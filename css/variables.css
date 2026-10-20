@@ -1,0 +1,75 @@
+/* ==========================================================================
+   FitVN Tracker - Design Tokens & CSS Variables
+   Dark Mode & Glassmorphism Fitness Theme
+   ========================================================================== */
+
+:root {
+  /* Color Palette - Dark Obsidian & Gym Neon Accents */
+  --bg-primary: #07090e;
+  --bg-secondary: #0d121d;
+  --bg-tertiary: #141b2d;
+  
+  /* Brand Accent Colors */
+  --accent-cyan: #00f0ff;
+  --accent-cyan-rgb: 0, 240, 255;
+  --accent-emerald: #10b981;
+  --accent-emerald-rgb: 16, 185, 129;
+  --accent-flame: #ff4757;
+  --accent-flame-rgb: 255, 71, 87;
+  --accent-purple: #8b5cf6;
+  --accent-purple-rgb: 139, 92, 246;
+  --accent-amber: #f59e0b;
+  --accent-amber-rgb: 245, 158, 11;
+
+  /* Text & Typography */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #07090e;
+
+  /* Glassmorphism System */
+  --glass-bg: rgba(15, 23, 42, 0.65);
+  --glass-bg-subtle: rgba(15, 23, 42, 0.45);
+  --glass-bg-hover: rgba(30, 41, 59, 0.75);
+  --glass-bg-active: rgba(0, 240, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.18);
+  --glass-border-active: rgba(0, 240, 255, 0.4);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-shadow-lg: 0 16px 40px 0 rgba(0, 0, 0, 0.55);
+  --glass-blur: blur(16px);
+  --glass-blur-lg: blur(24px);
+
+  /* Elevation Glow */
+  --glow-cyan: 0 0 20px rgba(0, 240, 255, 0.25);
+  --glow-emerald: 0 0 20px rgba(16, 185, 129, 0.25);
+  --glow-flame: 0 0 20px rgba(255, 71, 87, 0.25);
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem;  /* 8px */
+  --spacing-md: 1rem;    /* 16px */
+  --spacing-lg: 1.5rem;  /* 24px */
+  --spacing-xl: 2rem;    /* 32px */
+  --spacing-2xl: 3rem;   /* 48px */
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Transitions */
+  --transition-fast: 0.18s ease;
+  --transition-normal: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Layout Constants */
+  --bottom-nav-height: 68px;
+  --sidebar-width: 270px;
+  --header-height: 70px;
+}
