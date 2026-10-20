@@ -8,7 +8,8 @@ const STORAGE_KEYS = {
   FOOD_LOGS: 'fitvn_food_logs',
   WEIGHT_LOGS: 'fitvn_weight_logs',
   SETTINGS: 'fitvn_settings',
-  CUSTOM_FOODS: 'fitvn_custom_foods'
+  CUSTOM_FOODS: 'fitvn_custom_foods',
+  WATER_LOGS: 'fitvn_water_logs'
 };
 
 const DEFAULT_PROFILE = {
@@ -331,6 +332,33 @@ const storageService = {
     const logs = this.getWeightLogs();
     if (logs.length === 0) return null;
     return logs[logs.length - 1];
+  },
+
+  /**
+   * WATER LOGGING METHODS
+   */
+  getWater(dateString = null) {
+    const date = dateString || getTodayDateString();
+    const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
+    return Number(waterData[date]) || 1750; // 1750ml initial seed
+  },
+
+  addWater(amount, dateString = null) {
+    const date = dateString || getTodayDateString();
+    const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
+    const current = Number(waterData[date]) || 1750;
+    const updated = Math.max(0, current + amount);
+    waterData[date] = updated;
+    this.set(STORAGE_KEYS.WATER_LOGS, waterData);
+    return updated;
+  },
+
+  resetWater(dateString = null) {
+    const date = dateString || getTodayDateString();
+    const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
+    waterData[date] = 0;
+    this.set(STORAGE_KEYS.WATER_LOGS, waterData);
+    return 0;
   }
 };
 

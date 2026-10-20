@@ -136,11 +136,100 @@ const NavigationModule = {
 };
 
 /**
- * Dashboard Module - Synchronizes Day Totals, Calorie Budgets, and Macro Ratios
+ * Dashboard Module - Synchronizes Calorie Ring, Deep Macros, Hydration & Quick Feeds
+ * Optimized via Option A: Targeted DOM Element Cache & DocumentFragment Batching
  */
 const DashboardModule = {
+  dom: {},
+  circumference: 2 * Math.PI * 75, // Radius = 75px, C ≈ 471.24px
+
   init() {
+    this.cacheDOM();
+    this.bindEvents();
     this.updateUI();
+  },
+
+  cacheDOM() {
+    this.dom = {
+      circleProgress: document.getElementById('gauge-circle-progress'),
+      gaugeRemaining: document.getElementById('gauge-remaining-val'),
+      gaugeLabel: document.getElementById('gauge-status-label'),
+      statConsumed: document.getElementById('dash-stat-calories'),
+      statRemaining: document.getElementById('dash-calories-remaining'),
+      statConsumedSub: document.getElementById('dash-calories-consumed'),
+      calProgressFill: document.getElementById('dash-calories-progress'),
+      calBadge: document.getElementById('dash-calories-badge'),
+
+      // Macros
+      proteinText: document.getElementById('dash-macro-protein-text'),
+      proteinProgress: document.getElementById('dash-macro-protein-progress'),
+      proteinKcal: document.getElementById('dash-macro-protein-kcal'),
+
+      carbText: document.getElementById('dash-macro-carb-text'),
+      carbProgress: document.getElementById('dash-macro-carb-progress'),
+      carbKcal: document.getElementById('dash-macro-carb-kcal'),
+
+      fatText: document.getElementById('dash-macro-fat-text'),
+      fatProgress: document.getElementById('dash-macro-fat-progress'),
+      fatKcal: document.getElementById('dash-macro-fat-kcal'),
+
+      // Water Hydration
+      waterVal: document.getElementById('dash-water-val'),
+      waterProgress: document.getElementById('dash-water-progress'),
+      waterBadge: document.getElementById('dash-water-badge'),
+
+      // Weight
+      dashWeight: document.getElementById('dash-current-weight'),
+      dashWeightBadge: document.getElementById('dash-weight-badge'),
+
+      // Recent foods container
+      recentFoodList: document.getElementById('dash-recent-food-list')
+    };
+  },
+
+  bindEvents() {
+    // Water tracking actions
+    document.addEventListener('click', (e) => {
+      const waterBtn = e.target.closest('[data-water-add]');
+      if (waterBtn) {
+        const amount = parseInt(waterBtn.getAttribute('data-water-add'), 10);
+        if (!isNaN(amount)) {
+          this.updateWater(amount);
+        }
+      }
+
+      const resetBtn = e.target.closest('#btn-water-reset');
+      if (resetBtn) {
+        window.storageService.resetWater();
+        ToastModule.show('Đã đặt lại lượng nước uống hôm nay.', 'flame');
+        this.renderWater();
+      }
+    });
+  },
+
+  updateWater(amount) {
+    const updated = window.storageService.addWater(amount);
+    const sign = amount > 0 ? `+${amount}` : `${amount}`;
+    ToastModule.show(`Đã nạp ${sign}ml nước! Tổng: ${updated.toLocaleString()}ml`);
+    this.renderWater();
+  },
+
+  renderWater() {
+    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    const target = profile.waterTarget || 3000;
+    const current = window.storageService.getWater();
+    const percent = Math.min(100, Math.round((current / target) * 100));
+
+    if (this.dom.waterVal) {
+      this.dom.waterVal.innerHTML = `${current.toLocaleString()} <span class="stat-unit">/ ${target.toLocaleString()} ml</span>`;
+    }
+    if (this.dom.waterProgress) {
+      this.dom.waterProgress.style.width = `${percent}%`;
+    }
+    if (this.dom.waterBadge) {
+      this.dom.waterBadge.textContent = percent >= 100 ? 'Đã đủ nước' : `Đạt ${percent}%`;
+      this.dom.waterBadge.className = `glass-badge ${percent >= 100 ? 'glass-badge-emerald' : 'glass-badge-cyan'}`;
+    }
   },
 
   updateUI() {
@@ -151,53 +240,139 @@ const DashboardModule = {
     const todayDate = window.getTodayDateString();
     const dayTotals = window.storageService.calculateDayTotals(todayDate);
 
-    // 1. Calories Calculation
+    // 1. Calories & SVG Gauge Calculation
     const consumed = Math.round(dayTotals.calories);
-    const remaining = Math.max(0, targetCalories - consumed);
+    const remaining = targetCalories - consumed;
     const calPercent = Math.min(100, Math.round((consumed / targetCalories) * 100));
 
-    // Update Calorie UI Elements
-    const statConsumedEl = document.getElementById('dash-stat-calories');
-    const statRemainingEl = document.getElementById('dash-calories-remaining');
-    const statConsumedSubEl = document.getElementById('dash-calories-consumed');
-    const calProgressFillEl = document.getElementById('dash-calories-progress');
-    const calBadgeEl = document.getElementById('dash-calories-badge');
-
-    if (statConsumedEl) {
-      statConsumedEl.innerHTML = `${consumed.toLocaleString()} <span class="stat-unit">/ ${targetCalories.toLocaleString()} kcal</span>`;
-    }
-    if (statRemainingEl) {
-      statRemainingEl.textContent = `${remaining.toLocaleString()} kcal`;
-    }
-    if (statConsumedSubEl) {
-      statConsumedSubEl.textContent = `${consumed.toLocaleString()} kcal`;
-    }
-    if (calProgressFillEl) {
-      calProgressFillEl.style.width = `${calPercent}%`;
-    }
-    if (calBadgeEl) {
-      calBadgeEl.textContent = `Đạt ${calPercent}%`;
+    // Update SVG Circular Ring Gauge
+    if (this.dom.circleProgress) {
+      const ratio = Math.min(1, consumed / targetCalories);
+      const offset = this.circumference * (1 - ratio);
+      this.dom.circleProgress.style.strokeDasharray = `${this.circumference}`;
+      this.dom.circleProgress.style.strokeDashoffset = `${offset}`;
     }
 
-    // 2. Macros Calculation
-    this.updateMacroItem('protein', dayTotals.protein, targetMacros.protein);
-    this.updateMacroItem('carb', dayTotals.carbs, targetMacros.carbs);
-    this.updateMacroItem('fat', dayTotals.fat, targetMacros.fat);
+    if (this.dom.gaugeRemaining) {
+      this.dom.gaugeRemaining.textContent = Math.abs(remaining).toLocaleString();
+    }
+
+    if (this.dom.gaugeLabel) {
+      if (remaining > 0) {
+        this.dom.gaugeLabel.textContent = 'Calo còn lại';
+        this.dom.gaugeLabel.style.color = 'var(--text-muted)';
+      } else if (remaining === 0) {
+        this.dom.gaugeLabel.textContent = 'Đạt mục tiêu chuẩn!';
+        this.dom.gaugeLabel.style.color = 'var(--accent-emerald)';
+      } else {
+        this.dom.gaugeLabel.textContent = `Thặng dư: +${Math.abs(remaining)} kcal`;
+        this.dom.gaugeLabel.style.color = 'var(--accent-flame)';
+      }
+    }
+
+    // Secondary UI values
+    if (this.dom.statConsumed) {
+      this.dom.statConsumed.innerHTML = `${consumed.toLocaleString()} <span class="stat-unit">/ ${targetCalories.toLocaleString()} kcal</span>`;
+    }
+    if (this.dom.statRemaining) {
+      this.dom.statRemaining.textContent = `${Math.max(0, remaining).toLocaleString()} kcal`;
+    }
+    if (this.dom.statConsumedSub) {
+      this.dom.statConsumedSub.textContent = `${consumed.toLocaleString()} kcal`;
+    }
+    if (this.dom.calProgressFill) {
+      this.dom.calProgressFill.style.width = `${calPercent}%`;
+    }
+    if (this.dom.calBadge) {
+      this.dom.calBadge.textContent = `Đạt ${calPercent}%`;
+    }
+
+    // 2. Macro deep breakdown
+    this.renderMacroItem('protein', dayTotals.protein, targetMacros.protein, 4);
+    this.renderMacroItem('carb', dayTotals.carbs, targetMacros.carbs, 4);
+    this.renderMacroItem('fat', dayTotals.fat, targetMacros.fat, 9);
+
+    // 3. Hydration
+    this.renderWater();
+
+    // 4. Weight & 7DMA
+    this.renderWeightSnippet(profile);
+
+    // 5. Recent Meals via DocumentFragment Batching
+    this.renderRecentMeals(todayDate);
   },
 
-  updateMacroItem(macroType, actualVal, targetVal) {
-    const roundedActual = Math.round(actualVal);
-    const percent = Math.min(100, Math.round((roundedActual / targetVal) * 100));
+  renderMacroItem(type, actual, target, calMultiplier) {
+    const rounded = Math.round(actual);
+    const percent = Math.min(100, Math.round((rounded / target) * 100));
+    const kcal = rounded * calMultiplier;
 
-    const textEl = document.getElementById(`dash-macro-${macroType}-text`);
-    const progressEl = document.getElementById(`dash-macro-${macroType}-progress`);
+    const textEl = this.dom[`${type}Text`];
+    const progressEl = this.dom[`${type}Progress`];
+    const kcalEl = this.dom[`${type}Kcal`];
 
-    if (textEl) {
-      textEl.textContent = `${roundedActual}g / ${targetVal}g (${percent}%)`;
+    if (textEl) textEl.textContent = `${rounded}g / ${target}g (${percent}%)`;
+    if (progressEl) progressEl.style.width = `${percent}%`;
+    if (kcalEl) kcalEl.textContent = `${kcal} kcal`;
+  },
+
+  renderWeightSnippet(profile) {
+    const latest = window.storageService.getLatestWeight();
+    if (!latest) return;
+
+    if (this.dom.dashWeight) {
+      const targetWeight = profile.targetWeight || 76;
+      this.dom.dashWeight.innerHTML = `${latest.weight} <span class="stat-unit">kg (Target: ${targetWeight} kg)</span>`;
     }
-    if (progressEl) {
-      progressEl.style.width = `${percent}%`;
+
+    if (this.dom.dashWeightBadge) {
+      const logs = window.storageService.getWeightLogs();
+      if (logs.length >= 2 && window.HealthCalculator) {
+        const maData = window.HealthCalculator.calculateMovingAverage(logs, 7);
+        const trend = window.HealthCalculator.calculateWeeklyTrend(maData);
+        this.dom.dashWeightBadge.textContent = trend.text;
+      }
     }
+  },
+
+  /**
+   * Render Recent Meals Feed with DocumentFragment (Option A Optimization)
+   */
+  renderRecentMeals(dateString) {
+    if (!this.dom.recentFoodList) return;
+
+    const dayLogs = window.storageService.getFoodLogs(dateString);
+    if (dayLogs.length === 0) {
+      this.dom.recentFoodList.innerHTML = `
+        <div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+          Chưa có món ăn nào được nạp hôm nay.
+        </div>
+      `;
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    const recent = dayLogs.slice(0, 3); // Top 3 recent
+
+    recent.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'glass-subtle';
+      row.style.cssText = 'padding: 0.65rem 0.85rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;';
+      row.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span>🍽️</span>
+          <div>
+            <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">${item.name}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">P: ${item.protein}g • C: ${item.carbs}g • F: ${item.fat}g</div>
+          </div>
+        </div>
+        <strong style="color: var(--accent-cyan); font-size: 0.88rem;">${item.calories} kcal</strong>
+      `;
+      fragment.appendChild(row);
+    });
+
+    this.dom.recentFoodList.innerHTML = '';
+    this.dom.recentFoodList.appendChild(fragment);
   }
 };
 

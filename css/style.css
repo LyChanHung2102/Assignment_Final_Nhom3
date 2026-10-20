@@ -651,6 +651,7 @@ body {
   position: relative;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .food-search-icon {
@@ -682,33 +683,55 @@ body {
 /* Chips Filter */
 .chips-container {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  overflow-y: hidden;
+  padding: 8px 4px 12px 4px;
+  margin-top: 10px;    /* Đẩy cả thanh danh mục xuống dưới ô tìm kiếm */
+  margin-bottom: 12px; /* Đẩy danh sách món ăn xuống dưới thanh danh mục */
+  flex-shrink: 0;      /* Ngăn chặn Flexbox đè nén chiều cao của thanh danh mục */
+  min-height: 58px;    /* Đảm bảo đủ không gian cho toàn bộ khung nút và hiệu ứng viền */
+  box-sizing: border-box;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
+  -webkit-overflow-scrolling: touch; /* Smooth inertia scroll on iOS */
+}
+
+.chips-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge, Opera */
 }
 
 .chip-btn {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
+  border: 1.5px solid var(--glass-border);
   border-radius: var(--radius-full);
   color: var(--text-secondary);
-  font-size: 0.76rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  line-height: 1;
   white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
+  box-sizing: border-box;
 }
 
 .chip-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
   border-color: var(--glass-border-hover);
   color: var(--text-primary);
 }
 
 .chip-btn.active {
-  background: rgba(0, 240, 255, 0.15);
+  background: rgba(0, 240, 255, 0.12);
   border-color: var(--accent-cyan);
   color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
 }
 
 /* Food List Items */
@@ -718,6 +741,8 @@ body {
   gap: var(--spacing-sm);
   max-height: 380px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .food-item-row {
@@ -1171,5 +1196,130 @@ body {
 .delta-pos { color: var(--accent-emerald); }
 .delta-neg { color: var(--accent-flame); }
 .delta-neutral { color: var(--text-muted); }
+
+/* --------------------------------------------------------------------------
+   12. Circular Calorie Gauge & Interactive Dashboard Widgets
+   -------------------------------------------------------------------------- */
+.calorie-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: var(--spacing-md) 0;
+}
+
+.calorie-gauge-wrapper {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.gauge-circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 12;
+}
+
+.gauge-circle-progress {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
+}
+
+.gauge-center-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.gauge-cal-num {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.gauge-cal-unit {
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 3px;
+}
+
+.gauge-cal-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.macro-detail-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.btn-water-action {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+
+.btn-water-action:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+.btn-water-action:active {
+  transform: translateY(0);
+}
+
+.btn-water-reset {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.btn-water-reset:hover {
+  color: var(--accent-flame);
+  border-color: var(--accent-flame);
+  background: rgba(255, 71, 87, 0.1);
+}
+
 
 
