@@ -340,13 +340,16 @@ const storageService = {
   getWater(dateString = null) {
     const date = dateString || getTodayDateString();
     const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
-    return Number(waterData[date]) || 1750; // 1750ml initial seed
+    if (waterData && typeof waterData[date] !== 'undefined') {
+      return Math.max(0, Number(waterData[date]) || 0);
+    }
+    return 1750; // default seed for fresh demo
   },
 
   addWater(amount, dateString = null) {
     const date = dateString || getTodayDateString();
     const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
-    const current = Number(waterData[date]) || 1750;
+    const current = this.getWater(date);
     const updated = Math.max(0, current + amount);
     waterData[date] = updated;
     this.set(STORAGE_KEYS.WATER_LOGS, waterData);

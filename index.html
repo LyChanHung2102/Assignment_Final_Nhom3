@@ -228,33 +228,66 @@
               </div>
             </div>
 
-            <!-- WIDGET 3: Interactive Water Hydration Tracker -->
-            <div class="glass-card stat-card glass-card-interactive">
-              <div class="stat-header">
-                <span>NƯỚC UỐNG (HYDRATION)</span>
-                <span class="glass-badge glass-badge-cyan" id="dash-water-badge">Mục tiêu 3,000 ml</span>
+            <!-- WIDGET 3: Interactive Water Hydration Tracker with Dynamic Cups -->
+            <div class="glass-card stat-card glass-card-interactive water-tracker-card" id="widget-water-tracker">
+              <!-- Top Row: Title + Amount on Left, Circular Progress + Button on Right -->
+              <div class="water-card-top">
+                <div class="water-header-info">
+                  <div class="water-label">Nước uống</div>
+                  <div class="water-amount-row">
+                    <span class="water-big-number" id="dash-water-val">1,750</span>
+                    <span class="water-unit-label" id="dash-water-unit">ml</span>
+                    <span class="water-sub-oz" id="dash-water-sub-oz">(59.2 fl oz)</span>
+                  </div>
+                </div>
+
+                <div class="water-quick-add-wrap" title="Nhấn để nạp 1 cốc 250ml">
+                  <div class="water-circular-gauge" id="btn-water-quick-add" role="button" tabindex="0" aria-label="Uống 1 cốc nước 250ml">
+                    <svg viewBox="0 0 44 44" class="water-gauge-svg">
+                      <circle class="water-gauge-bg" cx="22" cy="22" r="18" />
+                      <circle class="water-gauge-bar" id="water-gauge-circle" cx="22" cy="22" r="18" />
+                    </svg>
+                    <span class="water-gauge-plus" aria-hidden="true">+</span>
+                  </div>
+                </div>
               </div>
-              <div class="stat-value" id="dash-water-val">
-                1,750 <span class="stat-unit">/ 3,000 ml</span>
+
+              <!-- Cups Container (Rendered dynamically based on waterTarget and 250ml/cup) -->
+              <div class="water-cups-section">
+                <div class="water-cups-grid" id="dash-water-cups-grid" role="region" aria-label="Danh sách cốc nước">
+                  <!-- Dynamically populated cups via app.js -->
+                </div>
               </div>
-              <div class="progress-track" style="margin-top: 10px;">
-                <div class="progress-fill fill-water" id="dash-water-progress" style="width: 58.3%;"></div>
-              </div>
-              
-              <!-- Interactive Action Buttons -->
-              <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px;">
-                <button type="button" class="btn-water-action" data-water-add="250" title="Uống 1 cốc nước 250ml">
-                  +250ml
-                </button>
-                <button type="button" class="btn-water-action" data-water-add="500" title="Uống 1 bình nước 500ml">
-                  +500ml
-                </button>
-                <button type="button" class="btn-water-action" data-water-add="-250" title="Bớt 250ml nếu ghi nhầm">
-                  -250ml
-                </button>
-                <button type="button" class="btn-water-action btn-water-reset" id="btn-water-reset" title="Đặt lại 0ml">
-                  ↺
-                </button>
+
+              <!-- Bottom Row: Goal on Left, Options Menu on Right -->
+              <div class="water-card-bottom">
+                <div class="water-goal-caption" id="dash-water-goal-caption">
+                  Mục tiêu: <span id="dash-water-goal-val">3,000 ml</span>
+                </div>
+                <div class="water-menu-wrapper">
+                  <button type="button" class="btn-water-dots" id="btn-water-dots" aria-label="Tùy chọn lượng nước" title="Tùy chọn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="5" cy="12" r="2.2"/>
+                      <circle cx="12" cy="12" r="2.2"/>
+                      <circle cx="19" cy="12" r="2.2"/>
+                    </svg>
+                  </button>
+                  <div class="water-dropdown-panel" id="water-dropdown-panel" style="display: none;">
+                    <button type="button" class="water-dropdown-btn" data-water-quick="250">
+                      <span>🥤 Uống 1 cốc (+250ml)</span>
+                    </button>
+                    <button type="button" class="water-dropdown-btn" data-water-quick="-250">
+                      <span>↩️ Giảm 1 cốc (-250ml)</span>
+                    </button>
+                    <button type="button" class="water-dropdown-btn" id="btn-water-edit-target">
+                      <span>🎯 Đổi mục tiêu hàng ngày</span>
+                    </button>
+                    <div class="water-dropdown-divider"></div>
+                    <button type="button" class="water-dropdown-btn text-danger" id="btn-water-reset">
+                      <span>↺ Đặt lại 0ml hôm nay</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 

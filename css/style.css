@@ -1323,3 +1323,360 @@ body {
 
 
 
+
+/* ==========================================================================
+   Water Tracker Widget & Interactive Cups (250ml / Cup)
+   ========================================================================== */
+
+.water-tracker-card {
+  position: relative;
+  overflow: visible !important;
+}
+
+.water-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.water-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.water-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.water-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.water-big-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.water-unit-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.water-sub-oz {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+/* Circular Gauge + Quick Add Button */
+.water-quick-add-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.water-circular-gauge {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.4);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.water-circular-gauge:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+}
+
+.water-circular-gauge:active {
+  transform: scale(0.96);
+}
+
+.water-gauge-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.water-gauge-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 3.5;
+}
+
+.water-gauge-bar {
+  fill: none;
+  stroke: #0ea5e9;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 113.1;
+  stroke-dashoffset: 113.1;
+  transition: stroke-dashoffset 0.4s ease, stroke 0.3s ease;
+}
+
+.water-gauge-plus {
+  position: absolute;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  pointer-events: none;
+  line-height: 1;
+  transition: transform var(--transition-fast);
+}
+
+.water-circular-gauge:hover .water-gauge-plus {
+  color: #38bdf8;
+  transform: scale(1.15);
+}
+
+/* Cups Container & Grid */
+.water-cups-section {
+  margin: 14px 0 10px 0;
+  padding: 4px 0;
+}
+
+.water-cups-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 10px;
+  align-items: center;
+}
+
+/* Cup Item */
+.water-cup-item {
+  width: 34px;
+  height: 48px;
+  position: relative;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.18s ease;
+  user-select: none;
+  border-radius: 6px;
+}
+
+.water-cup-item:hover {
+  transform: translateY(-3px) scale(1.1);
+  filter: drop-shadow(0 4px 10px rgba(14, 165, 233, 0.45));
+}
+
+.water-cup-item:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.water-cup-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Cup States */
+.cup-glass-bg {
+  fill: rgba(255, 255, 255, 0.03);
+  transition: fill 0.2s ease;
+}
+
+.cup-water-rect {
+  fill: #0284c7;
+  transition: y 0.35s ease, height 0.35s ease, fill 0.2s ease;
+}
+
+.cup-water-surface {
+  stroke: #7dd3fc;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+.cup-glass-stroke {
+  stroke: rgba(148, 163, 184, 0.3);
+  stroke-width: 1.2;
+  transition: stroke 0.2s ease;
+}
+
+.cup-glass-rim {
+  stroke: rgba(148, 163, 184, 0.25);
+  stroke-width: 1;
+}
+
+/* Filled Cup */
+.cup-filled .cup-water-rect {
+  fill: #0284c7;
+}
+
+.cup-filled .cup-glass-stroke {
+  stroke: rgba(56, 189, 248, 0.5);
+}
+
+.cup-filled .cup-glass-bg {
+  fill: rgba(2, 132, 199, 0.1);
+}
+
+/* Partial Cup */
+.cup-partial .cup-water-rect {
+  fill: #0284c7;
+}
+
+.cup-partial .cup-glass-stroke {
+  stroke: rgba(56, 189, 248, 0.4);
+}
+
+/* Next Action Cup (with +) */
+.cup-next-action {
+  animation: pulseNextCup 2.2s infinite ease-in-out;
+}
+
+.cup-next-action .cup-glass-bg {
+  fill: rgba(56, 189, 248, 0.08);
+}
+
+.cup-next-action .cup-glass-stroke {
+  stroke: rgba(56, 189, 248, 0.55);
+  stroke-dasharray: 2 1.5;
+}
+
+.cup-plus-icon {
+  fill: #38bdf8;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+@keyframes pulseNextCup {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(56, 189, 248, 0));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.35));
+  }
+}
+
+/* Empty Cup */
+.cup-empty .cup-glass-stroke {
+  stroke: rgba(148, 163, 184, 0.2);
+}
+
+/* Bottom Row */
+.water-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--glass-border);
+  margin-top: 4px;
+}
+
+.water-goal-caption {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.water-goal-caption span {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Options 3-dots Menu */
+.water-menu-wrapper {
+  position: relative;
+}
+
+.btn-water-dots {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-water-dots:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--glass-border);
+}
+
+.water-dropdown-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  background: rgba(13, 18, 29, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border-hover);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  min-width: 210px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  animation: fadeInFast 0.15s ease-out;
+}
+
+@keyframes fadeInFast {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.water-dropdown-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.water-dropdown-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #38bdf8;
+}
+
+.water-dropdown-btn.text-danger {
+  color: #f87171;
+}
+
+.water-dropdown-btn.text-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.water-dropdown-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 4px 0;
+}

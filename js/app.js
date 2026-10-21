@@ -173,10 +173,16 @@ const DashboardModule = {
       fatProgress: document.getElementById('dash-macro-fat-progress'),
       fatKcal: document.getElementById('dash-macro-fat-kcal'),
 
-      // Water Hydration
+      // Water Hydration (Dynamic Cups & Circular Gauge)
       waterVal: document.getElementById('dash-water-val'),
-      waterProgress: document.getElementById('dash-water-progress'),
-      waterBadge: document.getElementById('dash-water-badge'),
+      waterUnit: document.getElementById('dash-water-unit'),
+      waterSubOz: document.getElementById('dash-water-sub-oz'),
+      waterCupsGrid: document.getElementById('dash-water-cups-grid'),
+      waterCircleBar: document.getElementById('water-gauge-circle'),
+      waterGoalVal: document.getElementById('dash-water-goal-val'),
+      waterDropdownPanel: document.getElementById('water-dropdown-panel'),
+      btnWaterDots: document.getElementById('btn-water-dots'),
+      btnWaterQuickAdd: document.getElementById('btn-water-quick-add'),
 
       // Weight
       dashWeight: document.getElementById('dash-current-weight'),
@@ -188,48 +194,234 @@ const DashboardModule = {
   },
 
   bindEvents() {
-    // Water tracking actions
+    // Water tracking & interactive actions
     document.addEventListener('click', (e) => {
-      const waterBtn = e.target.closest('[data-water-add]');
-      if (waterBtn) {
-        const amount = parseInt(waterBtn.getAttribute('data-water-add'), 10);
-        if (!isNaN(amount)) {
-          this.updateWater(amount);
-        }
+      // 1. Quick add from circular gauge (+)
+      if (e.target.closest('#btn-water-quick-add')) {
+        this.updateWater(250);
+        return;
       }
 
+      // 2. Click on a specific water cup
+      const cupItem = e.target.closest('.water-cup-item');
+      if (cupItem) {
+        const fill = parseInt(cupItem.getAttribute('data-fill'), 10) || 0;
+        // If clicking next cup or unfull cup -> Drink 1 cup (+250ml)
+        if (fill < 100) {
+          this.updateWater(250);
+        } else {
+          // If clicking an already filled cup -> Undo/reduce 1 cup (-250ml)
+          this.updateWater(-250);
+        }
+        return;
+      }
+
+      // 3. Quick action buttons (from dropdown or buttons with data-water-quick or data-water-add)
+      const quickBtn = e.target.closest('[data-water-quick]') || e.target.closest('[data-water-add]');
+      if (quickBtn) {
+        const amount = parseInt(quickBtn.getAttribute('data-water-quick') || quickBtn.getAttribute('data-water-add'), 10);
+        if (!isNaN(amount)) {
+          this.updateWater(amount);
+          if (this.dom.waterDropdownPanel) this.dom.waterDropdownPanel.style.display = 'none';
+        }
+        return;
+      }
+
+      // 4. Toggle dropdown menu dots
+      const dotsBtn = e.target.closest('#btn-water-dots');
+      if (dotsBtn) {
+        if (this.dom.waterDropdownPanel) {
+          const isHidden = this.dom.waterDropdownPanel.style.display === 'none' || !this.dom.waterDropdownPanel.style.display;
+          this.dom.waterDropdownPanel.style.display = isHidden ? 'block' : 'none';
+        }
+        return;
+      }
+
+      // 5. Reset water today
       const resetBtn = e.target.closest('#btn-water-reset');
       if (resetBtn) {
         window.storageService.resetWater();
-        ToastModule.show('Đã đặt lại lượng nước uống hôm nay.', 'flame');
+        ToastModule.show('Đã đặt lại lượng nước uống hôm nay về 0ml.', 'flame');
+        if (this.dom.waterDropdownPanel) this.dom.waterDropdownPanel.style.display = 'none';
         this.renderWater();
+        return;
+      }
+
+      // 6. Edit daily water target
+      const editTargetBtn = e.target.closest('#btn-water-edit-target');
+      if (editTargetBtn) {
+        if (this.dom.waterDropdownPanel) this.dom.waterDropdownPanel.style.display = 'none';
+        const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+        const currentTarget = profile.waterTarget || 3000;
+        const input = prompt('Nhập mục tiêu nước uống mỗi ngày của bạn (ml):', currentTarget);
+        if (input !== null) {
+          const newTarget = parseInt(input, 10);
+          if (!isNaN(newTarget) && newTarget >= 500 && newTarget <= 10000) {
+            profile.waterTarget = newTarget;
+            window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
+            ToastModule.show(`Đã cập nhật mục tiêu nước: ${newTarget.toLocaleString()}ml!`);
+            this.renderWater();
+          } else if (input.trim() !== '') {
+            ToastModule.show('Vui lòng nhập số ml hợp lệ (từ 500 đến 10,000 ml)', 'flame');
+          }
+        }
+        return;
+      }
+
+      // 7. Click outside dropdown to close
+      if (this.dom.waterDropdownPanel && this.dom.waterDropdownPanel.style.display !== 'none') {
+        if (!e.target.closest('.water-menu-wrapper')) {
+          this.dom.waterDropdownPanel.style.display = 'none';
+        }
       }
     });
+
+    // Keyboard accessibility for Circular Gauge (+)
+    if (this.dom.btnWaterQuickAdd) {
+      this.dom.btnWaterQuickAdd.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.updateWater(250);
+        }
+      });
+    }
   },
 
   updateWater(amount) {
     const updated = window.storageService.addWater(amount);
     const sign = amount > 0 ? `+${amount}` : `${amount}`;
-    ToastModule.show(`Đã nạp ${sign}ml nước! Tổng: ${updated.toLocaleString()}ml`);
+    ToastModule.show(`Đã nạp ${sign}ml nước! Hiện tại: ${updated.toLocaleString('vi-VN')}ml`);
     this.renderWater();
   },
 
   renderWater() {
     const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
-    const target = profile.waterTarget || 3000;
+    const target = Number(profile.waterTarget) > 0 ? Number(profile.waterTarget) : 3000;
     const current = window.storageService.getWater();
     const percent = Math.min(100, Math.round((current / target) * 100));
+    const CUP_CAPACITY_ML = 250;
 
+    // 1. Text display (Amount & fl oz conversion)
     if (this.dom.waterVal) {
-      this.dom.waterVal.innerHTML = `${current.toLocaleString()} <span class="stat-unit">/ ${target.toLocaleString()} ml</span>`;
+      this.dom.waterVal.textContent = current.toLocaleString('vi-VN');
     }
-    if (this.dom.waterProgress) {
-      this.dom.waterProgress.style.width = `${percent}%`;
+    if (this.dom.waterUnit) {
+      this.dom.waterUnit.textContent = 'ml';
     }
-    if (this.dom.waterBadge) {
-      this.dom.waterBadge.textContent = percent >= 100 ? 'Đã đủ nước' : `Đạt ${percent}%`;
-      this.dom.waterBadge.className = `glass-badge ${percent >= 100 ? 'glass-badge-emerald' : 'glass-badge-cyan'}`;
+    if (this.dom.waterSubOz) {
+      // 1 ml = 0.033814 fl oz
+      const oz = (current * 0.033814).toFixed(1);
+      this.dom.waterSubOz.textContent = `(${oz} fl oz)`;
     }
+    if (this.dom.waterGoalVal) {
+      const goalOz = (target * 0.033814).toFixed(1);
+      this.dom.waterGoalVal.textContent = `${target.toLocaleString('vi-VN')} ml (${goalOz} fl oz)`;
+    }
+
+    // 2. Circular Gauge Ring Progress
+    if (this.dom.waterCircleBar) {
+      const circumference = 113.1; // 2 * PI * 18
+      const rawRatio = target > 0 ? (current / target) : 0;
+      const progressRatio = Math.min(1, Math.max(0, rawRatio));
+      const offset = circumference * (1 - progressRatio);
+      this.dom.waterCircleBar.style.strokeDashoffset = `${offset.toFixed(2)}`;
+
+      if (current >= target) {
+        this.dom.waterCircleBar.style.stroke = '#10b981'; // Emerald when completed
+      } else {
+        this.dom.waterCircleBar.style.stroke = '#0ea5e9'; // Vibrant water blue
+      }
+    }
+
+    // 3. Render Dynamic Water Cups (250ml per cup)
+    if (this.dom.waterCupsGrid) {
+      // Calculate base cups based on target
+      const baseCups = Math.max(1, Math.ceil(target / CUP_CAPACITY_ML));
+      // If user exceeded goal, add additional cups dynamically
+      const consumedCups = Math.ceil(current / CUP_CAPACITY_ML);
+      const totalCupsToRender = Math.max(baseCups, consumedCups);
+
+      const cupsHtml = [];
+      let foundNextActionCup = false;
+
+      for (let i = 0; i < totalCupsToRender; i++) {
+        const cupStart = i * CUP_CAPACITY_ML;
+        const cupEnd = (i + 1) * CUP_CAPACITY_ML;
+
+        let fillPercent = 0;
+        if (current >= cupEnd) {
+          fillPercent = 100;
+        } else if (current > cupStart) {
+          fillPercent = Math.round(((current - cupStart) / CUP_CAPACITY_ML) * 100);
+        } else {
+          fillPercent = 0;
+        }
+
+        // The first unfull cup gets the "+" icon and pulse animation
+        let isNextCup = false;
+        if (!foundNextActionCup && fillPercent < 100) {
+          isNextCup = true;
+          foundNextActionCup = true;
+        }
+
+        cupsHtml.push(this.createCupSvg(i, fillPercent, isNextCup, CUP_CAPACITY_ML));
+      }
+
+      this.dom.waterCupsGrid.innerHTML = cupsHtml.join('');
+    }
+  },
+
+  createCupSvg(cupIndex, fillPercent, isNextCup, cupCapacity) {
+    const clipId = `water-cup-clip-${cupIndex}`;
+    const cupHeight = 36;
+    const cupBottomY = 41.5;
+    const fillHeight = Math.max(0, Math.min(cupHeight, (fillPercent / 100) * cupHeight));
+    const fillY = cupBottomY - fillHeight;
+
+    let contentInside = '';
+    if (isNextCup) {
+      contentInside = `<text x="16" y="27" text-anchor="middle" class="cup-plus-icon">+</text>`;
+    }
+
+    let statusClass = 'cup-empty';
+    if (fillPercent >= 100) {
+      statusClass = 'cup-filled';
+    } else if (fillPercent > 0) {
+      statusClass = 'cup-partial';
+    }
+
+    return `
+      <div class="water-cup-item ${statusClass} ${isNextCup ? 'cup-next-action' : ''}" 
+           data-cup-index="${cupIndex}" 
+           data-fill="${fillPercent}"
+           role="button"
+           tabindex="0"
+           aria-label="Cốc ${cupIndex + 1}: ${fillPercent}%"
+           title="Cốc ${cupIndex + 1} (${cupCapacity}ml): ${fillPercent >= 100 ? 'Đã uống' : fillPercent > 0 ? `Đã uống ${Math.round((fillPercent / 100) * cupCapacity)}ml` : isNextCup ? 'Bấm để uống (+250ml)' : 'Chưa uống'}">
+        <svg class="water-cup-svg" viewBox="0 0 32 46" aria-hidden="true">
+          <defs>
+            <clipPath id="${clipId}">
+              <path d="M 3.5,5 L 7,39 C 7.5,41 9.5,42.5 16,42.5 C 22.5,42.5 24.5,41 25,39 L 28.5,5 Z" />
+            </clipPath>
+          </defs>
+
+          <!-- Cup body background -->
+          <path d="M 3.5,5 L 7,39 C 7.5,41 9.5,42.5 16,42.5 C 22.5,42.5 24.5,41 25,39 L 28.5,5 Z" class="cup-glass-bg" />
+          
+          <!-- Liquid Level Fill -->
+          <g clip-path="url(#${clipId})">
+            <rect x="0" y="${fillY.toFixed(1)}" width="32" height="${(fillHeight + 6).toFixed(1)}" class="cup-water-rect" />
+            ${fillPercent > 0 && fillPercent < 100 ? `<line x1="2" y1="${fillY.toFixed(1)}" x2="30" y2="${fillY.toFixed(1)}" class="cup-water-surface" />` : ''}
+          </g>
+
+          <!-- Glass outline and rim -->
+          <path d="M 3.5,5 L 7,39 C 7.5,41 9.5,42.5 16,42.5 C 22.5,42.5 24.5,41 25,39 L 28.5,5 Z" class="cup-glass-stroke" fill="none" />
+          <ellipse cx="16" cy="5" rx="12.5" ry="2" class="cup-glass-rim" fill="none" />
+
+          ${contentInside}
+        </svg>
+      </div>
+    `;
   },
 
   updateUI() {
@@ -1132,6 +1324,7 @@ const SettingsModule = {
     const heightInput = document.getElementById('setting-height');
     const targetWeightInput = document.getElementById('setting-target-weight');
     const caloriesInput = document.getElementById('setting-calories');
+    const waterTargetInput = document.getElementById('setting-water-target');
     const goalSelect = document.getElementById('setting-goal');
 
     if (nameInput && profile.name) nameInput.value = profile.name;
@@ -1139,6 +1332,7 @@ const SettingsModule = {
     if (heightInput && profile.height) heightInput.value = profile.height;
     if (targetWeightInput && profile.targetWeight) targetWeightInput.value = profile.targetWeight;
     if (caloriesInput && profile.targetCalories) caloriesInput.value = profile.targetCalories;
+    if (waterTargetInput && profile.waterTarget) waterTargetInput.value = profile.waterTarget;
     if (goalSelect && profile.fitnessGoal) goalSelect.value = profile.fitnessGoal;
   },
 
@@ -1155,6 +1349,7 @@ const SettingsModule = {
       const heightVal = parseFloat(document.getElementById('setting-height')?.value);
       const targetWeightVal = parseFloat(document.getElementById('setting-target-weight')?.value);
       const caloriesVal = parseInt(document.getElementById('setting-calories')?.value, 10);
+      const waterTargetVal = parseInt(document.getElementById('setting-water-target')?.value, 10);
       const goalVal = document.getElementById('setting-goal')?.value;
 
       if (nameVal) profile.name = nameVal;
@@ -1162,6 +1357,7 @@ const SettingsModule = {
       if (!isNaN(heightVal)) profile.height = heightVal;
       if (!isNaN(targetWeightVal)) profile.targetWeight = targetWeightVal;
       if (!isNaN(caloriesVal)) profile.targetCalories = caloriesVal;
+      if (!isNaN(waterTargetVal)) profile.waterTarget = waterTargetVal;
       if (goalVal) profile.fitnessGoal = goalVal;
 
       window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
