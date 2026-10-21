@@ -1,9 +1,86 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    FitVN Tracker - Design Tokens & CSS Variables
    Dark Mode & Glassmorphism Fitness Theme
    ========================================================================== */
 
 :root {
+  /* --------------------------------------------------------------------------
+     Jade & Porcelain Design Tokens (RULE.md Section 3)
+     -------------------------------------------------------------------------- */
+  /* Brand */
+  --color-primary: #173F35;
+  --color-primary-hover: #245747;
+  --color-primary-soft: #E5EDE7;
+  --color-primary-contrast: #FFFFFF;
+
+  /* Accent — Signature Citron */
+  --color-accent: #D2F36B;
+  --color-accent-hover: #C1E451;
+  --color-accent-soft: #EEF8CD;
+  --color-accent-text: #26351D;
+
+  /* Background */
+  --color-bg: #F7F6F0;
+  --color-surface: #FFFEFA;
+  --color-surface-raised: #F0F1E9;
+  --color-glass: rgba(255, 254, 250, 0.78);
+
+  /* Text */
+  --color-text: #202B28;
+  --color-text-secondary: #63756B;
+  --color-text-muted: #829087;
+  --color-text-inverse: #F7F6F0;
+
+  /* Borders */
+  --color-border: #DDE3D9;
+  --color-border-strong: #BECBC0;
+  --color-border-focus: #397866;
+
+  /* Supporting Brand Colors */
+  --color-jade: #173F35;
+  --color-sage: #397866;
+  --color-citron: #D2F36B;
+  --color-porcelain: #F7F6F0;
+  --color-ink: #202B28;
+  --color-clay: #C47D60;
+
+  /* Status */
+  --color-success: #287653;
+  --color-success-bg: #E5F2E9;
+
+  --color-warning: #946414;
+  --color-warning-bg: #FBF0D5;
+
+  --color-danger: #B83E42;
+  --color-danger-bg: #FBE9E7;
+
+  --color-info: #326B82;
+  --color-info-bg: #E5F0F4;
+
+  /* BMI Display */
+  --color-bmi-underweight: #326B82;
+  --color-bmi-normal: #287653;
+  --color-bmi-overweight: #946414;
+  --color-bmi-obesity: #B83E42;
+
+  /* Nutrition */
+  --color-protein: #397866;
+  --color-carbs: #D5A64B;
+  --color-fat: #C47D60;
+  --color-water: #528BA0;
+  --color-calories: #173F35;
+
+  /* Charts */
+  --color-chart-1: #397866;
+  --color-chart-2: #C47D60;
+  --color-chart-3: #8B83A8;
+  --color-chart-4: #D5A64B;
+  --color-chart-5: #528BA0;
+  --color-chart-grid: #DDE3D9;
+  --color-chart-label: #63756B;
+
+  /* Typography — Vietnamese Support */
+  --font-family: "Be Vietnam Pro", "Noto Sans", "Segoe UI", Arial, sans-serif;
   /* Color Palette - Dark Obsidian & Gym Neon Accents */
   --bg-primary: #07090e;
   --bg-secondary: #0d121d;

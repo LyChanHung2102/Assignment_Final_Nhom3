@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#F7F6F0">
+  <meta name="description" content="FitVN Tracker - Đăng nhập & Đăng ký tài khoản theo dõi sức khỏe và thể hình">
+  <title>Tài Khoản - FitVN Tracker</title>
+
+  <!-- Google Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core CSS (No external frameworks) -->
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/glass.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="auth-page">
+
+
+
+  <main class="auth-main-container">
+    <!-- Back to home button -->
+    <div class="auth-top-bar">
+      <a href="../index.html" class="auth-back-link" title="Về trang chủ">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Trang chủ FitVN</span>
+      </a>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="auth-card ">
+      <!-- Brand Header -->
+      <div class="auth-header">
+        <div class="brand-icon auth-brand-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+          </svg>
+        </div>
+        <h1 class="auth-title">FitVN Tracker</h1>
+        <p class="auth-subtitle">Nền tảng quản lý dinh dưỡng & sức khỏe toàn diện</p>
+      </div>
+
+      <!-- Segmented Switcher / Tabs -->
+      <div class="auth-tabs" role="tablist" aria-label="Chuyển đổi đăng nhập hoặc đăng ký">
+        <button type="button" class="auth-tab-btn active" id="tab-btn-login" role="tab" aria-selected="true" aria-controls="pane-login">
+          Đăng Nhập
+        </button>
+        <button type="button" class="auth-tab-btn" id="tab-btn-signup" role="tab" aria-selected="false" aria-controls="pane-signup">
+          Đăng Ký
+        </button>
+      </div>
+
+      <!-- Alert Box for global feedback -->
+      <div id="auth-alert-box" class="auth-alert hidden" role="alert"></div>
+
+      <!-- FORM 1: LOGIN -->
+      <section class="auth-form-pane active" id="pane-login" role="tabpanel" aria-labelledby="tab-btn-login">
+        <form id="form-login" novalidate>
+          <div class="auth-field-group">
+            <label for="login-email" class="auth-label">Địa chỉ Email</label>
+            <div class="auth-input-wrapper">
+              <input type="email" id="login-email" class="glass-input auth-input" placeholder="tenban@vidu.com" autocomplete="email" required>
+            </div>
+            <span class="auth-error-msg" id="err-login-email"></span>
+          </div>
+
+          <div class="auth-field-group">
+            <div class="auth-label-row">
+              <label for="login-password" class="auth-label">Mật khẩu</label>
+            </div>
+            <div class="auth-input-wrapper">
+              <input type="password" id="login-password" class="glass-input auth-input" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
+              <button type="button" class="auth-pwd-toggle" data-target="login-password" aria-label="Ẩn hoặc hiện mật khẩu">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="auth-error-msg" id="err-login-password"></span>
+          </div>
+
+          <button type="submit" class="auth-submit-btn" id="btn-submit-login">
+            <span>Đăng Nhập Vào Hệ Thống</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+
+          <p class="auth-switch-text">
+            Chưa có tài khoản FitVN? 
+            <button type="button" class="auth-link-btn" id="link-to-signup">Tạo tài khoản mới</button>
+          </p>
+        </form>
+      </section>
+
+      <!-- FORM 2: SIGN UP -->
+      <section class="auth-form-pane" id="pane-signup" role="tabpanel" aria-labelledby="tab-btn-signup">
+        <form id="form-signup" novalidate>
+          
+          <!-- Nhóm 1: Thông tin tài khoản -->
+          <div class="auth-section-divider">
+            <span>1. Tài Khoản & Bảo Mật</span>
+          </div>
+
+          <div class="auth-field-group">
+            <label for="signup-name" class="auth-label">Họ và tên <span class="required-star">*</span></label>
+            <div class="auth-input-wrapper">
+              <input type="text" id="signup-name" class="glass-input auth-input" placeholder="Ví dụ: Nguyễn Văn An" autocomplete="name" required>
+            </div>
+            <span class="auth-error-msg" id="err-signup-name"></span>
+          </div>
+
+          <div class="auth-field-group">
+            <label for="signup-email" class="auth-label">Địa chỉ Email <span class="required-star">*</span></label>
+            <div class="auth-input-wrapper">
+              <input type="email" id="signup-email" class="glass-input auth-input" placeholder="tenban@vidu.com" autocomplete="email" required>
+            </div>
+            <span class="auth-error-msg" id="err-signup-email"></span>
+          </div>
+
+          <div class="auth-row-2col">
+            <div class="auth-field-group">
+              <label for="signup-password" class="auth-label">Mật khẩu <span class="required-star">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="password" id="signup-password" class="glass-input auth-input" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" required>
+                <button type="button" class="auth-pwd-toggle" data-target="signup-password" aria-label="Ẩn hoặc hiện mật khẩu">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <span class="auth-error-msg" id="err-signup-password"></span>
+            </div>
+
+            <div class="auth-field-group">
+              <label for="signup-confirm-password" class="auth-label">Xác nhận mật khẩu <span class="required-star">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="password" id="signup-confirm-password" class="glass-input auth-input" placeholder="Nhập lại mật khẩu" autocomplete="new-password" required>
+                <button type="button" class="auth-pwd-toggle" data-target="signup-confirm-password" aria-label="Ẩn hoặc hiện mật khẩu">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <span class="auth-error-msg" id="err-signup-confirm-password"></span>
+            </div>
+          </div>
+
+          <!-- Nhóm 2: Chỉ số sức khỏe ban đầu -->
+          <div class="auth-section-divider">
+            <span>2. Chỉ Số Thể Chất & Mục Tiêu</span>
+          </div>
+
+          <div class="auth-row-2col">
+            <div class="auth-field-group">
+              <label for="signup-gender" class="auth-label">Giới tính</label>
+              <select id="signup-gender" class="glass-input auth-input auth-select">
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+
+            <div class="auth-field-group">
+              <label for="signup-age" class="auth-label">Tuổi <span class="required-star">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="number" id="signup-age" class="glass-input auth-input" placeholder="Ví dụ: 24" min="12" max="100" required>
+              </div>
+              <span class="auth-error-msg" id="err-signup-age"></span>
+            </div>
+          </div>
+
+          <div class="auth-row-2col">
+            <div class="auth-field-group">
+              <label for="signup-height" class="auth-label">Chiều cao (cm) <span class="required-star">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="number" id="signup-height" class="glass-input auth-input" placeholder="Ví dụ: 175" min="100" max="250" required>
+              </div>
+              <span class="auth-error-msg" id="err-signup-height"></span>
+            </div>
+
+            <div class="auth-field-group">
+              <label for="signup-weight" class="auth-label">Cân nặng (kg) <span class="required-star">*</span></label>
+              <div class="auth-input-wrapper">
+                <input type="number" step="0.1" id="signup-weight" class="glass-input auth-input" placeholder="Ví dụ: 68.5" min="30" max="250" required>
+              </div>
+              <span class="auth-error-msg" id="err-signup-weight"></span>
+            </div>
+          </div>
+
+          <div class="auth-field-group">
+            <label for="signup-goal" class="auth-label">Mục tiêu sức khỏe</label>
+            <select id="signup-goal" class="glass-input auth-input auth-select">
+              <option value="lean_bulk">Tăng cơ / Tăng cân lành mạnh (Lean Bulk)</option>
+              <option value="cut">Giảm mỡ / Giảm cân (Cutting)</option>
+              <option value="maintain" selected>Duy trì cân nặng & Tăng cường thể lực</option>
+            </select>
+          </div>
+
+          <button type="submit" class="auth-submit-btn" id="btn-submit-signup">
+            <span>Đăng Ký & Khởi Tạo Hồ Sơ</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+
+          <p class="auth-switch-text">
+            Đã có tài khoản? 
+            <button type="button" class="auth-link-btn" id="link-to-login">Đăng nhập ngay</button>
+          </p>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="../js/storage.js"></script>
+  <script src="../js/calculator.js"></script>
+  <script src="../js/auth.js"></script>`r`n  <script src="../js/app.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FitVN Tracker - Main Application Controller
  * Handles Navigation, Food Logging, Real-time Search, Barcode Scanner, and Dashboard Sync
  */
@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (document.getElementById('form-user-settings')) {
     SettingsModule.init();
+  }
+
+  if (document.getElementById('form-login') || document.getElementById('form-signup')) {
+    if (window.AuthModule) window.AuthModule.init();
   }
 });
 
@@ -83,6 +87,37 @@ const AppHeaderModule = {
     this.headerTitleEl = document.getElementById('header-title');
     this.headerDateEl = document.getElementById('header-date');
     this.updateCurrentDate();
+    this.syncUserData();
+  },
+
+  syncUserData() {
+    if (!window.storageService) return;
+    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    const authUser = window.storageService.getCurrentUser ? window.storageService.getCurrentUser() : null;
+    const activeName = (authUser && authUser.name) ? authUser.name : (profile.name || 'Người dùng FitVN');
+    
+    // Update user name elements
+    document.querySelectorAll('.user-name').forEach(el => {
+      el.textContent = activeName;
+    });
+
+    // Generate avatar initials
+    const initials = activeName.trim().split(/\s+/).map(w => w[0]).slice(-2).join('').toUpperCase() || 'VN';
+    document.querySelectorAll('.avatar-pill').forEach(el => {
+      el.textContent = initials;
+      el.setAttribute('title', activeName);
+    });
+
+    // Update goal tag
+    const goalLabels = {
+      'lean_bulk': 'Tăng Cơ (Lean Bulk)',
+      'cut': 'Giảm Cân (Cutting)',
+      'maintain': 'Duy Trì Thể Lực'
+    };
+    const activeGoal = (authUser && authUser.fitnessGoal) ? authUser.fitnessGoal : (profile.fitnessGoal || 'maintain');
+    document.querySelectorAll('.user-goal-tag').forEach(el => {
+      el.textContent = goalLabels[activeGoal] || 'Theo Dõi Sức Khỏe';
+    });
   },
 
   updateCurrentDate() {
