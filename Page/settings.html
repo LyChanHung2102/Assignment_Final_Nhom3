@@ -1,118 +1,217 @@
-﻿<a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
-            <div class="avatar-pill">VN</div>
-            <div class="user-info-snippet">
-              <span class="user-name">Người dùng FitVN</span>
-              <span class="user-goal-tag">Đang tải hồ sơ...</span>
-            </div>
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#07090e">
+  <meta name="description" content="Cài Đặt Hồ Sơ & Mục Tiêu Thể Hình - FitVN Tracker">
+  <title>Cài Đặt Cá Nhân - FitVN Tracker</title>
+
+  <!-- Google Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/glass.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+  <!-- Ambient Glowing Blobs -->
+  <div class="ambient-glow-container" aria-hidden="true">
+    <div class="ambient-blob blob-cyan"></div>
+    <div class="ambient-blob blob-purple"></div>
+    <div class="ambient-blob blob-emerald"></div>
+  </div>
+
+  <div id="app-layout">
+    <!-- NAVIGATION BAR -->
+    <nav class="app-navigation glass-nav" id="app-nav" aria-label="Main Navigation">
+      <div class="nav-brand-desktop">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">FitVN Tracker</span>
+          <span class="brand-sub">Gym & Nutrition</span>
+        </div>
+      </div>
+
+      <ul class="nav-list" role="tablist">
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link" data-page="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="9" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="5" rx="1.5"/>
+              <rect x="14" y="12" width="7" height="9" rx="1.5"/>
+              <rect x="3" y="16" width="7" height="5" rx="1.5"/>
+            </svg>
+            <span class="nav-label">Trang Chủ</span>
           </a>
-        </nav>
+        </li>
+        <li class="nav-item">
+          <a href="food-log.html" class="nav-link" data-page="food">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+              <line x1="6" y1="1" x2="6" y2="4"/>
+              <line x1="10" y1="1" x2="10" y2="4"/>
+              <line x1="14" y1="1" x2="14" y2="4"/>
+            </svg>
+            <span class="nav-label">Nhật Ký</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="weight.html" class="nav-link" data-page="weight">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
+            </svg>
+            <span class="nav-label">Cân Nặng</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link active" data-page="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span class="nav-label">Cá Nhân</span>
+          </a>
+        </li>
+      </ul>
 
-        <!-- CONTENT WRAPPER -->
-        <div class="content-wrapper">
-          <header class="app-header glass-header">
-            <div class="header-left">
-              <div class="brand-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
-                </svg>
-              </div>
-              <span class="brand-title">FitVN Tracker</span>
-            </div>
-            <div class="header-center">
-              <h1 class="header-tab-title" id="header-title">Cài Đặt Cá Nhân</h1>
-              <span class="header-date-badge" id="header-date">Hôm nay</span>
-            </div>
-            <div class="header-right">
-              <div class="avatar-pill" title="Tài khoản gymer">VN</div>
-            </div>
-          </header>
+      <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
+        <div class="avatar-pill">VN</div>
+        <div class="user-info-snippet">
+          <span class="user-name">Người dùng FitVN</span>
+          <span class="user-goal-tag">Đang tải hồ sơ...</span>
+        </div>
+      </a>
+    </nav>
 
-          <main class="main-viewport">
-            <!-- SETTINGS CONTENT -->
-            <section class="tab-content active" id="tab-settings">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                  </svg>
-                  Hồ Sơ & Thiết Lập Gymer
-                </h2>
-              </div>
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <header class="app-header glass-header">
+        <div class="header-left">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+            </svg>
+          </div>
+          <span class="brand-title">FitVN Tracker</span>
+        </div>
+        <div class="header-center">
+          <h1 class="header-tab-title" id="header-title">Cài Đặt Cá Nhân</h1>
+          <span class="header-date-badge" id="header-date">Hôm nay</span>
+        </div>
+        <div class="header-right">
+          <div class="avatar-pill" title="Tài khoản gymer">VN</div>
+        </div>
+      </header>
 
-              <div class="grid-cards" style="grid-template-columns: 1fr;">
-                <!-- Profile Form -->
-                <form id="form-user-settings" class="glass-card stat-card">
-                  <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: var(--spacing-sm);">Thông Số Thể Hình & Mục Tiêu</h3>
-                  
-                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-md);">
-                    <div>
-                      <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Họ tên gymer</label>
-                      <input type="text" class="glass-input" id="setting-name" value="Gymer FitVN" placeholder="Tên của bạn" required>
-                    </div>
-                    <div>
-                      <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Tuổi</label>
-                      <input type="number" class="glass-input" id="setting-age" value="24" min="12" max="100">
-                    </div>
-                    <div>
-                      <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Chiều cao (cm)</label>
-                      <input type="number" class="glass-input" id="setting-height" value="175" min="100" max="230" required>
-                    </div>
-                    <div>
-                      <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Cân nặng mục tiêu (kg)</label>
-                      <input type="number" step="0.5" class="glass-input" id="setting-target-weight" value="76" required>
-                    </div>
-                    <div>
-                      <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Calo mục tiêu hàng ngày (kcal)</label>
-                      <input type="number" class="glass-input" id="setting-calories" value="2600" required>
-                    </div>
-                    <div>
-                      <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Nước uống mục tiêu (ml / ngày)</label>
-                      <input type="number" step="50" class="glass-input" id="setting-water-target" value="3000" min="500" max="10000" required>
-                    </div>
-                    <div>
-                      <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Mục tiêu thể hình</label>
-                      <select class="glass-input" id="setting-goal" style="background: rgba(15, 23, 42, 0.9);">
-                        <option value="lean_bulk">Tăng cơ nạc (Lean Bulk)</option>
-                        <option value="cut">Cắt nét / Giảm mỡ (Cutting)</option>
-                        <option value="maintain">Duy trì vóc dáng (Maintain)</option>
-                      </select>
-                    </div>
-                  </div>
+      <main class="main-viewport">
+        <!-- SETTINGS CONTENT -->
+        <section class="tab-content active" id="tab-settings">
+          <div class="section-header">
+            <h2 class="section-title">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Hồ Sơ & Thiết Lập Gymer
+            </h2>
+          </div>
 
-                  <div style="margin-top: var(--spacing-lg); display: flex; justify-content: flex-end;">
-                    <button type="submit" class="glass-btn glass-btn-primary">
-                      Lưu Thay Đổi Hồ Sơ
-                    </button>
-                  </div>
-                </form>
-
-                <!-- App Preferences -->
-                <div class="glass-card stat-card">
-                  <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: var(--spacing-sm);">Tùy Chọn Ứng Dụng</h3>
-                  <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--glass-border);">
-                    <div>
-                      <div style="font-weight: 600;">Chế độ Dark Mode (Kính mờ)</div>
-                      <div style="font-size: 0.8rem; color: var(--text-muted);">Tối ưu bảo vệ mắt khi tập luyện và xem trong phòng gym</div>
-                    </div>
-                    <span class="glass-badge glass-badge-cyan">Đang bật</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--glass-border);">
-                    <div>
-                      <div style="font-weight: 600;">Hệ đơn vị</div>
-                      <div style="font-size: 0.8rem; color: var(--text-muted);">Metric (kg, cm, ml, kcal) chuẩn Việt Nam</div>
-                    </div>
-                    <span class="glass-badge glass-badge-emerald">Chuẩn VN</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0;">
-                    <div>
-                      <div style="font-weight: 600;">Phiên bản ứng dụng</div>
-                      <div style="font-size: 0.8rem; color: var(--text-muted);">FitVN Tracker v1.2 (Vanilla ES6+ Architecture)</div>
-                    </div>
-                    <span class="glass-badge">v1.2 Stable</span>
-                  </div>
+          <div class="grid-cards" style="grid-template-columns: 1fr;">
+            <!-- Profile Form -->
+            <form id="form-user-settings" class="glass-card stat-card">
+              <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: var(--spacing-sm);">Thông Số Thể Hình & Mục Tiêu</h3>
+              
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-md);">
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Họ tên gymer</label>
+                  <input type="text" class="glass-input" id="setting-name" value="Gymer FitVN" placeholder="Tên của bạn" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Tuổi</label>
+                  <input type="number" class="glass-input" id="setting-age" value="24" min="12" max="100">
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Chiều cao (cm)</label>
+                  <input type="number" class="glass-input" id="setting-height" value="175" min="100" max="230" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Cân nặng mục tiêu (kg)</label>
+                  <input type="number" step="0.5" class="glass-input" id="setting-target-weight" value="76" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Calo mục tiêu hàng ngày (kcal)</label>
+                  <input type="number" class="glass-input" id="setting-calories" value="2600" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Nước uống mục tiêu (ml / ngày)</label>
+                  <input type="number" step="50" class="glass-input" id="setting-water-target" value="3000" min="500" max="10000" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Mục tiêu thể hình</label>
+                  <select class="glass-input" id="setting-goal" style="background: rgba(15, 23, 42, 0.9);">
+                    <option value="lean_bulk">Tăng cơ nạc (Lean Bulk)</option>
+                    <option value="cut">Cắt nét / Giảm mỡ (Cutting)</option>
+                    <option value="maintain">Duy trì vóc dáng (Maintain)</option>
+                  </select>
                 </div>
               </div>
-            </section>
-          </main>
-        </div>
+
+              <div style="margin-top: var(--spacing-lg); display: flex; justify-content: flex-end;">
+                <button type="submit" class="glass-btn glass-btn-primary">
+                  Lưu Thay Đổi Hồ Sơ
+                </button>
+              </div>
+            </form>
+
+            <!-- App Preferences -->
+            <div class="glass-card stat-card">
+              <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: var(--spacing-sm);">Tùy Chọn Ứng Dụng</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--glass-border);">
+                <div>
+                  <div style="font-weight: 600;">Chế độ Dark Mode (Kính mờ)</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Tối ưu bảo vệ mắt khi tập luyện và xem trong phòng gym</div>
+                </div>
+                <span class="glass-badge glass-badge-cyan">Đang bật</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--glass-border);">
+                <div>
+                  <div style="font-weight: 600;">Hệ đơn vị</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Metric (kg, cm, ml, kcal) chuẩn Việt Nam</div>
+                </div>
+                <span class="glass-badge glass-badge-emerald">Chuẩn VN</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0;">
+                <div>
+                  <div style="font-weight: 600;">Phiên bản ứng dụng</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">FitVN Tracker v1.2 (Vanilla ES6+ Architecture)</div>
+                </div>
+                <span class="glass-badge">v1.2 Stable</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="../js/foodDatabase.js"></script>
+  <script src="../js/calculator.js"></script>
+  <script src="../js/chart.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
