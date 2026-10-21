@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('form-login') || document.getElementById('form-signup')) {
     if (window.AuthModule) window.AuthModule.init();
   }
+
+  if (document.getElementById('active-goal-hero') || document.getElementById('goals-history-list')) {
+    if (window.GoalsModule) window.GoalsModule.init();
+  }
 });
 
 /**
@@ -157,6 +161,8 @@ const NavigationModule = {
       activeKey = 'food';
     } else if (currentPath.includes('weight.html')) {
       activeKey = 'weight';
+    } else if (currentPath.includes('goals.html')) {
+      activeKey = 'goals';
     } else if (currentPath.includes('settings.html')) {
       activeKey = 'settings';
     }

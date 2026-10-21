@@ -1714,3 +1714,535 @@ body {
     font-size: var(--font-size-xl, 1.25rem);
   }
 }
+
+/* ==========================================================================
+   FITVN TRACKER - FITNESS GOALS MODULE STYLES
+   Design System: Jade & Porcelain (rule.md)
+   ========================================================================== */
+
+/* Active Hero Card */
+.hero-goal-card {
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-lg, 20px);
+  padding: var(--space-6, 24px);
+  box-shadow: var(--shadow-card, 0 4px 20px rgba(23, 63, 53, 0.06));
+  position: relative;
+  margin-bottom: var(--space-6, 24px);
+}
+
+.hero-goal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3, 12px);
+}
+
+.hero-goal-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.goal-type-pill {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-bold, 700);
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+  letter-spacing: 0.04em;
+}
+
+.goal-type-pill.badge-loss {
+  background: #E5F0F4;
+  color: #326B82;
+  border: 1px solid #BED6E0;
+}
+
+.goal-type-pill.badge-gain {
+  background: #EEF8CD;
+  color: #26351D;
+  border: 1px solid #D2F36B;
+}
+
+.goal-type-pill.badge-maintain {
+  background: #E5EDE7;
+  color: #173F35;
+  border: 1px solid #BECBC0;
+}
+
+.goal-status-pill {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-medium, 500);
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 9999px);
+}
+
+.goal-status-pill.status-progress {
+  background: #E5F2E9;
+  color: #287653;
+  border: 1px solid #A8D5B8;
+}
+
+.goal-status-pill.status-completed {
+  background: #173F35;
+  color: #FFFFFF;
+}
+
+.goal-status-pill.status-overdue {
+  background: #FBE9E7;
+  color: #B83E42;
+  border: 1px solid #EFA39F;
+}
+
+.goal-status-pill.status-paused {
+  background: #FBF0D5;
+  color: #946414;
+}
+
+.hero-goal-title {
+  font-size: 1.45rem;
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--color-primary, #173F35);
+  margin-bottom: 6px;
+}
+
+.hero-goal-note {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary, #63756B);
+  line-height: 1.4;
+  margin-bottom: var(--space-5, 20px);
+}
+
+/* Hero 3 Metrics Grid */
+.hero-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4, 16px);
+  background: var(--color-surface-raised, #F0F1E9);
+  padding: var(--space-4, 16px);
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--color-border, #DDE3D9);
+  margin-bottom: var(--space-5, 20px);
+}
+
+.hero-metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-metric-item.current {
+  border-left: 1px solid var(--color-border, #DDE3D9);
+  border-right: 1px solid var(--color-border, #DDE3D9);
+}
+
+.hero-metric-item .metric-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #829087);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.hero-metric-item .metric-val {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--color-text, #202B28);
+}
+
+.hero-metric-item .metric-val small {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.hero-metric-item .metric-sub {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #63756B);
+  margin-top: 4px;
+}
+
+.btn-quick-weight {
+  margin-top: 6px;
+  background: var(--color-primary-soft, #E5EDE7);
+  color: var(--color-primary, #173F35);
+  border: 1px solid var(--color-border-strong, #BECBC0);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.btn-quick-weight:hover {
+  background: var(--color-primary, #173F35);
+  color: #fff;
+}
+
+/* Progress section */
+.hero-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-status-desc {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-sage, #397866);
+}
+
+.progress-percent-bold {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-primary, #173F35);
+}
+
+.goal-progress-track {
+  width: 100%;
+  height: 14px;
+  background: var(--color-surface-raised, #F0F1E9);
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid var(--color-border, #DDE3D9);
+  overflow: hidden;
+  position: relative;
+}
+
+.goal-progress-track.small {
+  height: 8px;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #397866 0%, #173F35 100%);
+  border-radius: var(--radius-full, 9999px);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Goals History List */
+.goals-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4, 16px);
+}
+
+.goal-item-card {
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 14px);
+  padding: var(--space-4, 16px);
+  box-shadow: var(--shadow-card, 0 4px 20px rgba(23, 63, 53, 0.06));
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.goal-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover, 0 10px 30px rgba(23, 63, 53, 0.10));
+}
+
+.goal-item-card.active-border {
+  border-color: var(--color-sage, #397866);
+  border-width: 1.5px;
+}
+
+.goal-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.goal-item-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.goal-active-tag {
+  font-size: 0.68rem;
+  background: #D2F36B;
+  color: #26351D;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.goal-item-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text, #202B28);
+  margin: 0;
+}
+
+.goal-item-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-goal-icon {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #63756B);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: all 150ms ease;
+}
+
+.btn-goal-icon:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  color: var(--color-primary, #173F35);
+}
+
+.btn-goal-icon.danger:hover {
+  background: var(--color-danger-bg, #FBE9E7);
+  color: var(--color-danger, #B83E42);
+}
+
+.goal-item-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #63756B);
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border, #DDE3D9);
+  border-bottom: 1px solid var(--color-border, #DDE3D9);
+  margin-bottom: 10px;
+}
+
+.goal-item-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.goal-item-percent {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+}
+
+/* Modals */
+.app-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(32, 43, 40, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.app-modal-backdrop.active {
+  display: flex;
+}
+
+.app-modal-box {
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-modal, 0 20px 60px rgba(23, 63, 53, 0.18));
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--color-border, #DDE3D9);
+}
+
+.modal-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+  margin: 0;
+}
+
+.modal-body {
+  padding: 20px 24px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border, #DDE3D9);
+  background: var(--color-surface-raised, #F0F1E9);
+  border-bottom-left-radius: var(--radius-lg, 20px);
+  border-bottom-right-radius: var(--radius-lg, 20px);
+}
+
+/* Empty goal state */
+.empty-goal-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .hero-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .hero-metric-item.current {
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--color-border, #DDE3D9);
+    border-bottom: 1px solid var(--color-border, #DDE3D9);
+    padding: 10px 0;
+  }
+  .goals-list-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Page Theme Override: Jade & Porcelain (rule.md Section 3)
+   Applies when body has class .theme-porcelain or page is goals.html
+   -------------------------------------------------------------------------- */
+body.theme-porcelain {
+  background-color: var(--color-bg, #F7F6F0) !important;
+  color: var(--color-text, #202B28) !important;
+  font-family: var(--font-family, "Be Vietnam Pro", sans-serif) !important;
+}
+
+body.theme-porcelain html {
+  background-color: var(--color-bg, #F7F6F0) !important;
+  color-scheme: light !important;
+}
+
+body.theme-porcelain .app-header {
+  background: var(--color-glass, rgba(255, 254, 250, 0.85)) !important;
+  border-bottom: 1px solid var(--color-border, #DDE3D9) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+body.theme-porcelain .brand-title {
+  color: var(--color-primary, #173F35) !important;
+  font-weight: 700 !important;
+}
+
+body.theme-porcelain .header-tab-title {
+  color: var(--color-text, #202B28) !important;
+}
+
+body.theme-porcelain .header-date-badge {
+  background: var(--color-surface-raised, #F0F1E9) !important;
+  color: var(--color-text-secondary, #63756B) !important;
+  border: 1px solid var(--color-border, #DDE3D9) !important;
+}
+
+body.theme-porcelain .avatar-pill {
+  background: var(--color-primary, #173F35) !important;
+  color: #FFFFFF !important;
+  border: 1px solid var(--color-border-strong, #BECBC0) !important;
+}
+
+/* Sidebar in Jade & Porcelain */
+body.theme-porcelain .app-navigation {
+  background: var(--color-surface, #FFFEFA) !important;
+  border-right: 1px solid var(--color-border, #DDE3D9) !important;
+  border-top: 1px solid var(--color-border, #DDE3D9) !important;
+  box-shadow: 0 4px 20px rgba(23, 63, 53, 0.04) !important;
+}
+
+body.theme-porcelain .nav-brand-desktop {
+  border-bottom: 1px solid var(--color-border, #DDE3D9) !important;
+}
+
+body.theme-porcelain .brand-icon {
+  background: var(--color-primary-soft, #E5EDE7) !important;
+  color: var(--color-primary, #173F35) !important;
+  border: 1px solid var(--color-border-strong, #BECBC0) !important;
+  box-shadow: none !important;
+}
+
+body.theme-porcelain .brand-sub {
+  color: var(--color-text-muted, #829087) !important;
+}
+
+body.theme-porcelain .nav-link {
+  color: var(--color-text-secondary, #63756B) !important;
+}
+
+body.theme-porcelain .nav-link:hover {
+  color: var(--color-primary, #173F35) !important;
+  background: var(--color-primary-soft, #E5EDE7) !important;
+}
+
+body.theme-porcelain .nav-link.active {
+  background: var(--color-primary-soft, #E5EDE7) !important;
+  color: var(--color-primary, #173F35) !important;
+  border-color: var(--color-border-focus, #397866) !important;
+  box-shadow: none !important;
+}
+
+body.theme-porcelain .nav-link.active svg {
+  stroke: var(--color-primary, #173F35) !important;
+  filter: none !important;
+}
+
+body.theme-porcelain .nav-link.active .nav-label {
+  color: var(--color-primary, #173F35) !important;
+  font-weight: 700 !important;
+}
+
+body.theme-porcelain .nav-footer-desktop {
+  border-top: 1px solid var(--color-border, #DDE3D9) !important;
+  background: var(--color-surface-raised, #F0F1E9) !important;
+}
+
+body.theme-porcelain .user-name {
+  color: var(--color-text, #202B28) !important;
+}
+
+body.theme-porcelain .user-goal-tag {
+  color: var(--color-text-secondary, #63756B) !important;
+}
+
+body.theme-porcelain .section-title {
+  color: var(--color-primary, #173F35) !important;
+}
+
+body.theme-porcelain .section-title svg {
+  stroke: var(--color-primary, #173F35) !important;
+}

@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#F7F6F0">
+  <meta name="description" content="Quản Lý Mục Tiêu Thể Hình - FitVN Tracker">
+  <title>Mục Tiêu Thể Hình - FitVN Tracker</title>
+
+  <!-- Google Font Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/glass.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="theme-porcelain">
+
+  <div id="app-layout">
+    <!-- NAVIGATION BAR -->
+    <nav class="app-navigation glass-nav" id="app-nav" aria-label="Main Navigation">
+      <div class="nav-brand-desktop">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">FitVN Tracker</span>
+          <span class="brand-sub">Gym & Nutrition</span>
+        </div>
+      </div>
+
+      <ul class="nav-list" role="tablist">
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link" data-page="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="9" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="5" rx="1.5"/>
+              <rect x="14" y="12" width="7" height="9" rx="1.5"/>
+              <rect x="3" y="16" width="7" height="5" rx="1.5"/>
+            </svg>
+            <span class="nav-label">Trang Chủ</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="food-log.html" class="nav-link" data-page="food">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+              <line x1="6" y1="1" x2="6" y2="4"/>
+              <line x1="10" y1="1" x2="10" y2="4"/>
+              <line x1="14" y1="1" x2="14" y2="4"/>
+            </svg>
+            <span class="nav-label">Nhật Ký</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="weight.html" class="nav-link" data-page="weight">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
+            </svg>
+            <span class="nav-label">Cân Nặng</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="goals.html" class="nav-link active" data-page="goals">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+            <span class="nav-label">Mục Tiêu</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span class="nav-label">Cá Nhân</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Desktop Sidebar User Snippet -->
+      <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
+        <div class="avatar-pill">VN</div>
+        <div class="user-info-snippet">
+          <span class="user-name">Người dùng FitVN</span>
+          <span class="user-goal-tag">Đang tải hồ sơ...</span>
+        </div>
+      </a>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <header class="app-header glass-header">
+        <div class="header-left">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+            </svg>
+          </div>
+          <span class="brand-title">FitVN Tracker</span>
+        </div>
+        <div class="header-center">
+          <h1 class="header-tab-title" id="header-title">Quản Lý Mục Tiêu</h1>
+          <span class="header-date-badge" id="header-date">Hôm nay</span>
+        </div>
+        <div class="header-right">
+          <a href="auth.html" class="avatar-pill" title="Hồ sơ tài khoản">VN</a>
+        </div>
+      </header>
+
+      <main class="main-viewport">
+        <!-- GOALS SECTION -->
+        <section class="tab-content active" id="tab-goals">
+          <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="section-title">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #173F35)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+              Mục Tiêu Thể Hình & Cân Nặng
+            </h2>
+            <button type="button" class="auth-submit-btn" id="btn-new-goal" style="width: auto; margin: 0; padding: 9px 18px; font-size: 0.88rem;">
+              + Thiết Lập Mục Tiêu Mới
+            </button>
+          </div>
+
+          <!-- Active Goal Hero Card Container -->
+          <div id="active-goal-hero"></div>
+
+          <!-- Goals History List Header -->
+          <div style="margin: 28px 0 14px 0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin: 0;">
+              Lịch Sử & Tất Cả Mục Tiêu
+            </h3>
+            <span style="font-size: 0.8rem; color: var(--color-text-muted);">
+              Lưu trữ an toàn trên trình duyệt (localStorage)
+            </span>
+          </div>
+
+          <!-- Goals History List Grid -->
+          <div class="goals-list-grid" id="goals-history-list"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL: TẠO / SỬA MỤC TIÊU -->
+  <div class="app-modal-backdrop" id="modal-goal" role="dialog" aria-modal="true" aria-labelledby="goal-modal-title">
+    <div class="app-modal-box">
+      <div class="modal-header">
+        <h3 id="goal-modal-title">Thiết Lập Mục Tiêu Thể Hình</h3>
+        <button type="button" class="btn-goal-icon" id="btn-close-goal-modal" aria-label="Đóng modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-goal" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="goal-id">
+
+          <div class="auth-field-group">
+            <label for="goal-title" class="auth-label">Tên / Kế hoạch mục tiêu <span class="required-star">*</span></label>
+            <input type="text" id="goal-title" class="auth-input" placeholder="Ví dụ: Cắt nét 6 múi đón hè" required>
+            <span class="auth-error-msg" id="err-goal-title"></span>
+          </div>
+
+          <div class="auth-field-group">
+            <label for="goal-type" class="auth-label">Loại mục tiêu thể hình <span class="required-star">*</span></label>
+            <select id="goal-type" class="auth-input auth-select">
+              <option value="weight_loss">Giảm cân (Weight Loss)</option>
+              <option value="fat_loss">Giảm mỡ & Giữ cơ (Fat Loss)</option>
+              <option value="weight_gain">Tăng cân an toàn (Weight Gain)</option>
+              <option value="muscle_gain">Tăng cơ nạc (Lean Bulk / Muscle Gain)</option>
+              <option value="maintenance">Duy trì vóc dáng & cân nặng (Maintenance)</option>
+            </select>
+          </div>
+
+          <div class="auth-row-2col">
+            <div class="auth-field-group">
+              <label for="goal-start-weight" class="auth-label">Cân nặng bắt đầu (kg) <span class="required-star">*</span></label>
+              <input type="number" step="0.1" id="goal-start-weight" class="auth-input" placeholder="72.5" min="30" max="250" required>
+              <span class="auth-error-msg" id="err-goal-start-weight"></span>
+            </div>
+
+            <div class="auth-field-group">
+              <label for="goal-current-weight" class="auth-label">Cân nặng hiện tại (kg) <span class="required-star">*</span></label>
+              <input type="number" step="0.1" id="goal-current-weight" class="auth-input" placeholder="72.0" min="30" max="250" required>
+              <span class="auth-error-msg" id="err-goal-current-weight"></span>
+            </div>
+          </div>
+
+          <div class="auth-row-2col">
+            <div class="auth-field-group">
+              <label for="goal-target-weight" class="auth-label">Cân nặng mục tiêu (kg) <span class="required-star">*</span></label>
+              <input type="number" step="0.1" id="goal-target-weight" class="auth-input" placeholder="68.0" min="30" max="250" required>
+              <span class="auth-error-msg" id="err-goal-target-weight"></span>
+            </div>
+
+            <div class="auth-field-group">
+              <label for="goal-height" class="auth-label">Chiều cao (cm) <span class="required-star">*</span></label>
+              <input type="number" id="goal-height" class="auth-input" placeholder="175" min="100" max="250" required>
+              <span class="auth-error-msg" id="err-goal-height"></span>
+            </div>
+          </div>
+
+          <div class="auth-row-2col">
+            <div class="auth-field-group">
+              <label for="goal-start-date" class="auth-label">Ngày bắt đầu <span class="required-star">*</span></label>
+              <input type="date" id="goal-start-date" class="auth-input" required>
+              <span class="auth-error-msg" id="err-goal-start-date"></span>
+            </div>
+
+            <div class="auth-field-group">
+              <label for="goal-target-date" class="auth-label">Thời hạn hoàn thành <span class="required-star">*</span></label>
+              <input type="date" id="goal-target-date" class="auth-input" required>
+              <span class="auth-error-msg" id="err-goal-target-date"></span>
+            </div>
+          </div>
+
+          <div class="auth-field-group" id="goal-status-group" style="display: none;">
+            <label for="goal-status" class="auth-label">Trạng thái mục tiêu</label>
+            <select id="goal-status" class="auth-input auth-select">
+              <option value="in_progress">Đang thực hiện (In Progress)</option>
+              <option value="completed">Đã hoàn thành (Completed)</option>
+              <option value="overdue">Quá thời hạn (Overdue)</option>
+              <option value="paused">Tạm dừng (Paused)</option>
+            </select>
+          </div>
+
+          <div class="auth-field-group">
+            <label for="goal-note" class="auth-label">Ghi chú & Kế hoạch hành động</label>
+            <textarea id="goal-note" class="auth-input" rows="2" placeholder="Ví dụ: Thâm hụt 300 kcal mỗi ngày, ngủ đủ 7.5 tiếng..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-quick-weight" id="btn-cancel-goal-modal" style="padding: 10px 18px; font-size: 0.88rem;">Hủy bỏ</button>
+          <button type="submit" class="auth-submit-btn" style="width: auto; margin: 0; padding: 10px 22px;">Lưu Mục Tiêu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CẬP NHẬT CÂN NẶNG ĐỊNH KỲ NHANH -->
+  <div class="app-modal-backdrop" id="modal-quick-weight" role="dialog" aria-modal="true" aria-labelledby="quick-modal-title">
+    <div class="app-modal-box" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 id="quick-modal-title">Cập Nhật Cân Nặng Định Kỳ</h3>
+        <button type="button" class="btn-goal-icon" id="btn-close-quick-weight-modal" aria-label="Đóng modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="form-quick-weight">
+        <div class="modal-body">
+          <input type="hidden" id="quick-goal-id">
+          <div class="auth-field-group">
+            <label for="quick-weight-input" class="auth-label">Cân nặng hôm nay của bạn (kg)</label>
+            <input type="number" step="0.1" id="quick-weight-input" class="auth-input" placeholder="Ví dụ: 71.8" min="30" max="250" required>
+            <span style="font-size: 0.78rem; color: var(--color-text-muted); display: block; margin-top: 6px;">
+              Tiến độ mục tiêu và biểu đồ cân nặng sẽ được tự động tính toán lại ngay sau khi lưu.
+            </span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-quick-weight" id="btn-cancel-quick-weight" style="padding: 10px 16px;">Hủy</button>
+          <button type="submit" class="auth-submit-btn" style="width: auto; margin: 0; padding: 10px 20px;">Cập Nhật Tiến Độ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="../js/storage.js"></script>
+  <script src="../js/calculator.js"></script>
+  <script src="../js/goals.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

@@ -11,7 +11,8 @@ const STORAGE_KEYS = {
   CUSTOM_FOODS: 'fitvn_custom_foods',
   WATER_LOGS: 'fitvn_water_logs',
   AUTH_USER: 'fitvn_auth_user',
-  USERS_LIST: 'fitvn_users_list'
+  USERS_LIST: 'fitvn_users_list',
+  FITNESS_GOALS: 'fitvn_fitness_goals'
 };
 
 const DEFAULT_PROFILE = {
@@ -458,6 +459,140 @@ const storageService = {
     }
 
     this.set(STORAGE_KEYS.USER_PROFILE, profile);
+  },
+
+  /**
+   * FITNESS GOALS MANAGEMENT METHODS
+   */
+  getGoals() {
+    const goals = this.get(STORAGE_KEYS.FITNESS_GOALS, null);
+    if (!goals) {
+      // Seed default active goal from user profile if available
+      const profile = this.get(STORAGE_KEYS.USER_PROFILE, DEFAULT_PROFILE);
+      const defaultGoal = {
+        id: 'goal_' + Date.now(),
+        type: profile.fitnessGoal || 'lean_bulk',
+        title: 'Mục tiêu thể hình cá nhân',
+        startWeight: profile.currentWeight || 72.5,
+        currentWeight: profile.currentWeight || 72.5,
+        targetWeight: profile.targetWeight || 76.0,
+        heightCm: profile.height || 175,
+        startDate: getTodayDateString(),
+        targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        status: 'in_progress',
+        note: 'Tập gym 4-5 buổi/tuần, duy trì ăn đủ lượng protein.',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      this.set(STORAGE_KEYS.FITNESS_GOALS, [defaultGoal]);
+      return [defaultGoal];
+    }
+    return goals;
+  },
+
+  getActiveGoal() {
+    const goals = this.getGoals();
+    return goals.find(g => g.status === 'in_progress') || goals[0] || null;
+  },
+
+  saveGoal(goalData) {
+    const goals = this.getGoals();
+    const cleanId = goalData.id || ('goal_' + Date.now());
+    const existingIndex = goals.findIndex(g => g.id === cleanId);
+
+    const startW = parseFloat(Number(goalData.startWeight).toFixed(1));
+    const currW = parseFloat(Number(goalData.currentWeight || goalData.startWeight).toFixed(1));
+    const targetW = parseFloat(Number(goalData.targetWeight).toFixed(1));
+    const height = parseInt(goalData.heightCm, 10);
+
+    // Auto determine status
+    let status = goalData.status || 'in_progress';
+    if (goalData.type === 'weight_loss' || goalData.type === 'fat_loss') {
+      if (currW <= targetW) status = 'completed';
+    } else if (goalData.type === 'weight_gain' || goalData.type === 'muscle_gain') {
+      if (currW >= targetW) status = 'completed';
+    } else if (goalData.type === 'maintenance') {
+      if (Math.abs(currW - targetW) <= 1.0) status = 'in_progress';
+    }
+
+    // Check overdue
+    const today = getTodayDateString();
+    if (status === 'in_progress' && goalData.targetDate && goalData.targetDate < today) {
+      status = 'overdue';
+    }
+
+    const newGoal = {
+      id: cleanId,
+      type: goalData.type || 'weight_loss',
+      title: goalData.title ? goalData.title.trim() : 'Mục tiêu thể hình',
+      startWeight: startW,
+      currentWeight: currW,
+      targetWeight: targetW,
+      heightCm: height,
+      startDate: goalData.startDate || today,
+      targetDate: goalData.targetDate || today,
+      status: status,
+      note: goalData.note ? goalData.note.trim() : '',
+      createdAt: existingIndex >= 0 ? goals[existingIndex].createdAt : new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (existingIndex >= 0) {
+      goals[existingIndex] = newGoal;
+    } else {
+      // If setting this one to in_progress, keep only one active
+      if (newGoal.status === 'in_progress') {
+        goals.forEach(g => { if (g.status === 'in_progress') g.status = 'paused'; });
+      }
+      goals.unshift(newGoal);
+    }
+
+    this.set(STORAGE_KEYS.FITNESS_GOALS, goals);
+
+    // Sync target weight with user profile
+    const profile = this.get(STORAGE_KEYS.USER_PROFILE, {});
+    profile.targetWeight = targetW;
+    profile.fitnessGoal = newGoal.type;
+    this.set(STORAGE_KEYS.USER_PROFILE, profile);
+
+    return newGoal;
+  },
+
+  deleteGoal(goalId) {
+    const goals = this.getGoals();
+    const filtered = goals.filter(g => g.id !== goalId);
+    this.set(STORAGE_KEYS.FITNESS_GOALS, filtered);
+    return filtered.length < goals.length;
+  },
+
+  updateGoalWeight(goalId, newWeight) {
+    const goals = this.getGoals();
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return null;
+
+    const cleanWeight = parseFloat(Number(newWeight).toFixed(1));
+    goal.currentWeight = cleanWeight;
+    goal.updatedAt = new Date().toISOString();
+
+    // Check status completion
+    if (goal.type === 'weight_loss' || goal.type === 'fat_loss') {
+      if (cleanWeight <= goal.targetWeight) goal.status = 'completed';
+      else if (goal.status === 'completed') goal.status = 'in_progress';
+    } else if (goal.type === 'weight_gain' || goal.type === 'muscle_gain') {
+      if (cleanWeight >= goal.targetWeight) goal.status = 'completed';
+      else if (goal.status === 'completed') goal.status = 'in_progress';
+    }
+
+    this.set(STORAGE_KEYS.FITNESS_GOALS, goals);
+
+    // Also record into general weight logs
+    this.addWeightLog({
+      date: getTodayDateString(),
+      weight: cleanWeight,
+      note: `Cập nhật tiến độ: ${goal.title}`
+    });
+
+    return goal;
   }
 };
 
