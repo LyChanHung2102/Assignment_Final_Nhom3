@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -84,100 +84,13 @@
         </li>
       </ul>
 
-      <div class="nav-footer-desktop">
+            <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
         <div class="avatar-pill">VN</div>
         <div class="user-info-snippet">
-          <span class="user-name">Gymer FitVN</span>
-          <span class="user-goal-tag">Tăng Cơ (Lean Bulk)</span>
+          <span class="user-name">Người dùng FitVN</span>
+          <span class="user-goal-tag">Đang tải hồ sơ...</span>
         </div>
-      </div>
-    </nav>
-
-    <!-- CONTENT WRAPPER -->
-    <div class="content-wrapper">
-      <header class="app-header glass-header">
-        <div class="header-left">
-          <div class="brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
-            </svg>
-          </div>
-          <span class="brand-title">FitVN Tracker</span>
-        </div>
-        <div class="header-center">
-          <h1 class="header-tab-title" id="header-title">Theo Dõi Cân Nặng</h1>
-          <span class="header-date-badge" id="header-date">Hôm nay</span>
-        </div>
-        <div class="header-right">
-          <div class="avatar-pill" title="Tài khoản gymer">VN</div>
-        </div>
-      </header>
-
-      <main class="main-viewport">
-        <!-- WEIGHT TRACKING CONTENT -->
-        <section class="tab-content active" id="tab-weight">
-          <div class="section-header">
-            <h2 class="section-title">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
-                <path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
-              </svg>
-              Theo Dõi Thể Trọng & Cơ Thể
-            </h2>
-            <button type="button" class="glass-btn glass-btn-primary" id="btn-add-weight">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              Ghi Cân Nặng Hôm Nay
-            </button>
-          </div>
-
-          <!-- Top 4 Metrics Cards -->
-          <div class="grid-cards grid-cards-4">
-            <div class="glass-card stat-card glass-card-interactive">
-              <div class="stat-header">
-                <span>CÂN NẶNG HIỆN TẠI</span>
-                <span class="glass-badge glass-badge-cyan">Mới nhất</span>
-              </div>
-              <div class="stat-value" id="weight-current-val">-- <span class="stat-unit">kg</span></div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;" id="weight-target-diff">
-                Đang tính toán...
-              </div>
-            </div>
-
-            <div class="glass-card stat-card glass-card-interactive">
-              <div class="stat-header">
-                <span>TRUNG BÌNH ĐỘNG 7 NGÀY</span>
-                <span class="glass-badge glass-badge-emerald" id="weight-7dma-trend">Xu hướng</span>
-              </div>
-              <div class="stat-value" id="weight-7dma-val" style="color: var(--accent-cyan);">-- <span class="stat-unit">kg</span></div>
-              <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px;">
-                Lọc bỏ nhiễu nước, phản ánh chuẩn tiến độ
-              </div>
-            </div>
-
-            <div class="glass-card stat-card glass-card-interactive">
-              <div class="stat-header">
-                <span>CHỈ SỐ BMI</span>
-                <span class="glass-badge glass-badge-emerald" id="weight-bmi-badge">Cân đối</span>
-              </div>
-              <div class="stat-value" id="weight-bmi-val">-- <span class="stat-unit">kg/m²</span></div>
-              <div style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 4px;">
-                Thể trạng phát triển cơ bắp
-              </div>
-            </div>
-
-            <div class="glass-card stat-card glass-card-interactive">
-              <div class="stat-header">
-                <span>TỶ LỆ MỠ (BODY FAT)</span>
-                <span class="glass-badge glass-badge-cyan" id="weight-bodyfat-badge">Nạc nét</span>
-              </div>
-              <div class="stat-value" id="weight-bodyfat-val">-- <span class="stat-unit">%</span></div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: flex; justify-content: space-between;">
-                <span>Mỡ: <strong id="weight-fatmass-val" style="color: var(--accent-flame);">--</strong></span>
-                <span>Nạc (LBM): <strong id="weight-leanmass-val" style="color: var(--accent-emerald);">--</strong></span>
-              </div>
-            </div>
-          </div>
+      </a>
 
           <!-- HTML5 Canvas Pure Vanilla Chart (7-Day Moving Average) -->
           <div class="glass-card chart-container-card" style="margin-top: var(--spacing-md);">

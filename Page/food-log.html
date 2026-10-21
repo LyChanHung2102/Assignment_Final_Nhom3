@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -87,111 +87,13 @@
       </ul>
 
       <!-- Desktop Sidebar User Snippet -->
-      <div class="nav-footer-desktop">
+            <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
         <div class="avatar-pill">VN</div>
         <div class="user-info-snippet">
-          <span class="user-name">Gymer FitVN</span>
-          <span class="user-goal-tag">Tăng Cơ (Lean Bulk)</span>
+          <span class="user-name">Người dùng FitVN</span>
+          <span class="user-goal-tag">Đang tải hồ sơ...</span>
         </div>
-      </div>
-    </nav>
-
-    <!-- CONTENT WRAPPER -->
-    <div class="content-wrapper">
-      <header class="app-header glass-header">
-        <div class="header-left">
-          <div class="brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
-            </svg>
-          </div>
-          <span class="brand-title">FitVN Tracker</span>
-        </div>
-        <div class="header-center">
-          <h1 class="header-tab-title" id="header-title">Nhật Ký Ăn Uống</h1>
-          <span class="header-date-badge" id="header-date">Hôm nay</span>
-        </div>
-        <div class="header-right">
-          <div class="avatar-pill" title="Tài khoản gymer">VN</div>
-        </div>
-      </header>
-
-      <main class="main-viewport">
-        <!-- FOOD LOG CONTENT -->
-        <section class="tab-content active" id="tab-food-log">
-          <div class="section-header">
-            <h2 class="section-title">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
-                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-              </svg>
-              Bữa Ăn Trong Ngày
-            </h2>
-            <button type="button" class="glass-btn glass-btn-primary" data-open-food-modal data-meal-type="lunch">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              Ghi Chép Nhanh
-            </button>
-          </div>
-
-          <div class="grid-cards" style="grid-template-columns: 1fr;">
-            <!-- Bữa Sáng -->
-            <div class="glass-card stat-card">
-              <div class="stat-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: var(--accent-cyan); font-size: 1rem;">🌅 Bữa Sáng (Breakfast)</strong>
-                  <span class="glass-badge glass-badge-cyan" id="meal-calories-breakfast">0 kcal</span>
-                </div>
-                <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="breakfast">
-                  + Thêm Món
-                </button>
-              </div>
-              <div id="meal-items-breakfast" style="margin-top: var(--spacing-sm);"></div>
-            </div>
-
-            <!-- Bữa Trưa -->
-            <div class="glass-card stat-card">
-              <div class="stat-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: var(--accent-emerald); font-size: 1rem;">☀️ Bữa Trưa (Lunch)</strong>
-                  <span class="glass-badge glass-badge-emerald" id="meal-calories-lunch">0 kcal</span>
-                </div>
-                <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="lunch">
-                  + Thêm Món
-                </button>
-              </div>
-              <div id="meal-items-lunch" style="margin-top: var(--spacing-sm);"></div>
-            </div>
-
-            <!-- Bữa Tối -->
-            <div class="glass-card stat-card">
-              <div class="stat-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: #fbbf24; font-size: 1rem;">🌙 Bữa Tối (Dinner)</strong>
-                  <span class="glass-badge" id="meal-calories-dinner">0 kcal</span>
-                </div>
-                <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="dinner">
-                  + Thêm Món
-                </button>
-              </div>
-              <div id="meal-items-dinner" style="margin-top: var(--spacing-sm);"></div>
-            </div>
-
-            <!-- Bữa Phụ -->
-            <div class="glass-card stat-card">
-              <div class="stat-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: var(--accent-purple); font-size: 1rem;">⚡ Bữa Phụ & Pre-workout</strong>
-                  <span class="glass-badge glass-badge-flame" id="meal-calories-snack">0 kcal</span>
-                </div>
-                <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="snack">
-                  + Thêm Món
-                </button>
-              </div>
-              <div id="meal-items-snack" style="margin-top: var(--spacing-sm);"></div>
-            </div>
-          </div>
+      </a>
         </section>
       </main>
     </div>

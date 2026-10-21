@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FitVN Tracker - LocalStorage Service Module
  * Handles safe data persistence, schema validation, and seeding default state.
  */
@@ -9,7 +9,9 @@ const STORAGE_KEYS = {
   WEIGHT_LOGS: 'fitvn_weight_logs',
   SETTINGS: 'fitvn_settings',
   CUSTOM_FOODS: 'fitvn_custom_foods',
-  WATER_LOGS: 'fitvn_water_logs'
+  WATER_LOGS: 'fitvn_water_logs',
+  AUTH_USER: 'fitvn_auth_user',
+  USERS_LIST: 'fitvn_users_list'
 };
 
 const DEFAULT_PROFILE = {
@@ -359,6 +361,103 @@ const storageService = {
     waterData[date] = 0;
     this.set(STORAGE_KEYS.WATER_LOGS, waterData);
     return 0;
+  },
+
+  /**
+   * AUTHENTICATION & USER MANAGEMENT
+   */
+  getUsers() {
+    return this.get(STORAGE_KEYS.USERS_LIST, []);
+  },
+
+  registerUser(userData) {
+    const users = this.getUsers();
+    const existing = users.find(u => u.email.toLowerCase() === userData.email.toLowerCase());
+    if (existing) {
+      return { success: false, message: 'Email này đã được đăng ký trên hệ thống!' };
+    }
+
+    const newUser = {
+      id: 'usr_' + Date.now(),
+      name: userData.name.trim(),
+      email: userData.email.trim().toLowerCase(),
+      password: userData.password,
+      gender: userData.gender || 'male',
+      age: Number(userData.age) || 24,
+      height: Number(userData.height) || 175,
+      weight: Number(userData.weight) || 70,
+      fitnessGoal: userData.fitnessGoal || 'maintain',
+      registeredAt: new Date().toISOString()
+    };
+
+    users.push(newUser);
+    this.set(STORAGE_KEYS.USERS_LIST, users);
+    
+    // Set active session & sync profile
+    this.setCurrentUser(newUser);
+    this.syncUserProfile(newUser);
+
+    return { success: true, user: newUser };
+  },
+
+  loginUser(email, password) {
+    const users = this.getUsers();
+    const user = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password);
+    if (!user) {
+      return { success: false, message: 'Email hoặc mật khẩu không chính xác!' };
+    }
+
+    this.setCurrentUser(user);
+    this.syncUserProfile(user);
+    return { success: true, user };
+  },
+
+  getCurrentUser() {
+    return this.get(STORAGE_KEYS.AUTH_USER, null);
+  },
+
+  setCurrentUser(user) {
+    const safeUser = { ...user };
+    delete safeUser.password;
+    this.set(STORAGE_KEYS.AUTH_USER, safeUser);
+  },
+
+  logoutUser() {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  syncUserProfile(user) {
+    const profile = this.get(STORAGE_KEYS.USER_PROFILE, DEFAULT_PROFILE);
+    profile.name = user.name;
+    profile.email = user.email;
+    if (user.age) profile.age = user.age;
+    if (user.height) profile.height = user.height;
+    if (user.weight) {
+      profile.currentWeight = user.weight;
+      // also record initial weight if no weight logs exist yet
+      const weightLogs = this.getWeightLogs();
+      if (weightLogs.length === 0) {
+        this.addWeightLog({ date: getTodayDateString(), weight: user.weight, note: 'Khởi tạo tài khoản' });
+      }
+    }
+    if (user.gender) profile.gender = user.gender;
+    if (user.fitnessGoal) profile.fitnessGoal = user.fitnessGoal;
+    
+    // Estimate target calories
+    if (window.calcService && typeof window.calcService.calculateTDEE === 'function') {
+      const bmr = window.calcService.calculateBMR(profile.currentWeight, profile.height, profile.age, profile.gender);
+      const tdee = window.calcService.calculateTDEE(bmr, 'moderate');
+      if (profile.fitnessGoal === 'cut') profile.targetCalories = Math.round(tdee - 500);
+      else if (profile.fitnessGoal === 'lean_bulk') profile.targetCalories = Math.round(tdee + 300);
+      else profile.targetCalories = Math.round(tdee);
+    }
+
+    this.set(STORAGE_KEYS.USER_PROFILE, profile);
   }
 };
 
