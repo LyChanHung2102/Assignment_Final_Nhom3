@@ -2607,6 +2607,10 @@ body.theme-porcelain #app-layout,
 /* ==========================================================================
    Onboarding Wizard Styles - Glassmorphism Design
    ========================================================================== */
+#onboarding-modal {
+  z-index: 500; /* Higher than auth modal (400) to show first */
+}
+
 .onboarding-container {
   max-width: 600px;
   width: 90%;

@@ -1803,12 +1803,11 @@ const OnboardingModule = {
     if (!this.modal) return;
 
     // Check if user has completed onboarding
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
     const hasCompletedOnboarding = localStorage.getItem('fitvn_onboarding_completed');
 
-    // Show onboarding if not completed
+    // Show onboarding immediately if not completed (before auth modal)
     if (!hasCompletedOnboarding) {
-      setTimeout(() => this.showModal(), 500);
+      this.showModal();
     }
 
     this.bindEvents();
