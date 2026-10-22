@@ -2604,6 +2604,431 @@ body.theme-porcelain #app-layout,
   font-size: 1.05rem;
 }
 
+/* ==========================================================================
+   Onboarding Wizard Styles - Glassmorphism Design
+   ========================================================================== */
+#onboarding-modal {
+  z-index: 9999 !important; /* Highest priority to show first */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+#onboarding-modal.active {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.onboarding-container {
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--spacing-lg, 24px);
+  background: rgba(255, 254, 250, 0.95);
+  border: 1.5px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-xl, 24px);
+  box-shadow: 0 20px 60px rgba(23, 63, 53, 0.15);
+}
+
+/* Progress Steps */
+.onboarding-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg, 24px);
+  padding-bottom: var(--spacing-md, 16px);
+  border-bottom: 1px solid var(--color-border, #DDE3D9);
+}
+
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  opacity: 0.5;
+  transition: all var(--transition-normal);
+}
+
+.step-indicator.active {
+  opacity: 1;
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 2px solid var(--color-border, #DDE3D9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary, #63756B);
+  transition: all var(--transition-fast);
+}
+
+.step-indicator.active .step-number {
+  background: var(--color-primary, #173F35);
+  border-color: var(--color-primary, #173F35);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(23, 63, 53, 0.2);
+}
+
+.step-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #829087);
+  text-align: center;
+}
+
+.step-indicator.active .step-label {
+  color: var(--color-primary, #173F35);
+}
+
+/* Onboarding Steps */
+.onboarding-step {
+  display: none;
+  animation: fadeInStep 0.4s ease forwards;
+}
+
+.onboarding-step.active {
+  display: block;
+}
+
+@keyframes fadeInStep {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onboarding-header {
+  text-align: center;
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.onboarding-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.onboarding-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--color-primary, #173F35);
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.onboarding-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary, #63756B);
+  line-height: 1.5;
+}
+
+/* Onboarding Form */
+.onboarding-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--spacing-md, 16px);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #63756B);
+}
+
+.glass-input {
+  padding: 0.75rem 1rem;
+  background: var(--color-surface, #FFFEFA);
+  border: 1.5px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  color: var(--color-text, #202B28);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--color-border-focus, #397866);
+  background: #FFFFFF;
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(57, 120, 102, 0.15));
+}
+
+/* Gender Selector */
+.gender-selector {
+  display: flex;
+  gap: var(--spacing-md, 16px);
+}
+
+.gender-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.85rem 1rem;
+  background: var(--color-surface, #FFFEFA);
+  border: 1.5px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.gender-option:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-border-focus, #397866);
+}
+
+.gender-option input[type="radio"] {
+  display: none;
+}
+
+.gender-option:has(input:checked) {
+  background: var(--color-primary, #173F35);
+  border-color: var(--color-primary, #173F35);
+  color: #FFFFFF;
+}
+
+.gender-icon {
+  font-size: 1.5rem;
+}
+
+/* Activity Options */
+.activity-options,
+.goal-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.activity-option,
+.goal-option {
+  cursor: pointer;
+}
+
+.activity-option input[type="radio"],
+.goal-option input[type="radio"] {
+  display: none;
+}
+
+.activity-card,
+.goal-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-md, 16px);
+  background: var(--color-surface, #FFFEFA);
+  border: 1.5px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  transition: all var(--transition-fast);
+}
+
+.activity-card:hover,
+.goal-card:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-border-focus, #397866);
+  transform: translateX(4px);
+}
+
+.activity-option:has(input:checked) .activity-card,
+.goal-option:has(input:checked) .goal-card {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-primary, #173F35);
+  box-shadow: 0 4px 12px rgba(23, 63, 53, 0.1);
+}
+
+.activity-icon,
+.goal-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.activity-info,
+.goal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-title,
+.goal-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text, #202B28);
+}
+
+.activity-desc,
+.goal-desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #829087);
+}
+
+/* Onboarding Summary */
+.onboarding-summary {
+  margin-bottom: var(--spacing-lg, 24px);
+}
+
+.summary-card {
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  padding: var(--spacing-md, 16px);
+}
+
+.summary-card h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm, 8px);
+  margin-bottom: var(--spacing-md, 16px);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--color-surface, #FFFEFA);
+  border-radius: var(--radius-sm, 8px);
+}
+
+.summary-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #829087);
+}
+
+.summary-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-primary, #173F35);
+}
+
+.summary-value.highlight {
+  color: var(--color-success, #287653);
+  font-size: 1.15rem;
+}
+
+.timeline-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: var(--spacing-sm, 8px);
+  border-top: 1px solid var(--color-border, #DDE3D9);
+}
+
+.timeline-label {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #63756B);
+}
+
+.timeline-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+}
+
+/* Onboarding Actions */
+.onboarding-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md, 16px);
+  margin-top: var(--spacing-lg, 24px);
+}
+
+.glass-btn {
+  padding: 0.85rem 1.5rem;
+  background: var(--color-surface, #FFFEFA);
+  border: 1.5px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  color: var(--color-text, #202B28);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.glass-btn:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-border-focus, #397866);
+  color: var(--color-primary, #173F35);
+}
+
+.glass-btn-primary {
+  background: var(--color-primary, #173F35);
+  border-color: var(--color-primary, #173F35);
+  color: #FFFFFF;
+}
+
+.glass-btn-primary:hover {
+  background: var(--color-primary-hover, #245747);
+  border-color: var(--color-primary-hover, #245747);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(23, 63, 53, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+  .onboarding-container {
+    width: 95%;
+    padding: var(--spacing-md, 16px);
+  }
+
+  .step-label {
+    font-size: 0.7rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-actions {
+    flex-direction: column-reverse;
+  }
+
+  .glass-btn {
+    width: 100%;
+  }
+}
+
 @media (max-width: 680px) {
   .food-date-navigator {
     flex-direction: column;
@@ -2642,6 +3067,26 @@ body.theme-porcelain #app-layout,
   padding: 6px 16px;
   font-family: inherit;
   font-size: 0.85rem;
+   HEALTH DASHBOARD FEATURE STYLES (Jade & Porcelain Palette)
+   ========================================================================== */
+
+/* Time range pills */
+.time-filter-pills {
+  display: inline-flex;
+  background: var(--color-surface-raised, #F0F1E9);
+  padding: 3px;
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid var(--color-border, #DDE3D9);
+  gap: 2px;
+}
+
+.time-pill-btn {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full, 9999px);
+  padding: 5px 14px;
+  font-family: inherit;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text-secondary, #63756B);
   cursor: pointer;
@@ -2823,5 +3268,220 @@ body.theme-porcelain #app-layout,
 .page-btn:not(:disabled):hover {
   background: var(--color-primary-soft, #E5EDE7);
   color: var(--color-primary, #173F35);
+.time-pill-btn:hover {
+  color: var(--color-primary, #173F35);
+}
+
+.time-pill-btn.active {
+  background: var(--color-primary, #173F35);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(23, 63, 53, 0.2);
+}
+
+/* BMI Spectrum Visual Gauge */
+.bmi-spectrum-container {
+  margin-top: 1rem;
+}
+
+.bmi-spectrum-bar {
+  position: relative;
+  display: flex;
+  height: 14px;
+  border-radius: var(--radius-full, 9999px);
+  overflow: visible;
+  background: var(--color-border, #DDE3D9);
+}
+
+.bmi-segment {
+  height: 100%;
+  position: relative;
+}
+
+.bmi-segment:first-child {
+  border-top-left-radius: var(--radius-full, 9999px);
+  border-bottom-left-radius: var(--radius-full, 9999px);
+}
+
+.bmi-segment:last-child {
+  border-top-right-radius: var(--radius-full, 9999px);
+  border-bottom-right-radius: var(--radius-full, 9999px);
+}
+
+.bmi-segment-underweight {
+  width: 25%;
+  background: var(--color-bmi-underweight, #326B82);
+}
+
+.bmi-segment-normal {
+  width: 35%;
+  background: var(--color-bmi-normal, #287653);
+}
+
+.bmi-segment-overweight {
+  width: 22%;
+  background: var(--color-bmi-overweight, #946414);
+}
+
+.bmi-segment-obese {
+  width: 18%;
+  background: var(--color-bmi-obesity, #B83E42);
+}
+
+.bmi-needle-indicator {
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 26px;
+  background: var(--color-primary, #173F35);
+  border: 1.5px solid #FFFFFF;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+}
+
+.bmi-needle-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px 4px 0 4px;
+  border-style: solid;
+  border-color: var(--color-primary, #173F35) transparent transparent transparent;
+}
+
+.bmi-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.73rem;
+  color: var(--color-text-secondary, #63756B);
+  font-weight: 500;
+}
+
+.bmi-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.bmi-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Goal Progress Bar & Badges */
+.goal-progress-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-milestones-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.milestone-node {
+  text-align: center;
+}
+
+.milestone-label {
+  font-size: 0.72rem;
+  color: var(--color-text-muted, #829087);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.milestone-value {
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+  font-size: 1.05rem;
+}
+
+.goal-progress-track {
+  height: 10px;
+  background: var(--color-surface-raised, #F0F1E9);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--color-border, #DDE3D9);
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-sage, #397866), var(--color-accent, #D2F36B));
+  border-radius: var(--radius-full, 9999px);
+  transition: width 0.5s ease-out;
+}
+
+/* Incomplete profile warning banner */
+.incomplete-profile-banner {
+  background: rgba(148, 100, 20, 0.08);
+  border: 1px solid rgba(148, 100, 20, 0.25);
+  border-radius: var(--radius-md, 12px);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: var(--spacing-md, 1rem);
+}
+
+.incomplete-profile-banner h4 {
+  margin: 0;
+  color: #946414;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.incomplete-profile-banner p {
+  margin: 4px 0 0 0;
+  color: var(--color-text-secondary, #63756B);
+  font-size: 0.82rem;
+}
+
+/* Health Records Table styling */
+.health-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 0.5rem;
+}
+
+.health-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  text-align: left;
+}
+
+.health-table th {
+  background: var(--color-surface-raised, #F0F1E9);
+  color: var(--color-text-secondary, #63756B);
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border, #DDE3D9);
+}
+
+.health-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border, #DDE3D9);
+  color: var(--color-text, #202B28);
+}
+
+.health-table tr:hover td {
+  background: rgba(23, 63, 53, 0.02);
+}
+
+.health-table tr:last-child td {
+  border-bottom: none;
 }
 
