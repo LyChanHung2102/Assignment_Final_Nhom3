@@ -2074,4 +2074,5 @@ const OnboardingModule = {
   }
 };
 
+window.OnboardingModule = OnboardingModule;
 window.SettingsModule = SettingsModule;
