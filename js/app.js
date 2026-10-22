@@ -39,6 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('food-search-input') || document.getElementById('food-cards-grid')) {
     if (window.FoodSearchModule) window.FoodSearchModule.init();
   }
+
+  // Initialize Onboarding Module
+  if (window.OnboardingModule) {
+    window.OnboardingModule.init();
+  }
 });
 
 /**
@@ -1543,45 +1548,81 @@ const SettingsModule = {
 
     this.formEl.addEventListener('submit', (e) => {
       e.preventDefault();
-
-      const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
-
-      const nameVal = document.getElementById('setting-name')?.value.trim();
-      const genderVal = document.getElementById('setting-gender')?.value;
-      const ageVal = parseInt(document.getElementById('setting-age')?.value, 10);
-      const heightVal = parseFloat(document.getElementById('setting-height')?.value);
-      const currentWeightVal = parseFloat(document.getElementById('setting-current-weight')?.value);
-      const targetWeightVal = parseFloat(document.getElementById('setting-target-weight')?.value);
-      const caloriesVal = parseInt(document.getElementById('setting-calories')?.value, 10);
-      const goalVal = document.getElementById('setting-goal')?.value;
-
-      const proteinVal = parseInt(document.getElementById('setting-protein')?.value, 10);
-      const carbsVal = parseInt(document.getElementById('setting-carbs')?.value, 10);
-      const fatVal = parseInt(document.getElementById('setting-fat')?.value, 10);
-      const waterVal = parseInt(document.getElementById('setting-water')?.value, 10);
-
-      if (nameVal) profile.name = nameVal;
-      if (genderVal) profile.gender = genderVal;
-      if (!isNaN(ageVal) && ageVal > 0) profile.age = ageVal;
-      if (!isNaN(heightVal) && heightVal > 0) profile.height = heightVal;
-      if (!isNaN(currentWeightVal) && currentWeightVal > 0) profile.currentWeight = currentWeightVal;
-      if (!isNaN(targetWeightVal) && targetWeightVal > 0) profile.targetWeight = targetWeightVal;
-      if (!isNaN(caloriesVal) && caloriesVal > 0) profile.targetCalories = caloriesVal;
-      if (goalVal) profile.fitnessGoal = goalVal;
-
-      if (!profile.macros) profile.macros = {};
-      if (!isNaN(proteinVal) && proteinVal >= 0) profile.macros.protein = proteinVal;
-      if (!isNaN(carbsVal) && carbsVal >= 0) profile.macros.carbs = carbsVal;
-      if (!isNaN(fatVal) && fatVal >= 0) profile.macros.fat = fatVal;
-
-      if (!isNaN(waterVal) && waterVal >= 0) profile.waterTarget = waterVal;
-
-      // Persist to local storage
-      window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
-      this.updateUserLabels(profile);
-
-      ToastModule.show('Đã lưu thành công hồ sơ cá nhân và mục tiêu thể hình!');
+      this.saveProfile();
     });
+
+    // Reopen onboarding wizard button
+    const reopenBtn = document.getElementById('btn-reopen-onboarding');
+    if (reopenBtn && window.OnboardingModule) {
+      reopenBtn.addEventListener('click', () => {
+        // Pre-fill form with current profile data
+        const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+        
+        document.getElementById('onboarding-age').value = profile.age || 24;
+        document.getElementById('onboarding-height').value = profile.height || 175;
+        document.getElementById('onboarding-current-weight').value = profile.currentWeight || 70;
+        document.getElementById('onboarding-target-weight').value = profile.targetWeight || 75;
+        
+        const genderRadios = document.querySelectorAll('input[name="onboarding-gender"]');
+        genderRadios.forEach(radio => {
+          radio.checked = radio.value === (profile.gender || 'male');
+        });
+
+        const activityRadios = document.querySelectorAll('input[name="onboarding-activity"]');
+        const sessionsMap = { 'sedentary': '0', 'light': '1', 'moderate': '3', 'active': '6', 'very_active': '8' };
+        const currentActivity = sessionsMap[profile.activityLevel] || '3';
+        activityRadios.forEach(radio => {
+          radio.checked = radio.value === currentActivity;
+        });
+
+        const goalRadios = document.querySelectorAll('input[name="onboarding-goal"]');
+        goalRadios.forEach(radio => {
+          radio.checked = radio.value === (profile.fitnessGoal || 'maintain');
+        });
+
+        window.OnboardingModule.showModal();
+      });
+    }
+  },
+
+  saveProfile() {
+    const nameVal = document.getElementById('setting-name')?.value;
+    const genderVal = document.getElementById('setting-gender')?.value;
+    const ageVal = parseInt(document.getElementById('setting-age')?.value, 10);
+    const heightVal = parseFloat(document.getElementById('setting-height')?.value);
+    const currentWeightVal = parseFloat(document.getElementById('setting-current-weight')?.value);
+    const targetWeightVal = parseFloat(document.getElementById('setting-target-weight')?.value);
+    const caloriesVal = parseInt(document.getElementById('setting-calories')?.value, 10);
+    const goalVal = document.getElementById('setting-goal')?.value;
+
+    const proteinVal = parseInt(document.getElementById('setting-protein')?.value, 10);
+    const carbsVal = parseInt(document.getElementById('setting-carbs')?.value, 10);
+    const fatVal = parseInt(document.getElementById('setting-fat')?.value, 10);
+    const waterVal = parseInt(document.getElementById('setting-water')?.value, 10);
+
+    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+
+    if (nameVal) profile.name = nameVal;
+    if (genderVal) profile.gender = genderVal;
+    if (!isNaN(ageVal) && ageVal > 0) profile.age = ageVal;
+    if (!isNaN(heightVal) && heightVal > 0) profile.height = heightVal;
+    if (!isNaN(currentWeightVal) && currentWeightVal > 0) profile.currentWeight = currentWeightVal;
+    if (!isNaN(targetWeightVal) && targetWeightVal > 0) profile.targetWeight = targetWeightVal;
+    if (!isNaN(caloriesVal) && caloriesVal > 0) profile.targetCalories = caloriesVal;
+    if (goalVal) profile.fitnessGoal = goalVal;
+
+    if (!profile.macros) profile.macros = {};
+    if (!isNaN(proteinVal) && proteinVal >= 0) profile.macros.protein = proteinVal;
+    if (!isNaN(carbsVal) && carbsVal >= 0) profile.macros.carbs = carbsVal;
+    if (!isNaN(fatVal) && fatVal >= 0) profile.macros.fat = fatVal;
+
+    if (!isNaN(waterVal) && waterVal >= 0) profile.waterTarget = waterVal;
+
+    // Persist to local storage
+    window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
+    this.updateUserLabels(profile);
+
+    ToastModule.show('Đã lưu thành công hồ sơ cá nhân và mục tiêu thể hình!');
   },
 
   bindBackupEvents() {
@@ -1748,4 +1789,290 @@ const SettingsModule = {
   }
 };
 
+/**
+ * Onboarding Module - First-time User Setup Wizard
+ * Handles 3-step wizard for basic info, activity level, and fitness goals
+ */
+const OnboardingModule = {
+  currentStep: 1,
+  modal: null,
+  userData: {},
+
+  init() {
+    this.modal = document.getElementById('onboarding-modal');
+    if (!this.modal) {
+      console.log('Onboarding modal not found');
+      return;
+    }
+
+    console.log('Onboarding modal found:', this.modal);
+
+    // Check if user has completed onboarding
+    const hasCompletedOnboarding = localStorage.getItem('fitvn_onboarding_completed');
+
+    console.log('Has completed onboarding:', hasCompletedOnboarding);
+
+    // Show onboarding immediately if not completed (before auth modal)
+    if (!hasCompletedOnboarding) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        console.log('Attempting to show onboarding modal...');
+        this.showModal();
+      }, 100);
+    } else {
+      console.log('Onboarding already completed. To reset, run: localStorage.removeItem("fitvn_onboarding_completed")');
+    }
+
+    this.bindEvents();
+  },
+
+  showModal() {
+    if (this.modal) {
+      console.log('Setting display to flex and adding active class');
+      this.modal.style.display = 'flex';
+      this.modal.classList.add('active');
+      this.currentStep = 1;
+      this.updateStepUI();
+      console.log('Modal display:', this.modal.style.display);
+      console.log('Modal has active class:', this.modal.classList.contains('active'));
+    } else {
+      console.error('Modal element is null');
+    }
+  },
+
+  hideModal() {
+    if (this.modal) {
+      this.modal.classList.remove('active');
+      setTimeout(() => {
+        this.modal.style.display = 'none';
+      }, 300); // Wait for transition
+    }
+  },
+
+  bindEvents() {
+    // Step 1: Next button
+    const nextBtn1 = document.getElementById('onboarding-next-1');
+    const skipBtn = document.getElementById('onboarding-skip-btn');
+    const cancelBtn = document.getElementById('onboarding-cancel-btn');
+
+    if (nextBtn1) {
+      nextBtn1.addEventListener('click', () => this.validateAndNextStep1());
+    }
+
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => this.skipOnboarding());
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => this.hideModal());
+    }
+
+    // Step 2: Back and Next buttons
+    const backBtn2 = document.getElementById('onboarding-back-2');
+    const nextBtn2 = document.getElementById('onboarding-next-2');
+
+    if (backBtn2) {
+      backBtn2.addEventListener('click', () => this.goToStep(1));
+    }
+
+    if (nextBtn2) {
+      nextBtn2.addEventListener('click', () => this.goToStep(3));
+    }
+
+    // Step 3: Back and Complete buttons
+    const backBtn3 = document.getElementById('onboarding-back-3');
+    const completeBtn = document.getElementById('onboarding-complete');
+
+    if (backBtn3) {
+      backBtn3.addEventListener('click', () => this.goToStep(2));
+    }
+
+    if (completeBtn) {
+      completeBtn.addEventListener('click', () => this.completeOnboarding());
+    }
+
+    // Goal selection triggers summary update
+    const goalRadios = document.querySelectorAll('input[name="onboarding-goal"]');
+    goalRadios.forEach(radio => {
+      radio.addEventListener('change', () => this.updateSummary());
+    });
+  },
+
+  validateAndNextStep1() {
+    const gender = document.querySelector('input[name="onboarding-gender"]:checked')?.value;
+    const age = document.getElementById('onboarding-age')?.value;
+    const height = document.getElementById('onboarding-height')?.value;
+    const currentWeight = document.getElementById('onboarding-current-weight')?.value;
+    const targetWeight = document.getElementById('onboarding-target-weight')?.value;
+
+    if (!age || !height || !currentWeight || !targetWeight) {
+      ToastModule.show('Vui lòng điền đầy đủ thông tin!', 'flame');
+      return;
+    }
+
+    if (Number(age) < 12 || Number(age) > 100) {
+      ToastModule.show('Tuổi phải từ 12 đến 100!', 'flame');
+      return;
+    }
+
+    if (Number(height) < 100 || Number(height) > 250) {
+      ToastModule.show('Chiều cao phải từ 100 đến 250 cm!', 'flame');
+      return;
+    }
+
+    if (Number(currentWeight) < 30 || Number(currentWeight) > 250) {
+      ToastModule.show('Cân nặng phải từ 30 đến 250 kg!', 'flame');
+      return;
+    }
+
+    // Store step 1 data
+    this.userData = {
+      ...this.userData,
+      gender,
+      age: Number(age),
+      height: Number(height),
+      currentWeight: Number(currentWeight),
+      targetWeight: Number(targetWeight)
+    };
+
+    this.goToStep(2);
+  },
+
+  goToStep(step) {
+    this.currentStep = step;
+    this.updateStepUI();
+
+    if (step === 3) {
+      this.updateSummary();
+    }
+  },
+
+  updateStepUI() {
+    // Update step indicators
+    const indicators = document.querySelectorAll('.step-indicator');
+    indicators.forEach((ind, index) => {
+      ind.classList.toggle('active', index + 1 === this.currentStep);
+    });
+
+    // Update step visibility
+    const steps = document.querySelectorAll('.onboarding-step');
+    steps.forEach((step, index) => {
+      step.classList.toggle('active', index + 1 === this.currentStep);
+    });
+  },
+
+  updateSummary() {
+    const activity = document.querySelector('input[name="onboarding-activity"]:checked')?.value || '3';
+    const goal = document.querySelector('input[name="onboarding-goal"]:checked')?.value || 'maintain';
+
+    this.userData = {
+      ...this.userData,
+      sessionsPerWeek: Number(activity),
+      goal
+    };
+
+    // Calculate using HealthCalculator
+    if (window.HealthCalculator) {
+      const result = window.HealthCalculator.calculateCompleteProfile(this.userData);
+
+      // Update summary UI
+      document.getElementById('summary-bmr').textContent = `${result.bmr.toLocaleString()} kcal`;
+      document.getElementById('summary-tdee').textContent = `${result.tdee.toLocaleString()} kcal`;
+      document.getElementById('summary-calories').textContent = `${result.targetCalories.toLocaleString()} kcal`;
+      document.getElementById('summary-protein').textContent = `${result.macros.protein} g`;
+      document.getElementById('summary-carbs').textContent = `${result.macros.carbs} g`;
+      document.getElementById('summary-fat').textContent = `${result.macros.fat} g`;
+
+      const timelineEl = document.querySelector('.timeline-value');
+      if (result.timeline.weeksNeeded > 0) {
+        timelineEl.textContent = `${result.timeline.weeksNeeded} tuần (ước tính ngày ${result.timeline.estimatedDate})`;
+      } else {
+        timelineEl.textContent = 'Duy trì vóc dáng hiện tại';
+      }
+
+      // Show summary
+      document.getElementById('onboarding-summary').style.display = 'block';
+    }
+  },
+
+  completeOnboarding() {
+    const activity = document.querySelector('input[name="onboarding-activity"]:checked')?.value || '3';
+    const goal = document.querySelector('input[name="onboarding-goal"]:checked')?.value || 'maintain';
+
+    this.userData = {
+      ...this.userData,
+      sessionsPerWeek: Number(activity),
+      goal
+    };
+
+    // Calculate final profile
+    if (window.HealthCalculator) {
+      const result = window.HealthCalculator.calculateCompleteProfile(this.userData);
+
+      // Update user profile in localStorage
+      const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+      profile.gender = this.userData.gender;
+      profile.age = this.userData.age;
+      profile.height = this.userData.height;
+      profile.currentWeight = this.userData.currentWeight;
+      profile.targetWeight = this.userData.targetWeight;
+      profile.activityLevel = this.getActivityLevelKey(this.userData.sessionsPerWeek);
+      profile.fitnessGoal = this.userData.goal;
+      profile.targetCalories = result.targetCalories;
+      profile.macros = result.macros;
+
+      window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
+
+      // Mark onboarding as completed
+      localStorage.setItem('fitvn_onboarding_completed', 'true');
+
+      // Add initial weight log
+      window.storageService.addWeightLog({
+        date: window.getTodayDateString(),
+        weight: this.userData.currentWeight,
+        note: 'Khởi tạo hồ sơ'
+      });
+
+      // Hide modal and refresh dashboard
+      this.hideModal();
+      ToastModule.show('Đã thiết lập hồ sơ thành công! Chúc bạn đạt mục tiêu! 🎉');
+
+      // Refresh dashboard if on dashboard page
+      if (window.DashboardModule) {
+        DashboardModule.updateUI();
+      }
+    }
+  },
+
+  getActivityLevelKey(sessions) {
+    const s = Number(sessions);
+    if (s === 0) return 'sedentary';
+    if (s <= 2) return 'light';
+    if (s <= 5) return 'moderate';
+    if (s <= 7) return 'active';
+    return 'very_active';
+  },
+
+  skipOnboarding() {
+    localStorage.setItem('fitvn_onboarding_completed', 'true');
+    this.hideModal();
+    ToastModule.show('Bạn có thể cập nhật thông tin trong phần Cài đặt sau.');
+  },
+
+  // Allow reopening onboarding from settings
+  reopenOnboarding() {
+    localStorage.removeItem('fitvn_onboarding_completed');
+    this.userData = {};
+    this.showModal();
+  },
+
+  // Debug helper to reset onboarding (call from console: OnboardingModule.resetOnboarding())
+  resetOnboarding() {
+    localStorage.removeItem('fitvn_onboarding_completed');
+    console.log('Onboarding reset. Please reload the page.');
+    location.reload();
+  }
+};
+
+window.OnboardingModule = OnboardingModule;
 window.SettingsModule = SettingsModule;
