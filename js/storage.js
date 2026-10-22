@@ -444,9 +444,22 @@ const storageService = {
     if (user.weight) {
       profile.currentWeight = user.weight;
       // also record initial weight if no weight logs exist yet for this user
-      const weightLogs = this.getWeightLogs();
-      if (weightLogs.length === 0) {
-        this.addWeightLog({ date: getTodayDateString(), weight: user.weight, note: 'Khởi tạo tài khoản' });
+      const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+      const userLogs = allLogs.filter(log => log.userId === user.email);
+      if (userLogs.length === 0) {
+        // Add initial weight log directly with userId
+        const newEntry = {
+          id: `wt-${Date.now()}`,
+          userId: user.email,
+          date: getTodayDateString(),
+          weight: parseFloat(Number(user.weight).toFixed(1)),
+          bodyFat: null,
+          note: 'Khởi tạo tài khoản',
+          measurements: null
+        };
+        allLogs.push(newEntry);
+        allLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+        this.set(STORAGE_KEYS.WEIGHT_LOGS, allLogs);
       }
     }
     if (user.gender) profile.gender = user.gender;
