@@ -335,3 +335,195 @@ const CanvasChartEngine = {
 };
 
 window.CanvasChartEngine = CanvasChartEngine;
+
+/**
+ * WorkoutChartEngine - HTML5 Canvas Pure Vanilla Chart
+ * Visualizes workout duration (minutes) per active day with hover tooltips
+ * Theme: Jade & Porcelain (Rule 3)
+ */
+const WorkoutChartEngine = {
+  canvas: null,
+  ctx: null,
+  tooltipEl: null,
+  renderedBars: [],
+  data: [],
+  padding: { top: 30, right: 25, bottom: 40, left: 50 },
+
+  init(canvasId, tooltipId) {
+    this.canvas = document.getElementById(canvasId);
+    this.tooltipEl = document.getElementById(tooltipId);
+
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.bindEvents();
+  },
+
+  bindEvents() {
+    if (!this.canvas) return;
+
+    const handlePointer = (e) => {
+      if (this.renderedBars.length === 0) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const mouseX = clientX - rect.left;
+      const mouseY = clientY - rect.top;
+
+      let hoveredBar = null;
+      this.renderedBars.forEach(b => {
+        if (mouseX >= b.x && mouseX <= b.x + b.w && mouseY >= b.y && mouseY <= b.y + b.h) {
+          hoveredBar = b;
+        }
+      });
+
+      if (hoveredBar) {
+        this.showTooltip(hoveredBar, rect);
+      } else {
+        this.hideTooltip();
+      }
+    };
+
+    this.canvas.addEventListener('mousemove', handlePointer);
+    this.canvas.addEventListener('touchmove', handlePointer, { passive: true });
+    this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
+    this.canvas.addEventListener('touchend', () => this.hideTooltip());
+
+    window.addEventListener('resize', () => {
+      if (this.data.length > 0) {
+        this.render(this.data);
+      }
+    });
+  },
+
+  showTooltip(bar, rect) {
+    if (!this.tooltipEl) return;
+
+    const item = bar.data;
+    const parts = item.date.split('-');
+    const dateFormatted = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : item.date;
+
+    this.tooltipEl.innerHTML = `
+      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
+        📅 ${dateFormatted}
+      </div>
+      <div style="font-size: 0.85rem; color: #202B28;">
+        Thời lượng: <strong style="color: #173F35; font-size: 0.95rem;">${item.totalMinutes} phút</strong>
+      </div>
+      <div style="font-size: 0.74rem; color: #63756B; margin-top: 2px;">
+        Số buổi tập: ${item.sessionCount} buổi
+      </div>
+    `;
+
+    this.tooltipEl.style.display = 'block';
+
+    const canvasWidth = this.canvas.clientWidth;
+    let leftPos = bar.x + bar.w / 2 - 60;
+    if (leftPos + 140 > canvasWidth) leftPos = canvasWidth - 145;
+    if (leftPos < 10) leftPos = 10;
+
+    this.tooltipEl.style.left = `${leftPos}px`;
+    this.tooltipEl.style.top = `${Math.max(10, bar.y - 45)}px`;
+  },
+
+  hideTooltip() {
+    if (this.tooltipEl) {
+      this.tooltipEl.style.display = 'none';
+    }
+  },
+
+  render(groupedData) {
+    if (!this.canvas || !this.ctx) return;
+    this.data = groupedData || [];
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = this.canvas.parentElement.clientWidth || 600;
+    const height = Math.max(220, Math.min(280, width * 0.4));
+
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
+    const ctx = this.ctx;
+    ctx.resetTransform();
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, width, height);
+
+    if (this.data.length === 0) {
+      ctx.fillStyle = '#829087';
+      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Chưa có dữ liệu tập luyện để hiển thị biểu đồ.', width / 2, height / 2);
+      this.renderedBars = [];
+      return;
+    }
+
+    const maxMinutes = Math.max(60, Math.ceil(Math.max(...this.data.map(d => d.totalMinutes)) / 15) * 15);
+    const pad = this.padding;
+    const chartW = width - pad.left - pad.right;
+    const chartH = height - pad.top - pad.bottom;
+
+    // 1. Grid & Y Axis
+    ctx.strokeStyle = '#DDE3D9';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#63756B';
+    ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
+    ctx.textAlign = 'right';
+
+    const ySteps = 4;
+    for (let i = 0; i <= ySteps; i++) {
+      const val = Math.round((maxMinutes / ySteps) * i);
+      const y = pad.top + chartH - (val / maxMinutes) * chartH;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, y);
+      ctx.lineTo(width - pad.right, y);
+      ctx.stroke();
+      ctx.fillText(`${val}p`, pad.left - 6, y + 4);
+    }
+
+    // 2. Bars
+    const totalBars = this.data.length;
+    const slotW = chartW / totalBars;
+    const barW = Math.min(36, Math.max(12, slotW * 0.55));
+    this.renderedBars = [];
+
+    this.data.forEach((item, idx) => {
+      const x = pad.left + idx * slotW + (slotW - barW) / 2;
+      const barH = (item.totalMinutes / maxMinutes) * chartH;
+      const y = pad.top + chartH - barH;
+
+      // Draw Bar with Jade Gradient
+      ctx.save();
+      const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+      grad.addColorStop(0, '#173F35');
+      grad.addColorStop(1, '#397866');
+      ctx.fillStyle = grad;
+
+      // Rounded top
+      const r = Math.min(4, barW / 2);
+      ctx.beginPath();
+      ctx.moveTo(x, y + barH);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.lineTo(x + barW - r, y);
+      ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
+      ctx.lineTo(x + barW, y + barH);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      this.renderedBars.push({ x, y, w: barW, h: barH, data: item });
+
+      // Date Label below bar
+      ctx.fillStyle = '#63756B';
+      ctx.font = '500 10px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      const parts = item.date.split('-');
+      const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : item.date;
+      ctx.fillText(label, x + barW / 2, height - 12);
+    });
+  }
+};
+
+window.WorkoutChartEngine = WorkoutChartEngine;

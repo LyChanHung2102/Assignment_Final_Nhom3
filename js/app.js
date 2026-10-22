@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FitVN Tracker - Main Application Controller
  * Handles Navigation, Food Logging, Real-time Search, Barcode Scanner, and Dashboard Sync
  */
@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Conditional Page Module Initialization
   if (document.getElementById('dash-stat-calories')) {
     DashboardModule.init();
+  }
+
+  if (document.getElementById('workout-chart-canvas')) {
+    WorkoutJournalModule.init();
   }
 
   if (document.getElementById('modal-food-results') || document.getElementById('meal-items-breakfast')) {
@@ -1749,3 +1753,779 @@ const SettingsModule = {
 };
 
 window.SettingsModule = SettingsModule;
+
+/**
+ * WorkoutJournalModule - Controller for Workout Journal Feature
+ * Handles Workout CRUD, Filtering by Range/Type/Intensity, Search,
+ * Form Validations, Details Modal, Confirm Delete, Pagination and Duration Chart.
+ */
+const WorkoutJournalModule = {
+  dom: {},
+  currentRange: '30d', // '7d' | '30d' | '90d' | '180d' | 'all'
+  currentType: 'all',
+  currentIntensity: 'all',
+  searchQuery: '',
+  currentPage: 1,
+  pageSize: 8,
+  cachedAllWorkouts: [],
+  cachedFilteredWorkouts: [],
+  selectedWorkout: null,
+  pendingDeleteId: null,
+
+  // Activity metadata definition for unified UI
+  ACTIVITY_TYPES: {
+    gym: { label: 'Tập Gym', icon: '🏋️‍♂️' },
+    running: { label: 'Chạy bộ', icon: '🏃‍♂️' },
+    walking: { label: 'Đi bộ', icon: '🚶‍♂️' },
+    cycling: { label: 'Đạp xe', icon: '🚴‍♂️' },
+    strength: { label: 'Tập sức mạnh', icon: '💪' },
+    yoga: { label: 'Yoga', icon: '🧘‍♀️' },
+    swimming: { label: 'Bơi lội', icon: '🏊‍♂️' },
+    sports: { label: 'Thể thao', icon: '⚽' },
+    other: { label: 'Khác', icon: '⚡' }
+  },
+
+  FEELING_LABELS: {
+    great: '🔥 Tuyệt vời, tràn đầy năng lượng',
+    good: '👍 Khỏe khoắn, đạt chỉ tiêu',
+    tired: '🥱 Hơi mệt, căng cơ tốt',
+    exhausted: '😵 Kiệt sức, cần nghỉ ngơi'
+  },
+
+  INTENSITY_LABELS: {
+    low: { label: 'Nhẹ nhàng', badgeClass: 'badge-intensity-low' },
+    medium: { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' },
+    high: { label: 'Cường độ cao', badgeClass: 'badge-intensity-high' }
+  },
+
+  init() {
+    this.cacheDOM();
+    this.bindEvents();
+    this.loadDataAndRender();
+  },
+
+  cacheDOM() {
+    this.dom = {
+      // Summary cards
+      statSessions: document.getElementById('wo-stat-sessions'),
+      statDuration: document.getElementById('wo-stat-duration'),
+      statAvg: document.getElementById('wo-stat-avg'),
+      statDays: document.getElementById('wo-stat-days'),
+      statDistanceExtra: document.getElementById('wo-stat-distance-extra'),
+      rangeDatesText: document.getElementById('wo-range-dates-text'),
+
+      // Time range pills
+      rangeButtons: document.querySelectorAll('[data-workout-range]'),
+
+      // Search and Filter controls
+      searchInput: document.getElementById('wo-search-input'),
+      filterType: document.getElementById('wo-filter-type'),
+      filterIntensity: document.getElementById('wo-filter-intensity'),
+      btnResetFilters: document.getElementById('btn-reset-filters'),
+
+      // List & States
+      listContainer: document.getElementById('wo-list-container'),
+      emptyState: document.getElementById('wo-empty-state'),
+      emptyFilterState: document.getElementById('wo-empty-filter-state'),
+      btnClearEmptyFilter: document.getElementById('btn-clear-empty-filter'),
+
+      // Pagination
+      pageInfo: document.getElementById('wo-page-info'),
+      btnPagePrev: document.getElementById('wo-btn-page-prev'),
+      btnPageNext: document.getElementById('wo-btn-page-next'),
+
+      // Create / Edit Modal
+      btnOpenCreate: document.getElementById('btn-open-create-workout'),
+      modalForm: document.getElementById('wo-modal-form'),
+      modalFormClose: document.getElementById('wo-modal-form-close'),
+      modalFormCancel: document.getElementById('wo-modal-form-cancel'),
+      modalFormTitle: document.getElementById('wo-modal-form-title'),
+      formEntry: document.getElementById('form-workout-entry'),
+      btnSubmitForm: document.getElementById('wo-btn-submit-form'),
+
+      // Form inputs
+      inputId: document.getElementById('wo-input-id'),
+      inputTitle: document.getElementById('wo-input-title'),
+      inputType: document.getElementById('wo-input-type'),
+      inputIntensity: document.getElementById('wo-input-intensity'),
+      inputDate: document.getElementById('wo-input-date'),
+      inputDuration: document.getElementById('wo-input-duration'),
+      inputStartTime: document.getElementById('wo-input-start-time'),
+      inputEndTime: document.getElementById('wo-input-end-time'),
+      inputDistance: document.getElementById('wo-input-distance'),
+      inputSteps: document.getElementById('wo-input-steps'),
+      inputFeeling: document.getElementById('wo-input-feeling'),
+      inputNotes: document.getElementById('wo-input-notes'),
+
+      // Detail Modal
+      modalDetail: document.getElementById('wo-modal-detail'),
+      modalDetailClose: document.getElementById('wo-modal-detail-close'),
+      detailBtnClose: document.getElementById('wo-detail-btn-close'),
+      detailBtnEdit: document.getElementById('wo-detail-btn-edit'),
+      detailBtnDelete: document.getElementById('wo-detail-btn-delete'),
+      detailTitle: document.getElementById('wo-detail-title'),
+      detailSubtitle: document.getElementById('wo-detail-subtitle'),
+      detailContent: document.getElementById('wo-detail-content'),
+
+      // Confirm Delete Modal
+      modalDelete: document.getElementById('wo-modal-confirm-delete'),
+      btnCancelDelete: document.getElementById('wo-btn-cancel-delete'),
+      btnConfirmDelete: document.getElementById('wo-btn-confirm-delete'),
+      deleteMsg: document.getElementById('wo-confirm-delete-msg')
+    };
+  },
+
+  bindEvents() {
+    // 1. Time range pills
+    if (this.dom.rangeButtons) {
+      this.dom.rangeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.dom.rangeButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentRange = btn.getAttribute('data-workout-range') || '30d';
+          this.currentPage = 1;
+          this.filterDataAndRender();
+        });
+      });
+    }
+
+    // 2. Search input
+    if (this.dom.searchInput) {
+      let debounceTimer = null;
+      this.dom.searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          this.searchQuery = e.target.value.trim().toLowerCase();
+          this.currentPage = 1;
+          this.filterDataAndRender();
+        }, 250);
+      });
+    }
+
+    // 3. Filters dropdowns
+    if (this.dom.filterType) {
+      this.dom.filterType.addEventListener('change', (e) => {
+        this.currentType = e.target.value;
+        this.currentPage = 1;
+        this.filterDataAndRender();
+      });
+    }
+
+    if (this.dom.filterIntensity) {
+      this.dom.filterIntensity.addEventListener('change', (e) => {
+        this.currentIntensity = e.target.value;
+        this.currentPage = 1;
+        this.filterDataAndRender();
+      });
+    }
+
+    // 4. Reset Filters
+    const resetFn = () => {
+      this.searchQuery = '';
+      this.currentType = 'all';
+      this.currentIntensity = 'all';
+      if (this.dom.searchInput) this.dom.searchInput.value = '';
+      if (this.dom.filterType) this.dom.filterType.value = 'all';
+      if (this.dom.filterIntensity) this.dom.filterIntensity.value = 'all';
+      this.currentPage = 1;
+      this.filterDataAndRender();
+    };
+
+    if (this.dom.btnResetFilters) this.dom.btnResetFilters.addEventListener('click', resetFn);
+    if (this.dom.btnClearEmptyFilter) this.dom.btnClearEmptyFilter.addEventListener('click', resetFn);
+
+    // 5. Open Create Modal
+    if (this.dom.btnOpenCreate) {
+      this.dom.btnOpenCreate.addEventListener('click', () => {
+        this.openCreateForm();
+      });
+    }
+
+    // 6. Close Modal Form
+    if (this.dom.modalFormClose) this.dom.modalFormClose.addEventListener('click', () => this.closeFormModal());
+    if (this.dom.modalFormCancel) this.dom.modalFormCancel.addEventListener('click', () => this.closeFormModal());
+    if (this.dom.modalForm) {
+      this.dom.modalForm.addEventListener('click', (e) => {
+        if (e.target === this.dom.modalForm) this.closeFormModal();
+      });
+    }
+
+    // 7. Form Submit (Create / Edit)
+    if (this.dom.formEntry) {
+      this.dom.formEntry.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.handleFormSubmit();
+      });
+    }
+
+    // 8. Detail Modal Handlers
+    if (this.dom.modalDetailClose) this.dom.modalDetailClose.addEventListener('click', () => this.closeDetailModal());
+    if (this.dom.detailBtnClose) this.dom.detailBtnClose.addEventListener('click', () => this.closeDetailModal());
+    if (this.dom.modalDetail) {
+      this.dom.modalDetail.addEventListener('click', (e) => {
+        if (e.target === this.dom.modalDetail) this.closeDetailModal();
+      });
+    }
+
+    if (this.dom.detailBtnEdit) {
+      this.dom.detailBtnEdit.addEventListener('click', () => {
+        const item = this.selectedWorkout;
+        this.closeDetailModal();
+        if (item) this.openEditForm(item);
+      });
+    }
+
+    if (this.dom.detailBtnDelete) {
+      this.dom.detailBtnDelete.addEventListener('click', () => {
+        const item = this.selectedWorkout;
+        this.closeDetailModal();
+        if (item) this.promptDelete(item.id, item.title);
+      });
+    }
+
+    // 9. Confirm Delete Modal
+    if (this.dom.btnCancelDelete) this.dom.btnCancelDelete.addEventListener('click', () => this.closeDeleteModal());
+    if (this.dom.btnConfirmDelete) {
+      this.dom.btnConfirmDelete.addEventListener('click', () => {
+        if (this.pendingDeleteId) {
+          const success = window.storageService.deleteWorkoutLog(this.pendingDeleteId);
+          if (success) {
+            ToastModule.show('Đã xóa buổi tập thành công.', 'emerald');
+            this.closeDeleteModal();
+            this.loadDataAndRender();
+          } else {
+            ToastModule.show('Không thể xóa buổi tập.', 'flame');
+          }
+        }
+      });
+    }
+
+    // 10. Pagination handlers
+    if (this.dom.btnPagePrev) {
+      this.dom.btnPagePrev.addEventListener('click', () => {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          this.renderList();
+        }
+      });
+    }
+
+    if (this.dom.btnPageNext) {
+      this.dom.btnPageNext.addEventListener('click', () => {
+        const totalPages = Math.ceil(this.cachedFilteredWorkouts.length / this.pageSize) || 1;
+        if (this.currentPage < totalPages) {
+          this.currentPage++;
+          this.renderList();
+        }
+      });
+    }
+  },
+
+  loadDataAndRender() {
+    this.cachedAllWorkouts = window.storageService ? window.storageService.getWorkoutLogs() : [];
+    
+    // Initialize Canvas Chart
+    if (window.WorkoutChartEngine) {
+      WorkoutChartEngine.init('workout-chart-canvas', 'workout-chart-tooltip');
+    }
+
+    this.filterDataAndRender();
+  },
+
+  filterDataAndRender() {
+    const all = this.cachedAllWorkouts;
+
+    if (all.length === 0) {
+      this.cachedFilteredWorkouts = [];
+      this.renderSummary();
+      this.renderChart();
+      this.renderList();
+      return;
+    }
+
+    // 1. Filter by Time Range
+    let daysCutoff = null;
+    if (this.currentRange === '7d') daysCutoff = 7;
+    else if (this.currentRange === '30d') daysCutoff = 30;
+    else if (this.currentRange === '90d') daysCutoff = 90;
+    else if (this.currentRange === '180d') daysCutoff = 180;
+
+    let filtered = [...all];
+    if (daysCutoff !== null) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - daysCutoff);
+      filtered = filtered.filter(item => new Date(item.workoutDate) >= cutoff);
+    }
+
+    // 2. Filter by Activity Type
+    if (this.currentType !== 'all') {
+      filtered = filtered.filter(item => item.activityType === this.currentType);
+    }
+
+    // 3. Filter by Intensity
+    if (this.currentIntensity !== 'all') {
+      filtered = filtered.filter(item => item.intensity === this.currentIntensity);
+    }
+
+    // 4. Search query
+    if (this.searchQuery) {
+      filtered = filtered.filter(item => {
+        const t = (item.title || '').toLowerCase();
+        const n = (item.notes || '').toLowerCase();
+        return t.includes(this.searchQuery) || n.includes(this.searchQuery);
+      });
+    }
+
+    // Sort newest first
+    filtered.sort((a, b) => {
+      const dateA = new Date(`${a.workoutDate}T${a.startTime || '00:00'}`);
+      const dateB = new Date(`${b.workoutDate}T${b.startTime || '00:00'}`);
+      return dateB - dateA;
+    });
+
+    this.cachedFilteredWorkouts = filtered;
+
+    this.renderRangeBadge();
+    this.renderSummary();
+    this.renderChart();
+    this.renderList();
+  },
+
+  renderRangeBadge() {
+    if (!this.dom.rangeDatesText) return;
+    const count = this.cachedFilteredWorkouts.length;
+    let label = 'Tất cả thời gian';
+    if (this.currentRange === '7d') label = '7 ngày qua';
+    else if (this.currentRange === '30d') label = '30 ngày qua';
+    else if (this.currentRange === '90d') label = '3 tháng qua';
+    else if (this.currentRange === '180d') label = '6 tháng qua';
+
+    this.dom.rangeDatesText.textContent = `${label} (${count} buổi tập)`;
+  },
+
+  renderSummary() {
+    if (!window.HealthCalculator) return;
+    const summary = window.HealthCalculator.calculateWorkoutSummary(this.cachedFilteredWorkouts);
+
+    if (this.dom.statSessions) {
+      this.dom.statSessions.innerHTML = `${summary.totalSessions} <span class="stat-unit">buổi</span>`;
+    }
+    if (this.dom.statDuration) {
+      this.dom.statDuration.innerHTML = `${summary.formattedDuration}`;
+    }
+    if (this.dom.statAvg) {
+      this.dom.statAvg.innerHTML = `${summary.avgDurationMinutes} <span class="stat-unit">phút/buổi</span>`;
+    }
+    if (this.dom.statDays) {
+      this.dom.statDays.innerHTML = `${summary.activeDaysCount} <span class="stat-unit">ngày</span>`;
+    }
+
+    if (this.dom.statDistanceExtra) {
+      if (summary.totalDistanceKm > 0) {
+        this.dom.statDistanceExtra.textContent = `Tổng quãng đường: ${summary.totalDistanceKm} km`;
+      } else {
+        this.dom.statDistanceExtra.textContent = 'Ngày có phát sinh bài tập';
+      }
+    }
+  },
+
+  renderChart() {
+    if (!window.WorkoutChartEngine || !window.HealthCalculator) return;
+    const grouped = window.HealthCalculator.groupWorkoutsByDate(this.cachedFilteredWorkouts);
+    WorkoutChartEngine.render(grouped);
+  },
+
+  renderList() {
+    const list = this.cachedFilteredWorkouts;
+    const container = this.dom.listContainer;
+    if (!container) return;
+
+    if (this.cachedAllWorkouts.length === 0) {
+      container.innerHTML = '';
+      if (this.dom.emptyState) this.dom.emptyState.style.display = 'block';
+      if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'none';
+      this.updatePaginationUI(0, 0);
+      return;
+    }
+
+    if (list.length === 0) {
+      container.innerHTML = '';
+      if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
+      if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'block';
+      this.updatePaginationUI(0, 0);
+      return;
+    }
+
+    if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
+    if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'none';
+
+    // Pagination slice
+    const totalPages = Math.ceil(list.length / this.pageSize) || 1;
+    this.currentPage = Math.min(this.currentPage, totalPages);
+    const startIdx = (this.currentPage - 1) * this.pageSize;
+    const pageItems = list.slice(startIdx, startIdx + this.pageSize);
+
+    const itemsHtml = pageItems.map(item => this.createWorkoutCardHtml(item));
+    container.innerHTML = itemsHtml.join('');
+
+    // Attach dynamic click events to buttons on each card
+    container.querySelectorAll('.btn-view-detail').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        this.openDetailModal(id);
+      });
+    });
+
+    container.querySelectorAll('.btn-edit-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const item = this.cachedAllWorkouts.find(w => w.id === id);
+        if (item) this.openEditForm(item);
+      });
+    });
+
+    container.querySelectorAll('.btn-delete-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const item = this.cachedAllWorkouts.find(w => w.id === id);
+        this.promptDelete(id, item ? item.title : 'Buổi tập này');
+      });
+    });
+
+    this.updatePaginationUI(this.currentPage, totalPages);
+  },
+
+  createWorkoutCardHtml(item) {
+    const actMeta = this.ACTIVITY_TYPES[item.activityType] || { label: 'Khác', icon: '⚡' };
+    const intMeta = this.INTENSITY_LABELS[item.intensity] || { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' };
+
+    // Format date DD/MM/YYYY
+    const p = (item.workoutDate || '').split('-');
+    const dateFormatted = p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : item.workoutDate;
+
+    // Time string
+    let timeRangeStr = '';
+    if (item.startTime && item.endTime) {
+      timeRangeStr = ` • ⏰ ${item.startTime} - ${item.endTime}`;
+    } else if (item.startTime) {
+      timeRangeStr = ` • ⏰ ${item.startTime}`;
+    }
+
+    let extraStatsHtml = '';
+    if (item.distanceKm && item.distanceKm > 0) {
+      extraStatsHtml += `
+        <span class="workout-stat-pill">
+          <span>📍 Quãng đường:</span> <strong>${item.distanceKm} km</strong>
+        </span>
+      `;
+    }
+    if (item.steps && item.steps > 0) {
+      extraStatsHtml += `
+        <span class="workout-stat-pill">
+          <span>👟 Số bước:</span> <strong>${item.steps.toLocaleString()}</strong>
+        </span>
+      `;
+    }
+
+    const noteSnippet = item.notes 
+      ? `<div style="font-size: 0.78rem; color: var(--color-text-secondary); margin-top: 4px; font-style: italic; max-width: 580px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+           "${item.notes}"
+         </div>`
+      : '';
+
+    return `
+      <div class="workout-item-card" data-id="${item.id}">
+        <div class="workout-item-top">
+          <div class="workout-item-main">
+            <div class="workout-type-icon-pill" title="${actMeta.label}">
+              ${actMeta.icon}
+            </div>
+            <div class="workout-item-titles">
+              <div class="workout-item-title">${item.title}</div>
+              <div class="workout-item-meta">
+                <span style="font-weight: 600; color: var(--color-primary);">${actMeta.label}</span>
+                <span>• 📅 ${dateFormatted}${timeRangeStr}</span>
+                <span class="glass-badge ${intMeta.badgeClass}" style="padding: 2px 8px; font-size: 0.7rem;">${intMeta.label}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="workout-item-actions">
+            <button type="button" class="btn-workout-action btn-view-detail" data-id="${item.id}" title="Xem chi tiết">
+              Chi tiết
+            </button>
+            <button type="button" class="btn-workout-action btn-edit-item" data-id="${item.id}" title="Chỉnh sửa">
+              Sửa
+            </button>
+            <button type="button" class="btn-workout-action text-danger btn-delete-item" data-id="${item.id}" title="Xóa">
+              Xóa
+            </button>
+          </div>
+        </div>
+
+        <div class="workout-item-stats-strip">
+          <span class="workout-stat-pill">
+            <span>⏱️ Thời lượng:</span> <strong>${item.durationMinutes} phút</strong>
+          </span>
+          ${extraStatsHtml}
+          ${item.feeling ? `<span class="workout-stat-pill" style="margin-left: auto;">${this.FEELING_LABELS[item.feeling] || ''}</span>` : ''}
+        </div>
+
+        ${noteSnippet}
+      </div>
+    `;
+  },
+
+  updatePaginationUI(current, total) {
+    if (this.dom.pageInfo) {
+      this.dom.pageInfo.textContent = total > 0 ? `Trang ${current} / ${total} (${this.cachedFilteredWorkouts.length} bản ghi)` : 'Trang 0 / 0';
+    }
+    if (this.dom.btnPagePrev) this.dom.btnPagePrev.disabled = current <= 1;
+    if (this.dom.btnPageNext) this.dom.btnPageNext.disabled = current >= total;
+  },
+
+  // MODAL FORM (CREATE & EDIT)
+  openCreateForm() {
+    if (!this.dom.modalForm) return;
+    this.clearValidationErrors();
+
+    if (this.dom.modalFormTitle) this.dom.modalFormTitle.textContent = 'Ghi Nhận Buổi Tập Mới';
+    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.textContent = 'Lưu Buổi Tập';
+
+    this.dom.inputId.value = '';
+    this.dom.inputTitle.value = '';
+    this.dom.inputType.value = 'gym';
+    this.dom.inputIntensity.value = 'medium';
+    this.dom.inputDate.value = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    this.dom.inputDuration.value = '60';
+    this.dom.inputStartTime.value = '';
+    this.dom.inputEndTime.value = '';
+    this.dom.inputDistance.value = '';
+    this.dom.inputSteps.value = '';
+    this.dom.inputFeeling.value = 'good';
+    this.dom.inputNotes.value = '';
+
+    this.dom.modalForm.style.display = 'flex';
+  },
+
+  openEditForm(item) {
+    if (!this.dom.modalForm || !item) return;
+    this.clearValidationErrors();
+
+    if (this.dom.modalFormTitle) this.dom.modalFormTitle.textContent = 'Chỉnh Sửa Buổi Tập';
+    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.textContent = 'Cập Nhật Buổi Tập';
+
+    this.dom.inputId.value = item.id;
+    this.dom.inputTitle.value = item.title || '';
+    this.dom.inputType.value = item.activityType || 'gym';
+    this.dom.inputIntensity.value = item.intensity || 'medium';
+    this.dom.inputDate.value = item.workoutDate || (window.getTodayDateString ? window.getTodayDateString() : '');
+    this.dom.inputDuration.value = item.durationMinutes || 30;
+    this.dom.inputStartTime.value = item.startTime || '';
+    this.dom.inputEndTime.value = item.endTime || '';
+    this.dom.inputDistance.value = item.distanceKm !== null ? item.distanceKm : '';
+    this.dom.inputSteps.value = item.steps !== null ? item.steps : '';
+    this.dom.inputFeeling.value = item.feeling || 'good';
+    this.dom.inputNotes.value = item.notes || '';
+
+    this.dom.modalForm.style.display = 'flex';
+  },
+
+  closeFormModal() {
+    if (this.dom.modalForm) {
+      this.dom.modalForm.style.display = 'none';
+    }
+  },
+
+  clearValidationErrors() {
+    const inputs = [
+      this.dom.inputTitle, this.dom.inputDate, this.dom.inputDuration,
+      this.dom.inputEndTime, this.dom.inputDistance, this.dom.inputSteps
+    ];
+    inputs.forEach(input => {
+      if (input) input.classList.remove('is-invalid');
+    });
+  },
+
+  handleFormSubmit() {
+    this.clearValidationErrors();
+
+    const id = this.dom.inputId.value;
+    const title = this.dom.inputTitle.value.trim();
+    const activityType = this.dom.inputType.value;
+    const intensity = this.dom.inputIntensity.value;
+    const workoutDate = this.dom.inputDate.value;
+    const duration = parseInt(this.dom.inputDuration.value, 10);
+    const startTime = this.dom.inputStartTime.value;
+    const endTime = this.dom.inputEndTime.value;
+    const distanceVal = this.dom.inputDistance.value.trim();
+    const stepsVal = this.dom.inputSteps.value.trim();
+    const feeling = this.dom.inputFeeling.value;
+    const notes = this.dom.inputNotes.value.trim();
+
+    let isValid = true;
+
+    // Validate title
+    if (!title) {
+      this.dom.inputTitle.classList.add('is-invalid');
+      isValid = false;
+    }
+
+    // Validate date
+    if (!workoutDate) {
+      this.dom.inputDate.classList.add('is-invalid');
+      isValid = false;
+    }
+
+    // Validate duration
+    if (isNaN(duration) || duration <= 0 || duration > 720) {
+      this.dom.inputDuration.classList.add('is-invalid');
+      isValid = false;
+    }
+
+    // Validate times if both provided
+    if (startTime && endTime) {
+      if (endTime <= startTime) {
+        this.dom.inputEndTime.classList.add('is-invalid');
+        isValid = false;
+      }
+    }
+
+    // Validate distance
+    let distanceKm = null;
+    if (distanceVal !== '') {
+      distanceKm = parseFloat(distanceVal);
+      if (isNaN(distanceKm) || distanceKm < 0) {
+        this.dom.inputDistance.classList.add('is-invalid');
+        isValid = false;
+      }
+    }
+
+    // Validate steps
+    let steps = null;
+    if (stepsVal !== '') {
+      steps = parseInt(stepsVal, 10);
+      if (isNaN(steps) || steps < 0) {
+        this.dom.inputSteps.classList.add('is-invalid');
+        isValid = false;
+      }
+    }
+
+    if (!isValid) return;
+
+    const workoutData = {
+      title,
+      activityType,
+      intensity,
+      workoutDate,
+      durationMinutes: duration,
+      startTime,
+      endTime,
+      distanceKm,
+      steps,
+      feeling,
+      notes
+    };
+
+    // Submitting state
+    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.disabled = true;
+
+    try {
+      if (id) {
+        // Edit mode
+        window.storageService.updateWorkoutLog(id, workoutData);
+        ToastModule.show(`Đã cập nhật buổi tập "${title}"!`, 'emerald');
+      } else {
+        // Create mode
+        window.storageService.addWorkoutLog(workoutData);
+        ToastModule.show(`Đã thêm buổi tập mới "${title}"!`, 'emerald');
+      }
+
+      this.closeFormModal();
+      this.loadDataAndRender();
+    } catch (err) {
+      console.error(err);
+      ToastModule.show('Có lỗi xảy ra khi lưu trữ dữ liệu.', 'flame');
+    } finally {
+      if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.disabled = false;
+    }
+  },
+
+  // DETAILS MODAL
+  openDetailModal(id) {
+    const item = this.cachedAllWorkouts.find(w => w.id === id);
+    if (!item || !this.dom.modalDetail) return;
+    this.selectedWorkout = item;
+
+    const actMeta = this.ACTIVITY_TYPES[item.activityType] || { label: 'Khác', icon: '⚡' };
+    const intMeta = this.INTENSITY_LABELS[item.intensity] || { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' };
+
+    if (this.dom.detailTitle) this.dom.detailTitle.textContent = `${actMeta.icon} ${item.title}`;
+    if (this.dom.detailSubtitle) this.dom.detailSubtitle.textContent = `${actMeta.label} • Ngày ${item.workoutDate}`;
+
+    if (this.dom.detailContent) {
+      this.dom.detailContent.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--color-surface-raised); padding: 12px; border-radius: 8px;">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Loại hình:</span>
+            <div style="font-weight: 600;">${actMeta.label}</div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Cường độ:</span>
+            <div><span class="glass-badge ${intMeta.badgeClass}">${intMeta.label}</span></div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Thời lượng:</span>
+            <div style="font-weight: 700; color: var(--color-primary);">${item.durationMinutes} phút</div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Thời gian:</span>
+            <div style="font-weight: 500;">${item.startTime || '--'} ${item.endTime ? '→ ' + item.endTime : ''}</div>
+          </div>
+          ${item.distanceKm ? `<div><span style="font-size: 0.75rem; color: var(--color-text-muted);">Quãng đường:</span><div style="font-weight: 600;">${item.distanceKm} km</div></div>` : ''}
+          ${item.steps ? `<div><span style="font-size: 0.75rem; color: var(--color-text-muted);">Số bước:</span><div style="font-weight: 600;">${item.steps.toLocaleString()}</div></div>` : ''}
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 2px;">Cảm nhận:</span>
+          <div style="font-weight: 500;">${this.FEELING_LABELS[item.feeling] || 'Bình thường'}</div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 2px;">Ghi chú chi tiết:</span>
+          <div style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 10px; border-radius: 8px; line-height: 1.5; font-size: 0.84rem;">
+            ${item.notes ? item.notes : '<span style="color: var(--color-text-muted); font-style: italic;">Không có ghi chú.</span>'}
+          </div>
+        </div>
+      `;
+    }
+
+    this.dom.modalDetail.style.display = 'flex';
+  },
+
+  closeDetailModal() {
+    if (this.dom.modalDetail) {
+      this.dom.modalDetail.style.display = 'none';
+    }
+  },
+
+  // CONFIRM DELETE
+  promptDelete(id, title) {
+    this.pendingDeleteId = id;
+    if (this.dom.deleteMsg) {
+      this.dom.deleteMsg.innerHTML = `Bạn có chắc chắn muốn xóa buổi tập <strong>"${title}"</strong>? Thao tác này không thể hoàn tác.`;
+    }
+    if (this.dom.modalDelete) {
+      this.dom.modalDelete.style.display = 'flex';
+    }
+  },
+
+  closeDeleteModal() {
+    this.pendingDeleteId = null;
+    if (this.dom.modalDelete) {
+      this.dom.modalDelete.style.display = 'none';
+    }
+  }
+};
+
+window.WorkoutJournalModule = WorkoutJournalModule;
