@@ -1,81 +1,82 @@
 /* ==========================================================================
-   FitVN Tracker - Glassmorphism UI Effects
-   Backdrop Blur, Translucent Panels & Neon Glow
+   FitVN Tracker - UI Surfaces & Interactive Components
+   Theme: Jade & Porcelain (Translucent Panels, Crisp Borders & Soft Shadows)
    ========================================================================== */
 
-/* Glass Card Surfaces */
+/* --------------------------------------------------------------------------
+   1. Card Surfaces
+   -------------------------------------------------------------------------- */
 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-card, 0 4px 20px rgba(23, 63, 53, 0.06));
   transition: transform var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
   position: relative;
   overflow: hidden;
 }
 
 .glass-card:hover {
-  border-color: var(--glass-border-hover);
+  border-color: var(--color-border-strong, #BECBC0);
 }
 
 .glass-card-interactive:hover {
   transform: translateY(-2px);
-  border-color: var(--glass-border-active);
-  box-shadow: var(--glass-shadow-lg), var(--glow-cyan);
+  border-color: var(--color-border-focus, #397866);
+  box-shadow: var(--shadow-card-hover, 0 10px 30px rgba(23, 63, 53, 0.10));
 }
 
-/* Subtle Glass Surface for Sub-components */
+/* Subtle Card Surface for Sub-components & Items */
 .glass-subtle {
-  background: var(--glass-bg-subtle);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  color: var(--color-text, #202B28);
 }
 
-/* Glass Navigation Bar */
+/* --------------------------------------------------------------------------
+   2. Navigation & Header Glass Surfaces
+   -------------------------------------------------------------------------- */
 .glass-nav {
-  background: rgba(13, 18, 29, 0.78);
-  backdrop-filter: var(--glass-blur-lg);
-  -webkit-backdrop-filter: var(--glass-blur-lg);
-  border-top: 1px solid var(--glass-border);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
+  background: #FFFEFA;
+  border-top: 1px solid var(--color-border, #DDE3D9);
+  box-shadow: 0 4px 20px rgba(23, 63, 53, 0.04);
 }
 
-/* Glass Header */
 .glass-header {
-  background: rgba(7, 9, 14, 0.7);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 254, 250, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border, #DDE3D9);
+  box-shadow: 0 2px 10px rgba(23, 63, 53, 0.04);
 }
 
-/* Glass Buttons */
+/* --------------------------------------------------------------------------
+   3. Buttons
+   -------------------------------------------------------------------------- */
 .glass-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
   padding: 0.65rem 1.25rem;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  color: var(--color-primary, #173F35);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
   text-decoration: none;
   user-select: none;
+  font-family: inherit;
 }
 
 .glass-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--glass-border-hover);
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-border-strong, #BECBC0);
+  color: var(--color-primary, #173F35);
   transform: translateY(-1px);
 }
 
@@ -84,19 +85,46 @@
 }
 
 .glass-btn-primary {
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.25) 0%, rgba(16, 185, 129, 0.25) 100%);
-  border-color: rgba(0, 240, 255, 0.4);
-  color: var(--text-primary);
-  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.15);
+  background: var(--color-primary, #173F35);
+  border-color: var(--color-primary, #173F35);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(23, 63, 53, 0.18);
 }
 
 .glass-btn-primary:hover {
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.4) 0%, rgba(16, 185, 129, 0.4) 100%);
-  border-color: var(--accent-cyan);
-  box-shadow: var(--glow-cyan);
+  background: var(--color-primary-hover, #245747);
+  border-color: var(--color-primary-hover, #245747);
+  color: #FFFFFF;
+  box-shadow: 0 6px 16px rgba(23, 63, 53, 0.22);
 }
 
-/* Glass Badge / Pill */
+.glass-btn-emerald {
+  background: var(--color-success-bg, #E5F2E9);
+  border-color: #A8D5B8;
+  color: var(--color-success, #287653);
+}
+
+.glass-btn-emerald:hover {
+  background: var(--color-success, #287653);
+  border-color: var(--color-success, #287653);
+  color: #FFFFFF;
+}
+
+.glass-btn-danger {
+  background: var(--color-danger-bg, #FBE9E7);
+  border-color: #EFA39F;
+  color: var(--color-danger, #B83E42);
+}
+
+.glass-btn-danger:hover {
+  background: var(--color-danger, #B83E42);
+  border-color: var(--color-danger, #B83E42);
+  color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   4. Badges & Pills
+   -------------------------------------------------------------------------- */
 .glass-badge {
   display: inline-flex;
   align-items: center;
@@ -104,91 +132,108 @@
   padding: 0.25rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--glass-border);
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  color: var(--color-text-secondary, #63756B);
 }
 
 .glass-badge-cyan {
-  background: rgba(0, 240, 255, 0.12);
-  border-color: rgba(0, 240, 255, 0.3);
-  color: var(--accent-cyan);
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-border-strong, #BECBC0);
+  color: var(--color-primary, #173F35);
 }
 
 .glass-badge-emerald {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: var(--accent-emerald);
+  background: var(--color-success-bg, #E5F2E9);
+  border-color: #A8D5B8;
+  color: var(--color-success, #287653);
 }
 
 .glass-badge-flame {
-  background: rgba(255, 71, 87, 0.12);
-  border-color: rgba(255, 71, 87, 0.3);
-  color: var(--accent-flame);
+  background: var(--color-danger-bg, #FBE9E7);
+  border-color: #EFA39F;
+  color: var(--color-danger, #B83E42);
 }
 
-/* Glass Form Inputs */
+/* --------------------------------------------------------------------------
+   5. Form Inputs & Controls
+   -------------------------------------------------------------------------- */
 .glass-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
+  background: var(--color-surface, #FFFEFA);
+  border: 1.5px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  color: var(--color-text, #202B28);
   font-family: inherit;
   font-size: 0.95rem;
   outline: none;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
 }
 
 .glass-input:focus {
-  border-color: var(--accent-cyan);
-  background: rgba(15, 23, 42, 0.75);
-  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15);
+  border-color: var(--color-border-focus, #397866);
+  background: #FFFFFF;
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(57, 120, 102, 0.20));
 }
 
 .glass-input::placeholder {
-  color: var(--text-muted);
+  color: var(--color-text-muted, #829087);
 }
 
-/* Background Ambient Glow Blobs */
-.ambient-glow-container {
+/* --------------------------------------------------------------------------
+   6. Modals & Overlays
+   -------------------------------------------------------------------------- */
+.glass-modal-backdrop,
+.app-modal-backdrop {
   position: fixed;
   inset: 0;
+  background: rgba(23, 63, 53, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: var(--z-modal, 400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  opacity: 0;
   pointer-events: none;
-  z-index: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.glass-modal-backdrop.active,
+.app-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.glass-modal-container,
+.app-modal-box {
+  width: 100%;
+  max-width: 600px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-modal, 0 20px 60px rgba(23, 63, 53, 0.18));
+  transform: translateY(20px) scale(0.97);
+  transition: transform var(--transition-spring), opacity var(--transition-normal);
   overflow: hidden;
+  color: var(--color-text, #202B28);
 }
 
-.ambient-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.22;
-  will-change: transform;
+.glass-modal-backdrop.active .glass-modal-container,
+.app-modal-backdrop.active .app-modal-box {
+  transform: translateY(0) scale(1);
 }
 
-.blob-cyan {
-  width: 320px;
-  height: 320px;
-  background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
-  top: -80px;
-  right: -80px;
-}
-
-.blob-purple {
-  width: 380px;
-  height: 380px;
-  background: radial-gradient(circle, var(--accent-purple) 0%, transparent 70%);
-  bottom: 10%;
-  left: -120px;
-}
-
-.blob-emerald {
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, var(--accent-emerald) 0%, transparent 70%);
-  top: 45%;
-  right: -60px;
+/* --------------------------------------------------------------------------
+   7. Ambient Glow Container (Disabled in Porcelain Wellness Theme)
+   -------------------------------------------------------------------------- */
+.ambient-glow-container {
+  display: none !important;
 }
