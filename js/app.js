@@ -1805,6 +1805,8 @@ const OnboardingModule = {
       return;
     }
 
+    console.log('Onboarding modal found:', this.modal);
+
     // Check if user has completed onboarding
     const hasCompletedOnboarding = localStorage.getItem('fitvn_onboarding_completed');
 
@@ -1813,7 +1815,10 @@ const OnboardingModule = {
     // Show onboarding immediately if not completed (before auth modal)
     if (!hasCompletedOnboarding) {
       // Small delay to ensure DOM is ready
-      setTimeout(() => this.showModal(), 100);
+      setTimeout(() => {
+        console.log('Attempting to show onboarding modal...');
+        this.showModal();
+      }, 100);
     } else {
       console.log('Onboarding already completed. To reset, run: localStorage.removeItem("fitvn_onboarding_completed")');
     }
@@ -1823,10 +1828,15 @@ const OnboardingModule = {
 
   showModal() {
     if (this.modal) {
+      console.log('Setting display to flex and adding active class');
       this.modal.style.display = 'flex';
       this.modal.classList.add('active');
       this.currentStep = 1;
       this.updateStepUI();
+      console.log('Modal display:', this.modal.style.display);
+      console.log('Modal has active class:', this.modal.classList.contains('active'));
+    } else {
+      console.error('Modal element is null');
     }
   },
 
