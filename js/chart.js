@@ -1,6 +1,7 @@
 /**
  * FitVN Tracker - HTML5 Canvas Pure Vanilla Chart Engine
- * Renders 7-Day Moving Average, Raw Weight Fluctuations, Neon Glow and Tooltips
+ * Renders 7-Day Moving Average, Raw Weight Fluctuations and Tooltips
+ * Theme: Jade & Porcelain (rule.md Section 3)
  * Strictly NO external libraries.
  */
 
@@ -71,16 +72,16 @@ const CanvasChartEngine = {
   showTooltip(point, rect) {
     if (!this.tooltipEl) return;
 
-    const bodyFatText = point.data.bodyFat ? `• Body Fat: <strong style="color: #fbbf24;">${point.data.bodyFat}%</strong>` : '';
-    const noteText = point.data.note ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">"${point.data.note}"</div>` : '';
+    const bodyFatText = point.data.bodyFat ? `• Body Fat: <strong style="color: #946414;">${point.data.bodyFat}%</strong>` : '';
+    const noteText = point.data.note ? `<div style="font-size: 0.72rem; color: #829087; margin-top: 3px;">"${point.data.note}"</div>` : '';
 
     this.tooltipEl.innerHTML = `
-      <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 4px; font-size: 0.78rem;">
+      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
         📅 ${this.formatDisplayDate(point.data.date)}
       </div>
-      <div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem;">
-        <div>Cân nặng thực tế: <strong style="color: #94a3b8;">${point.data.rawWeight} kg</strong> ${bodyFatText}</div>
-        <div>Trung bình 7 ngày (7DMA): <strong style="color: var(--accent-cyan);">${point.data.movingAverage} kg</strong></div>
+      <div style="display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; color: #202B28;">
+        <div>Cân nặng thực tế: <strong style="color: #63756B;">${point.data.rawWeight} kg</strong> ${bodyFatText}</div>
+        <div>Trung bình 7 ngày (7DMA): <strong style="color: #173F35;">${point.data.movingAverage} kg</strong></div>
         ${noteText}
       </div>
     `;
@@ -173,7 +174,7 @@ const CanvasChartEngine = {
     // 3. Draw Line 1: Raw Weight (Dashed Subtle Gray with Dot Markers)
     this.drawRawWeightLine(ctx, this.renderedPoints);
 
-    // 4. Draw Line 2: 7-Day Moving Average Curve (Smooth Spline + Neon Glow)
+    // 4. Draw Line 2: 7-Day Moving Average Curve (Smooth Spline)
     this.drawMovingAverageCurve(ctx, this.renderedPoints);
 
     // 5. Draw Highlight Points
@@ -182,7 +183,7 @@ const CanvasChartEngine = {
 
   drawGridAndAxes(ctx, width, height, pad, minVal, maxVal, range) {
     const steps = 4;
-    ctx.font = '11px sans-serif';
+    ctx.font = '11px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
 
@@ -192,14 +193,14 @@ const CanvasChartEngine = {
 
       // Grid line
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+      ctx.strokeStyle = '#DDE3D9';
       ctx.lineWidth = 1;
       ctx.moveTo(pad.left, y);
       ctx.lineTo(width - pad.right, y);
       ctx.stroke();
 
       // Y Label
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#63756B';
       ctx.fillText(`${val.toFixed(1)}kg`, pad.left - 10, y);
     }
 
@@ -211,7 +212,7 @@ const CanvasChartEngine = {
 
     this.renderedPoints.forEach((p, idx) => {
       if (idx % labelInterval === 0 || idx === totalPoints - 1) {
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#63756B';
         ctx.fillText(this.formatDisplayDate(p.data.date), p.x, height - pad.bottom + 10);
       }
     });
@@ -221,9 +222,9 @@ const CanvasChartEngine = {
     if (points.length < 2) return;
 
     const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotHeight);
-    gradient.addColorStop(0, 'rgba(0, 240, 255, 0.22)');
-    gradient.addColorStop(0.7, 'rgba(16, 185, 129, 0.08)');
-    gradient.addColorStop(1, 'rgba(0, 240, 255, 0.0)');
+    gradient.addColorStop(0, 'rgba(23, 63, 53, 0.12)');
+    gradient.addColorStop(0.7, 'rgba(57, 120, 102, 0.04)');
+    gradient.addColorStop(1, 'rgba(23, 63, 53, 0.0)');
 
     ctx.save();
     ctx.beginPath();
@@ -258,7 +259,7 @@ const CanvasChartEngine = {
     ctx.save();
     ctx.beginPath();
     ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+    ctx.strokeStyle = 'rgba(99, 117, 107, 0.55)';
     ctx.lineWidth = 1.5;
 
     points.forEach((p, i) => {
@@ -271,7 +272,7 @@ const CanvasChartEngine = {
     ctx.setLineDash([]);
     points.forEach((p) => {
       ctx.beginPath();
-      ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+      ctx.fillStyle = 'rgba(99, 117, 107, 0.7)';
       ctx.arc(p.x, p.yRaw, 2.5, 0, Math.PI * 2);
       ctx.fill();
     });
@@ -285,15 +286,13 @@ const CanvasChartEngine = {
     ctx.save();
     ctx.beginPath();
 
-    // Create Neon Gradient Stroke
+    // Create Jade to Sage Gradient Stroke
     const strokeGrad = ctx.createLinearGradient(points[0].x, 0, points[points.length - 1].x, 0);
-    strokeGrad.addColorStop(0, '#00f0ff');
-    strokeGrad.addColorStop(1, '#10b981');
+    strokeGrad.addColorStop(0, '#173F35');
+    strokeGrad.addColorStop(1, '#397866');
 
     ctx.strokeStyle = strokeGrad;
     ctx.lineWidth = 3;
-    ctx.shadowColor = 'rgba(0, 240, 255, 0.65)';
-    ctx.shadowBlur = 12;
 
     ctx.moveTo(points[0].x, points[0].y);
 
@@ -316,20 +315,18 @@ const CanvasChartEngine = {
   },
 
   drawDataPoints(ctx, points) {
-    // Highlight the latest point with pulsing neon circle
+    // Highlight the latest point with clean jade dot
     if (points.length === 0) return;
     const latest = points[points.length - 1];
 
     ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = '#00f0ff';
-    ctx.shadowColor = 'rgba(0, 240, 255, 0.9)';
-    ctx.shadowBlur = 16;
+    ctx.fillStyle = '#173F35';
     ctx.arc(latest.x, latest.y, 5, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.beginPath();
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 2;
     ctx.arc(latest.x, latest.y, 5, 0, Math.PI * 2);
     ctx.stroke();

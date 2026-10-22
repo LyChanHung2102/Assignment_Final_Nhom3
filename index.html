@@ -1,30 +1,23 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#07090e">
+  <meta name="theme-color" content="#F7F6F0">
   <meta name="description" content="FitVN Tracker - Ứng dụng quản lý sức khỏe, dinh dưỡng và cân nặng dành cho Gymer">
   <title>Trang Chủ - FitVN Tracker</title>
 
-  <!-- Google Font Inter -->
+  <!-- Google Font Be Vietnam Pro -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Core CSS (No external frameworks) -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/glass.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-
-  <!-- Ambient Glowing Blobs for Glassmorphism Effect -->
-  <div class="ambient-glow-container" aria-hidden="true">
-    <div class="ambient-blob blob-cyan"></div>
-    <div class="ambient-blob blob-purple"></div>
-    <div class="ambient-blob blob-emerald"></div>
-  </div>
+<body class="theme-porcelain">
 
   <div id="app-layout">
     <!-- NAVIGATION BAR -->
@@ -96,18 +89,77 @@
       </ul>
 
       <!-- Desktop Sidebar User Snippet -->
-            <a href="Page/auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
+      <a href="Page/auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
         <div class="avatar-pill">VN</div>
         <div class="user-info-snippet">
           <span class="user-name">Người dùng FitVN</span>
           <span class="user-goal-tag">Đang tải hồ sơ...</span>
         </div>
       </a>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <!-- Sticky Glass Header -->
+      <header class="app-header glass-header">
+        <div class="header-left">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+            </svg>
+          </div>
+          <span class="brand-title">FitVN Tracker</span>
+        </div>
+        <div class="header-center">
+          <h1 class="header-tab-title" id="header-title">Trang Chủ</h1>
+          <span class="header-date-badge" id="header-date">Hôm nay</span>
+        </div>
+        <div class="header-right">
+          <a href="Page/auth.html" class="avatar-pill" title="Hồ sơ tài khoản">VN</a>
+        </div>
+      </header>
+
+      <!-- Main Viewport for Dashboard -->
+      <main class="main-viewport">
+        <!-- TRANG CHỦ (DASHBOARD) -->
+        <section class="tab-content active" id="tab-dashboard">
+          <div class="section-header">
+            <h2 class="section-title">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #173F35)" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+              Tổng Quan Trong Ngày
+            </h2>
+            <span class="glass-badge glass-badge-cyan" id="dash-target-badge">Mục tiêu 2,600 kcal</span>
+          </div>
+
+          <div class="grid-cards">
+            <!-- WIDGET 1: SVG Circular Calorie Progress Gauge -->
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>TIẾN ĐỘ CALO TRONG NGÀY</span>
+                <span class="glass-badge glass-badge-emerald" id="dash-calories-badge">Đạt 50%</span>
+              </div>
+
+              <div class="calorie-gauge-container">
+                <div class="calorie-gauge-wrapper">
+                  <svg class="gauge-svg" viewBox="0 0 180 180">
+                    <!-- Background ring -->
+                    <circle class="gauge-circle-bg" cx="90" cy="90" r="75"/>
+                    <!-- Progress ring -->
+                    <circle class="gauge-circle-progress" id="gauge-circle-progress" cx="90" cy="90" r="75"/>
+                  </svg>
+                  <div class="gauge-center-content">
+                    <div class="gauge-cal-num" id="gauge-remaining-val">1,300</div>
+                    <div class="gauge-cal-unit">KCAL</div>
+                    <div class="gauge-cal-label" id="gauge-status-label">Calo còn lại</div>
+                  </div>
+                </div>
               </div>
 
               <!-- Sub statistics -->
-              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); border-top: 1px solid var(--glass-border); padding-top: 10px; margin-top: 4px;">
-                <span>Đã nạp: <strong style="color: var(--accent-cyan);" id="dash-calories-consumed">1,300 kcal</strong></span>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-secondary, #63756B); border-top: 1px solid var(--color-border, #DDE3D9); padding-top: 10px; margin-top: 4px;">
+                <span>Đã nạp: <strong style="color: var(--color-primary, #173F35);" id="dash-calories-consumed">1,300 kcal</strong></span>
                 <span>Mục tiêu: <span id="dash-stat-calories">2,600 kcal</span></span>
               </div>
               <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
@@ -121,52 +173,52 @@
             <div class="glass-card stat-card glass-card-interactive">
               <div class="stat-header">
                 <span>PHÂN BỔ MACRO NUTRITION</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Tỷ lệ năng lượng (kcal)</span>
+                <span style="font-size: 0.75rem; color: var(--color-text-muted, #829087);">Tỷ lệ năng lượng (kcal)</span>
               </div>
               
               <div class="macro-bars">
                 <!-- Protein -->
                 <div class="macro-bar-item">
                   <div class="macro-meta">
-                    <span style="color: var(--accent-cyan); font-weight: 600;">Protein (Đạm)</span>
+                    <span style="color: var(--color-protein, #397866); font-weight: 600;">Protein (Đạm)</span>
                     <span id="dash-macro-protein-text">0g / 165g (0%)</span>
                   </div>
                   <div class="progress-track">
                     <div class="progress-fill fill-protein" id="dash-macro-protein-progress" style="width: 0%;"></div>
                   </div>
                   <div class="macro-detail-pill">
-                    <span style="color: var(--text-muted);">Năng lượng từ đạm:</span>
-                    <strong style="color: var(--accent-cyan);" id="dash-macro-protein-kcal">0 kcal</strong>
+                    <span style="color: var(--color-text-muted, #829087);">Năng lượng từ đạm:</span>
+                    <strong style="color: var(--color-protein, #397866);" id="dash-macro-protein-kcal">0 kcal</strong>
                   </div>
                 </div>
 
                 <!-- Carbs -->
                 <div class="macro-bar-item">
                   <div class="macro-meta">
-                    <span style="color: #fbbf24; font-weight: 600;">Carbohydrate (Tinh bột)</span>
+                    <span style="color: var(--color-carbs, #D5A64B); font-weight: 600;">Carbohydrate (Tinh bột)</span>
                     <span id="dash-macro-carb-text">0g / 325g (0%)</span>
                   </div>
                   <div class="progress-track">
                     <div class="progress-fill fill-carb" id="dash-macro-carb-progress" style="width: 0%;"></div>
                   </div>
                   <div class="macro-detail-pill">
-                    <span style="color: var(--text-muted);">Năng lượng từ tinh bột:</span>
-                    <strong style="color: #fbbf24;" id="dash-macro-carb-kcal">0 kcal</strong>
+                    <span style="color: var(--color-text-muted, #829087);">Năng lượng từ tinh bột:</span>
+                    <strong style="color: var(--color-carbs, #D5A64B);" id="dash-macro-carb-kcal">0 kcal</strong>
                   </div>
                 </div>
 
                 <!-- Fat -->
                 <div class="macro-bar-item">
                   <div class="macro-meta">
-                    <span style="color: var(--accent-flame); font-weight: 600;">Fat (Chất béo)</span>
+                    <span style="color: var(--color-fat, #C47D60); font-weight: 600;">Fat (Chất béo)</span>
                     <span id="dash-macro-fat-text">0g / 72g (0%)</span>
                   </div>
                   <div class="progress-track">
                     <div class="progress-fill fill-fat" id="dash-macro-fat-progress" style="width: 0%;"></div>
                   </div>
                   <div class="macro-detail-pill">
-                    <span style="color: var(--text-muted);">Năng lượng từ chất béo:</span>
-                    <strong style="color: var(--accent-flame);" id="dash-macro-fat-kcal">0 kcal</strong>
+                    <span style="color: var(--color-text-muted, #829087);">Năng lượng từ chất béo:</span>
+                    <strong style="color: var(--color-fat, #C47D60);" id="dash-macro-fat-kcal">0 kcal</strong>
                   </div>
                 </div>
               </div>
@@ -211,7 +263,7 @@
               <div class="stat-value" id="dash-current-weight">
                 72.5 <span class="stat-unit">kg (Target: 76.0 kg)</span>
               </div>
-              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">
+              <p style="font-size: 0.82rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;">
                 Đang trong chu kỳ <strong>Lean Bulk</strong>. Đường trung bình động 7 ngày đang đi đúng hướng tăng cơ nạc.
               </p>
               <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
@@ -227,11 +279,11 @@
             <!-- Recent Meals Feed -->
             <div class="glass-card stat-card">
               <div class="stat-header">
-                <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary, #173F35); display: flex; align-items: center; gap: 6px;">
                   <span>🍽️</span>
                   <span>Món Ăn Gần Đây Trong Ngày</span>
                 </span>
-                <a href="Page/food-log.html" style="font-size: 0.78rem; color: var(--accent-cyan); text-decoration: none; font-weight: 600;">
+                <a href="Page/food-log.html" style="font-size: 0.78rem; color: var(--color-primary, #173F35); text-decoration: none; font-weight: 600;">
                   Xem tất cả &rarr;
                 </a>
               </div>

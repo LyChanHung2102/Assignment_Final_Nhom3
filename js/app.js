@@ -815,7 +815,7 @@ const BarcodeScannerModule = {
     // Display found product preview with immediate 1-Tap Add
     if (this.scanResultBoxEl) {
       this.scanResultBoxEl.innerHTML = `
-        <div class="food-item-row" style="background: rgba(0, 240, 255, 0.08); border-color: var(--accent-cyan); margin-top: 8px;">
+        <div class="food-item-row" style="background: var(--color-primary-soft, #E5EDE7); border-color: var(--accent-cyan); margin-top: 8px;">
           <div class="food-item-info">
             <div class="food-icon-circle">${food.icon || '📦'}</div>
             <div class="food-details">
@@ -1129,7 +1129,7 @@ const WeightModule = {
           </div>
           <div style="display: flex; align-items: center; gap: 12px;">
             <div style="text-align: right;">
-              <strong style="color: #00f0ff; font-size: 1rem;">${item.rawWeight} kg</strong>
+              <strong style="color: var(--color-primary, #173F35); font-size: 1rem;">${item.rawWeight} kg</strong>
               <div style="font-size: 0.72rem; color: var(--text-muted);">${bfText}</div>
             </div>
             <button type="button" class="btn-delete-weight btn-delete-log" data-weight-id="${item.id}" title="Xóa bản ghi" aria-label="Xóa ${item.date}">
