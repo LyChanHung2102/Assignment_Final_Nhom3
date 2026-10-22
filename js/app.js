@@ -1348,31 +1348,82 @@ window.WeightModule = WeightModule;
  */
 const SettingsModule = {
   formEl: null,
+  pendingImportData: null,
+  goalLabels: {
+    lean_bulk: 'Tăng Cơ (Lean Bulk)',
+    cut: 'Cắt Nét (Cutting)',
+    maintain: 'Duy Trì (Maintain)'
+  },
 
   init() {
     this.formEl = document.getElementById('form-user-settings');
     this.loadProfile();
     this.bindEvents();
+    this.bindBackupEvents();
   },
 
   loadProfile() {
     const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
 
     const nameInput = document.getElementById('setting-name');
+    const genderSelect = document.getElementById('setting-gender');
     const ageInput = document.getElementById('setting-age');
     const heightInput = document.getElementById('setting-height');
+    const currentWeightInput = document.getElementById('setting-current-weight');
     const targetWeightInput = document.getElementById('setting-target-weight');
-    const caloriesInput = document.getElementById('setting-calories');
-    const waterTargetInput = document.getElementById('setting-water-target');
     const goalSelect = document.getElementById('setting-goal');
+    const caloriesInput = document.getElementById('setting-calories');
+    const proteinInput = document.getElementById('setting-protein');
+    const carbsInput = document.getElementById('setting-carbs');
+    const fatInput = document.getElementById('setting-fat');
+    const waterInput = document.getElementById('setting-water');
 
     if (nameInput && profile.name) nameInput.value = profile.name;
+    if (genderSelect && profile.gender) genderSelect.value = profile.gender;
     if (ageInput && profile.age) ageInput.value = profile.age;
     if (heightInput && profile.height) heightInput.value = profile.height;
+    if (currentWeightInput && profile.currentWeight) currentWeightInput.value = profile.currentWeight;
     if (targetWeightInput && profile.targetWeight) targetWeightInput.value = profile.targetWeight;
-    if (caloriesInput && profile.targetCalories) caloriesInput.value = profile.targetCalories;
-    if (waterTargetInput && profile.waterTarget) waterTargetInput.value = profile.waterTarget;
     if (goalSelect && profile.fitnessGoal) goalSelect.value = profile.fitnessGoal;
+    if (caloriesInput && profile.targetCalories) caloriesInput.value = profile.targetCalories;
+
+    if (profile.macros) {
+      if (proteinInput && profile.macros.protein) proteinInput.value = profile.macros.protein;
+      if (carbsInput && profile.macros.carbs) carbsInput.value = profile.macros.carbs;
+      if (fatInput && profile.macros.fat) fatInput.value = profile.macros.fat;
+    }
+    if (waterInput && profile.waterTarget) waterInput.value = profile.waterTarget;
+
+    // Update avatar and labels in sidebar / header if present
+    this.updateUserLabels(profile);
+  },
+
+  updateUserLabels(profile) {
+    if (!profile) return;
+    const nameSnippets = document.querySelectorAll('.user-name');
+    nameSnippets.forEach(el => {
+      if (profile.name) el.textContent = profile.name;
+    });
+
+    const goalSnippets = document.querySelectorAll('.user-goal-tag');
+    goalSnippets.forEach(el => {
+      if (profile.fitnessGoal && this.goalLabels[profile.fitnessGoal]) {
+        el.textContent = this.goalLabels[profile.fitnessGoal];
+      }
+    });
+
+    const avatarSnippets = document.querySelectorAll('.avatar-pill');
+    if (profile.name) {
+      const initials = profile.name
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w[0].toUpperCase())
+        .slice(0, 2)
+        .join('');
+      if (initials) {
+        avatarSnippets.forEach(el => el.textContent = initials);
+      }
+    }
   },
 
   bindEvents() {
@@ -1384,30 +1435,205 @@ const SettingsModule = {
       const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
 
       const nameVal = document.getElementById('setting-name')?.value.trim();
+      const genderVal = document.getElementById('setting-gender')?.value;
       const ageVal = parseInt(document.getElementById('setting-age')?.value, 10);
       const heightVal = parseFloat(document.getElementById('setting-height')?.value);
+      const currentWeightVal = parseFloat(document.getElementById('setting-current-weight')?.value);
       const targetWeightVal = parseFloat(document.getElementById('setting-target-weight')?.value);
       const caloriesVal = parseInt(document.getElementById('setting-calories')?.value, 10);
-      const waterTargetVal = parseInt(document.getElementById('setting-water-target')?.value, 10);
       const goalVal = document.getElementById('setting-goal')?.value;
 
+      const proteinVal = parseInt(document.getElementById('setting-protein')?.value, 10);
+      const carbsVal = parseInt(document.getElementById('setting-carbs')?.value, 10);
+      const fatVal = parseInt(document.getElementById('setting-fat')?.value, 10);
+      const waterVal = parseInt(document.getElementById('setting-water')?.value, 10);
+
       if (nameVal) profile.name = nameVal;
-      if (!isNaN(ageVal)) profile.age = ageVal;
-      if (!isNaN(heightVal)) profile.height = heightVal;
-      if (!isNaN(targetWeightVal)) profile.targetWeight = targetWeightVal;
-      if (!isNaN(caloriesVal)) profile.targetCalories = caloriesVal;
-      if (!isNaN(waterTargetVal)) profile.waterTarget = waterTargetVal;
+      if (genderVal) profile.gender = genderVal;
+      if (!isNaN(ageVal) && ageVal > 0) profile.age = ageVal;
+      if (!isNaN(heightVal) && heightVal > 0) profile.height = heightVal;
+      if (!isNaN(currentWeightVal) && currentWeightVal > 0) profile.currentWeight = currentWeightVal;
+      if (!isNaN(targetWeightVal) && targetWeightVal > 0) profile.targetWeight = targetWeightVal;
+      if (!isNaN(caloriesVal) && caloriesVal > 0) profile.targetCalories = caloriesVal;
       if (goalVal) profile.fitnessGoal = goalVal;
 
-      window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
-      ToastModule.show('Đã lưu thông tin hồ sơ & mục tiêu dinh dưỡng!');
+      if (!profile.macros) profile.macros = {};
+      if (!isNaN(proteinVal) && proteinVal >= 0) profile.macros.protein = proteinVal;
+      if (!isNaN(carbsVal) && carbsVal >= 0) profile.macros.carbs = carbsVal;
+      if (!isNaN(fatVal) && fatVal >= 0) profile.macros.fat = fatVal;
 
-      // Update snippet on sidebar if present
-      const nameSnippet = document.querySelector('.user-name');
-      if (nameSnippet && profile.name) nameSnippet.textContent = profile.name;
+      if (!isNaN(waterVal) && waterVal >= 0) profile.waterTarget = waterVal;
+
+      // Persist to local storage
+      window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
+      this.updateUserLabels(profile);
+
+      ToastModule.show('Đã lưu thành công hồ sơ cá nhân và mục tiêu thể hình!');
     });
+  },
+
+  bindBackupEvents() {
+    // 1. Export Backup JSON
+    const btnExport = document.getElementById('btn-export-backup');
+    if (btnExport) {
+      btnExport.addEventListener('click', () => {
+        try {
+          const jsonString = window.storageService.exportBackupData();
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+          const filename = `fitvn_backup_${timestamp}.json`;
+
+          const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          ToastModule.show('Đã xuất file sao lưu thành công!');
+        } catch (err) {
+          ToastModule.show('Không thể xuất file sao lưu: ' + err.message, 'flame');
+        }
+      });
+    }
+
+    // 2. Import Trigger & File Input
+    const btnTriggerImport = document.getElementById('btn-trigger-import');
+    const inputBackupFile = document.getElementById('input-backup-file');
+    const modalImport = document.getElementById('modal-confirm-import');
+    const importFileNameEl = document.getElementById('import-file-name');
+    const btnConfirmOverwrite = document.getElementById('btn-confirm-import-overwrite');
+    const btnConfirmMerge = document.getElementById('btn-confirm-import-merge');
+    const btnCancelImport = document.getElementById('btn-cancel-import');
+
+    if (btnTriggerImport && inputBackupFile) {
+      btnTriggerImport.addEventListener('click', () => {
+        inputBackupFile.value = '';
+        inputBackupFile.click();
+      });
+    }
+
+    if (inputBackupFile) {
+      inputBackupFile.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (readEvent) => {
+          try {
+            const parsed = JSON.parse(readEvent.target.result);
+            const validation = window.storageService.validateBackupData(parsed);
+
+            if (!validation.valid) {
+              ToastModule.show(validation.message, 'flame');
+              return;
+            }
+
+            this.pendingImportData = parsed;
+            if (importFileNameEl) {
+              importFileNameEl.textContent = file.name;
+            }
+            if (modalImport) {
+              modalImport.classList.add('active');
+            }
+          } catch (err) {
+            ToastModule.show('File được chọn không đúng định dạng JSON hợp lệ.', 'flame');
+          }
+        };
+
+        reader.onerror = () => {
+          ToastModule.show('Lỗi khi đọc file sao lưu từ máy tính.', 'flame');
+        };
+
+        reader.readAsText(file);
+      });
+    }
+
+    // Modal Import Actions
+    const closeImportModal = () => {
+      if (modalImport) modalImport.classList.remove('active');
+      this.pendingImportData = null;
+    };
+
+    if (btnCancelImport) {
+      btnCancelImport.addEventListener('click', closeImportModal);
+    }
+
+    if (modalImport) {
+      modalImport.addEventListener('click', (e) => {
+        if (e.target === modalImport) closeImportModal();
+      });
+    }
+
+    if (btnConfirmOverwrite) {
+      btnConfirmOverwrite.addEventListener('click', () => {
+        if (!this.pendingImportData) return;
+        const result = window.storageService.importBackupData(this.pendingImportData, false);
+        closeImportModal();
+        if (result.success) {
+          this.loadProfile();
+          ToastModule.show('Khôi phục toàn bộ dữ liệu thành công!');
+        } else {
+          ToastModule.show(result.message || 'Lỗi khi khôi phục dữ liệu.', 'flame');
+        }
+      });
+    }
+
+    if (btnConfirmMerge) {
+      btnConfirmMerge.addEventListener('click', () => {
+        if (!this.pendingImportData) return;
+        const result = window.storageService.importBackupData(this.pendingImportData, true);
+        closeImportModal();
+        if (result.success) {
+          this.loadProfile();
+          ToastModule.show('Đã gộp thêm dữ liệu sao lưu thành công!');
+        } else {
+          ToastModule.show(result.message || 'Lỗi khi gộp dữ liệu.', 'flame');
+        }
+      });
+    }
+
+    // 3. Factory Reset Modal & Action
+    const btnResetData = document.getElementById('btn-reset-data');
+    const modalReset = document.getElementById('modal-confirm-reset');
+    const btnCancelReset = document.getElementById('btn-cancel-reset');
+    const btnConfirmReset = document.getElementById('btn-confirm-reset');
+
+    if (btnResetData && modalReset) {
+      btnResetData.addEventListener('click', () => {
+        modalReset.classList.add('active');
+      });
+    }
+
+    const closeResetModal = () => {
+      if (modalReset) modalReset.classList.remove('active');
+    };
+
+    if (btnCancelReset) {
+      btnCancelReset.addEventListener('click', closeResetModal);
+    }
+
+    if (modalReset) {
+      modalReset.addEventListener('click', (e) => {
+        if (e.target === modalReset) closeResetModal();
+      });
+    }
+
+    if (btnConfirmReset) {
+      btnConfirmReset.addEventListener('click', () => {
+        const result = window.storageService.resetToDefaultData();
+        closeResetModal();
+        if (result.success) {
+          this.loadProfile();
+          ToastModule.show('Đã khôi phục toàn bộ dữ liệu mẫu ban đầu!', 'flame');
+        } else {
+          ToastModule.show(result.message || 'Lỗi khi khôi phục cài đặt gốc.', 'flame');
+        }
+      });
+    }
   }
 };
 
 window.SettingsModule = SettingsModule;
-
