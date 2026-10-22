@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FitVN Tracker - Main Application Controller
  * Handles Navigation, Food Logging, Real-time Search, Barcode Scanner, and Dashboard Sync
  */
@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Conditional Page Module Initialization
   if (document.getElementById('dash-stat-calories')) {
     DashboardModule.init();
+  }
+
+  if (document.getElementById('health-weight-canvas')) {
+    HealthDashboardModule.init();
   }
 
   if (document.getElementById('modal-food-results') || document.getElementById('meal-items-breakfast')) {
@@ -2076,3 +2080,448 @@ const OnboardingModule = {
 
 window.OnboardingModule = OnboardingModule;
 window.SettingsModule = SettingsModule;
+
+/**
+ * HealthDashboardModule - Controls Health Dashboard Feature
+ * Handles BMI analysis, dynamic needle gauge, goal progress, Canvas weight chart,
+ * time range filtering, health records table and quick weight logging modal.
+ */
+const HealthDashboardModule = {
+  dom: {},
+  currentRange: 'all',
+
+  init() {
+    this.cacheDOM();
+    this.bindEvents();
+    this.updateDashboard();
+  },
+
+  cacheDOM() {
+    this.dom = {
+      // Header & Greeting
+      greetingTitle: document.getElementById('health-greeting-title'),
+      greetingSubtitle: document.getElementById('health-greeting-subtitle'),
+      incompleteBanner: document.getElementById('health-incomplete-banner'),
+      btnQuickLogWeight: document.getElementById('btn-quick-log-weight'),
+
+      // 4 Key Overview Cards
+      bmiVal: document.getElementById('hd-bmi-val'),
+      bmiBadge: document.getElementById('hd-bmi-badge'),
+      bmiStatusText: document.getElementById('hd-bmi-status-text'),
+
+      weightVal: document.getElementById('hd-weight-val'),
+      weightChangeBadge: document.getElementById('hd-weight-change-badge'),
+      weightChangeText: document.getElementById('hd-weight-change-text'),
+
+      heightVal: document.getElementById('hd-height-val'),
+      targetVal: document.getElementById('hd-target-val'),
+      targetBadge: document.getElementById('hd-target-badge'),
+      targetDiffText: document.getElementById('hd-target-diff-text'),
+
+      // BMI Analysis Section
+      bmiCategoryBadge: document.getElementById('hd-bmi-category-badge'),
+      bmiExplanation: document.getElementById('hd-bmi-explanation'),
+      bmiNeedle: document.getElementById('hd-bmi-needle'),
+
+      // Goal Progress Card
+      goalPercentBadge: document.getElementById('hd-goal-percent-badge'),
+      goalInitialVal: document.getElementById('hd-goal-initial-val'),
+      goalCurrentVal: document.getElementById('hd-goal-current-val'),
+      goalTargetVal: document.getElementById('hd-goal-target-val'),
+      goalBarFill: document.getElementById('hd-goal-bar-fill'),
+      goalStatusDesc: document.getElementById('hd-goal-status-desc'),
+      goalRemainingDiff: document.getElementById('hd-goal-remaining-diff'),
+
+      // Health Metrics
+      waterVal: document.getElementById('hd-metric-water-val'),
+      waterProgress: document.getElementById('hd-metric-water-progress'),
+      caloriesVal: document.getElementById('hd-metric-calories-val'),
+      caloriesProgress: document.getElementById('hd-metric-calories-progress'),
+
+      // Recent Records Table
+      recentTbody: document.getElementById('hd-recent-records-tbody'),
+      recentEmpty: document.getElementById('hd-recent-empty'),
+
+      // Modal Quick Add Weight
+      modalWeight: document.getElementById('hd-modal-weight'),
+      modalCloseBtn: document.getElementById('hd-modal-weight-close'),
+      modalCancelBtn: document.getElementById('hd-modal-weight-cancel'),
+      formWeight: document.getElementById('hd-form-weight'),
+      inputDate: document.getElementById('hd-input-date'),
+      inputWeight: document.getElementById('hd-input-weight'),
+      inputNote: document.getElementById('hd-input-note'),
+
+      // Time Range Buttons
+      timePills: document.querySelectorAll('.time-pill-btn')
+    };
+  },
+
+  bindEvents() {
+    // 1. Time range filter buttons
+    if (this.dom.timePills && this.dom.timePills.length > 0) {
+      this.dom.timePills.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          this.dom.timePills.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentRange = btn.getAttribute('data-range') || 'all';
+          this.renderChart();
+        });
+      });
+    }
+
+    // 2. Open quick weight log modal
+    if (this.dom.btnQuickLogWeight) {
+      this.dom.btnQuickLogWeight.addEventListener('click', () => {
+        this.openWeightModal();
+      });
+    }
+
+    // 3. Close modal handlers
+    if (this.dom.modalCloseBtn) {
+      this.dom.modalCloseBtn.addEventListener('click', () => this.closeWeightModal());
+    }
+    if (this.dom.modalCancelBtn) {
+      this.dom.modalCancelBtn.addEventListener('click', () => this.closeWeightModal());
+    }
+    if (this.dom.modalWeight) {
+      this.dom.modalWeight.addEventListener('click', (e) => {
+        if (e.target === this.dom.modalWeight) this.closeWeightModal();
+      });
+    }
+
+    // 4. Submit weight form
+    if (this.dom.formWeight) {
+      this.dom.formWeight.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.handleSaveWeight();
+      });
+    }
+  },
+
+  openWeightModal() {
+    if (!this.dom.modalWeight) return;
+    if (this.dom.inputDate) {
+      this.dom.inputDate.value = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    }
+    if (this.dom.inputWeight) {
+      const latest = window.storageService ? window.storageService.getLatestWeight() : null;
+      this.dom.inputWeight.value = latest ? latest.weight : '';
+    }
+    if (this.dom.inputNote) {
+      this.dom.inputNote.value = '';
+    }
+    this.dom.modalWeight.style.display = 'flex';
+  },
+
+  closeWeightModal() {
+    if (this.dom.modalWeight) {
+      this.dom.modalWeight.style.display = 'none';
+    }
+  },
+
+  handleSaveWeight() {
+    const dateVal = this.dom.inputDate.value;
+    const weightVal = parseFloat(this.dom.inputWeight.value);
+    const noteVal = this.dom.inputNote.value.trim();
+
+    if (!dateVal || isNaN(weightVal) || weightVal <= 0) {
+      if (window.ToastModule) ToastModule.show('Vui lòng nhập cân nặng hợp lệ!', 'flame');
+      return;
+    }
+
+    const newEntry = {
+      id: 'wt-' + Date.now(),
+      date: dateVal,
+      weight: weightVal,
+      note: noteVal
+    };
+
+    if (window.storageService && window.storageService.saveWeightEntry) {
+      window.storageService.saveWeightEntry(newEntry);
+    } else {
+      const logs = window.storageService.getWeightLogs();
+      logs.push(newEntry);
+      window.storageService.set(window.STORAGE_KEYS.WEIGHT_LOGS, logs);
+    }
+
+    // Also update profile current weight
+    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    profile.currentWeight = weightVal;
+    window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
+
+    this.closeWeightModal();
+    if (window.ToastModule) ToastModule.show(`Đã lưu bản ghi ${weightVal} kg ngày ${dateVal}!`);
+    this.updateDashboard();
+  },
+
+  updateDashboard() {
+    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
+    const weightLogs = window.storageService ? window.storageService.getWeightLogs() : [];
+    const latestLog = window.storageService ? window.storageService.getLatestWeight() : null;
+
+    const currentWeight = latestLog ? Number(latestLog.weight) : (Number(profile.currentWeight) || null);
+    const height = Number(profile.height) || null;
+    const targetWeight = Number(profile.targetWeight) || 70;
+
+    // 1. Personalized Greeting
+    if (this.dom.greetingTitle) {
+      const userName = profile.name || 'Gymer FitVN';
+      this.dom.greetingTitle.textContent = `Xin chào, ${userName}!`;
+    }
+
+    // 2. Incomplete Profile State Check
+    const isIncomplete = !currentWeight || !height || height <= 0 || currentWeight <= 0;
+    if (this.dom.incompleteBanner) {
+      this.dom.incompleteBanner.style.display = isIncomplete ? 'flex' : 'none';
+    }
+
+    // 3. BMI Calculation & Needle Spectrum
+    this.renderBMIAnalysis(currentWeight, height);
+
+    // 4. Weight Card with Comparison
+    this.renderWeightOverview(weightLogs, currentWeight);
+
+    // 5. Height & Target Weight Cards
+    if (this.dom.heightVal) {
+      this.dom.heightVal.innerHTML = height ? `${height} <span class="stat-unit">cm</span>` : `-- <span class="stat-unit">cm</span>`;
+    }
+    if (this.dom.targetVal) {
+      this.dom.targetVal.innerHTML = `${targetWeight} <span class="stat-unit">kg</span>`;
+    }
+    if (this.dom.targetDiffText && currentWeight) {
+      const diff = (currentWeight - targetWeight).toFixed(1);
+      if (Math.abs(diff) <= 0.2) {
+        this.dom.targetDiffText.textContent = '🎉 Đã đạt mục tiêu cân nặng!';
+      } else if (diff > 0) {
+        this.dom.targetDiffText.textContent = `Cần giảm ${diff} kg để tới đích`;
+      } else {
+        this.dom.targetDiffText.textContent = `Cần tăng ${Math.abs(diff)} kg để tới đích`;
+      }
+    }
+
+    // 6. Goal Progress Card
+    this.renderGoalProgress(profile, weightLogs, currentWeight, targetWeight);
+
+    // 7. Health Metrics: Water & Calories
+    this.renderHealthMetrics(profile);
+
+    // 8. Weight Chart
+    this.renderChart();
+
+    // 9. Recent Health Records Table
+    this.renderRecentRecords(weightLogs, height);
+  },
+
+  renderBMIAnalysis(weight, height) {
+    if (!window.HealthCalculator) return;
+    const bmiResult = window.HealthCalculator.calculateBMI(weight, height);
+
+    if (!bmiResult || bmiResult.bmi === null) {
+      if (this.dom.bmiVal) this.dom.bmiVal.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
+      if (this.dom.bmiBadge) {
+        this.dom.bmiBadge.className = 'glass-badge glass-badge-muted';
+        this.dom.bmiBadge.textContent = 'Chưa đủ dữ liệu';
+      }
+      if (this.dom.bmiStatusText) this.dom.bmiStatusText.textContent = 'Cần cập nhật chiều cao và cân nặng';
+      if (this.dom.bmiCategoryBadge) {
+        this.dom.bmiCategoryBadge.className = 'glass-badge glass-badge-muted';
+        this.dom.bmiCategoryBadge.textContent = 'Chưa xác định';
+      }
+      if (this.dom.bmiExplanation) this.dom.bmiExplanation.textContent = 'Vui lòng cập nhật đầy đủ chiều cao và cân nặng để hiển thị phân tích BMI.';
+      if (this.dom.bmiNeedle) this.dom.bmiNeedle.style.display = 'none';
+      return;
+    }
+
+    // Fill BMI texts
+    if (this.dom.bmiVal) this.dom.bmiVal.innerHTML = `${bmiResult.bmi} <span class="stat-unit">kg/m²</span>`;
+    if (this.dom.bmiBadge) {
+      this.dom.bmiBadge.className = `glass-badge ${bmiResult.colorClass}`;
+      this.dom.bmiBadge.textContent = bmiResult.category;
+    }
+    if (this.dom.bmiStatusText) this.dom.bmiStatusText.textContent = bmiResult.category;
+    if (this.dom.bmiCategoryBadge) {
+      this.dom.bmiCategoryBadge.className = `glass-badge ${bmiResult.colorClass}`;
+      this.dom.bmiCategoryBadge.textContent = `${bmiResult.category} (${bmiResult.bmi})`;
+    }
+    if (this.dom.bmiExplanation) this.dom.bmiExplanation.textContent = bmiResult.description;
+
+    // Position Needle on Spectrum Bar (Mapping BMI 15 -> 35 to 0% -> 100%)
+    if (this.dom.bmiNeedle) {
+      const minBmi = 15;
+      const maxBmi = 35;
+      const clampedBmi = Math.max(minBmi, Math.min(maxBmi, bmiResult.bmi));
+      const percentage = ((clampedBmi - minBmi) / (maxBmi - minBmi)) * 100;
+      this.dom.bmiNeedle.style.display = 'block';
+      this.dom.bmiNeedle.style.left = `${percentage.toFixed(1)}%`;
+      this.dom.bmiNeedle.title = `BMI: ${bmiResult.bmi} (${bmiResult.category})`;
+    }
+  },
+
+  renderWeightOverview(weightLogs, currentWeight) {
+    if (!currentWeight) {
+      if (this.dom.weightVal) this.dom.weightVal.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.weightChangeText) this.dom.weightChangeText.textContent = 'Chưa có dữ liệu';
+      return;
+    }
+
+    if (this.dom.weightVal) {
+      this.dom.weightVal.innerHTML = `${currentWeight} <span class="stat-unit">kg</span>`;
+    }
+
+    // Comparison against previous log
+    if (weightLogs && weightLogs.length >= 2) {
+      const sorted = [...weightLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const latest = sorted[sorted.length - 1];
+      const previous = sorted[sorted.length - 2];
+      const diff = parseFloat((latest.weight - previous.weight).toFixed(1));
+
+      if (this.dom.weightChangeBadge) {
+        if (diff > 0) {
+          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-cyan';
+          this.dom.weightChangeBadge.textContent = `+${diff} kg`;
+        } else if (diff < 0) {
+          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-emerald';
+          this.dom.weightChangeBadge.textContent = `${diff} kg`;
+        } else {
+          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-muted';
+          this.dom.weightChangeBadge.textContent = 'Không đổi';
+        }
+      }
+
+      if (this.dom.weightChangeText) {
+        const signText = diff > 0 ? `Tăng +${diff} kg` : diff < 0 ? `Giảm ${Math.abs(diff)} kg` : 'Giữ nguyên';
+        this.dom.weightChangeText.textContent = `${signText} so với lần trước (${previous.date})`;
+      }
+    } else {
+      if (this.dom.weightChangeBadge) {
+        this.dom.weightChangeBadge.className = 'glass-badge glass-badge-emerald';
+        this.dom.weightChangeBadge.textContent = 'Bản ghi đầu';
+      }
+      if (this.dom.weightChangeText) {
+        this.dom.weightChangeText.textContent = 'Đây là bản ghi thể trọng đầu tiên';
+      }
+    }
+  },
+
+  renderGoalProgress(profile, weightLogs, currentWeight, targetWeight) {
+    // Initial weight is the first recorded weight entry or profile's starting weight
+    let initialWeight = currentWeight;
+    if (weightLogs && weightLogs.length > 0) {
+      const sorted = [...weightLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+      initialWeight = Number(sorted[0].weight);
+    }
+
+    if (this.dom.goalInitialVal) this.dom.goalInitialVal.textContent = initialWeight ? `${initialWeight} kg` : '-- kg';
+    if (this.dom.goalCurrentVal) this.dom.goalCurrentVal.textContent = currentWeight ? `${currentWeight} kg` : '-- kg';
+    if (this.dom.goalTargetVal) this.dom.goalTargetVal.textContent = targetWeight ? `${targetWeight} kg` : '-- kg';
+
+    if (!window.HealthCalculator || !currentWeight || !initialWeight || !targetWeight) {
+      if (this.dom.goalPercentBadge) this.dom.goalPercentBadge.textContent = '0%';
+      if (this.dom.goalBarFill) this.dom.goalBarFill.style.width = '0%';
+      if (this.dom.goalStatusDesc) this.dom.goalStatusDesc.textContent = 'Chưa đủ dữ liệu để tính tiến độ';
+      return;
+    }
+
+    const progress = window.HealthCalculator.calculateGoalProgress(initialWeight, currentWeight, targetWeight);
+
+    if (this.dom.goalPercentBadge) {
+      this.dom.goalPercentBadge.textContent = `${progress.percent}%`;
+      this.dom.goalPercentBadge.className = progress.isCompleted ? 'glass-badge glass-badge-emerald' : 'glass-badge glass-badge-cyan';
+    }
+    if (this.dom.goalBarFill) {
+      this.dom.goalBarFill.style.width = `${progress.percent}%`;
+    }
+    if (this.dom.goalStatusDesc) {
+      this.dom.goalStatusDesc.textContent = progress.statusText;
+    }
+    if (this.dom.goalRemainingDiff) {
+      this.dom.goalRemainingDiff.textContent = progress.isCompleted ? 'Hoàn thành!' : `Còn ${progress.remainingDiff} kg`;
+    }
+  },
+
+  renderHealthMetrics(profile) {
+    // 1. Water
+    const waterTarget = Number(profile.waterTarget) || 3000;
+    const currentWater = window.storageService ? window.storageService.getWater() : 0;
+    const waterPercent = Math.min(100, Math.round((currentWater / waterTarget) * 100));
+
+    if (this.dom.waterVal) {
+      this.dom.waterVal.textContent = `${currentWater.toLocaleString('vi-VN')} / ${waterTarget.toLocaleString('vi-VN')} ml (${waterPercent}%)`;
+    }
+    if (this.dom.waterProgress) {
+      this.dom.waterProgress.style.width = `${waterPercent}%`;
+    }
+
+    // 2. Calories
+    const calorieTarget = Number(profile.targetCalories) || 2600;
+    const todayDate = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    const dayTotals = window.storageService ? window.storageService.calculateDayTotals(todayDate) : { calories: 0 };
+    const consumedCalories = Math.round(dayTotals.calories);
+    const caloriePercent = Math.min(100, Math.round((consumedCalories / calorieTarget) * 100));
+
+    if (this.dom.caloriesVal) {
+      this.dom.caloriesVal.textContent = `${consumedCalories.toLocaleString('vi-VN')} / ${calorieTarget.toLocaleString('vi-VN')} kcal (${caloriePercent}%)`;
+    }
+    if (this.dom.caloriesProgress) {
+      this.dom.caloriesProgress.style.width = `${caloriePercent}%`;
+    }
+  },
+
+  renderChart() {
+    if (!window.HealthDashboardChart) return;
+    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
+    const weightLogs = window.storageService ? window.storageService.getWeightLogs() : [];
+    const targetWeight = Number(profile.targetWeight) || null;
+
+    HealthDashboardChart.init('health-weight-canvas', 'health-weight-tooltip', targetWeight);
+    HealthDashboardChart.render(weightLogs, this.currentRange);
+  },
+
+  renderRecentRecords(weightLogs, height) {
+    if (!this.dom.recentTbody) return;
+
+    if (!weightLogs || weightLogs.length === 0) {
+      this.dom.recentTbody.innerHTML = '';
+      if (this.dom.recentEmpty) this.dom.recentEmpty.style.display = 'block';
+      return;
+    }
+
+    if (this.dom.recentEmpty) this.dom.recentEmpty.style.display = 'none';
+
+    // Sort descending by date (most recent first) and take top 8
+    const sortedDesc = [...weightLogs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+
+    const rowsHtml = sortedDesc.map((entry) => {
+      let bmiBadgeHtml = '<span class="glass-badge glass-badge-muted">--</span>';
+      if (height && height > 0 && window.HealthCalculator) {
+        const bmiRes = window.HealthCalculator.calculateBMI(entry.weight, height);
+        if (bmiRes && bmiRes.bmi) {
+          bmiBadgeHtml = `<span class="glass-badge ${bmiRes.colorClass}">${bmiRes.bmi} (${bmiRes.category})</span>`;
+        }
+      }
+
+      const noteText = entry.note ? entry.note : '<span style="color: var(--color-text-muted); font-style: italic;">Không có ghi chú</span>';
+
+      return `
+        <tr>
+          <td style="font-weight: 600; color: var(--color-primary, #173F35); white-space: nowrap;">
+            📅 ${entry.date}
+          </td>
+          <td style="font-weight: 700;">
+            ${Number(entry.weight).toFixed(1)} kg
+          </td>
+          <td>
+            ${bmiBadgeHtml}
+          </td>
+          <td style="color: var(--color-text-secondary, #63756B); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${noteText}
+          </td>
+        </tr>
+      `;
+    });
+
+    this.dom.recentTbody.innerHTML = rowsHtml.join('');
+  }
+};
+
+window.HealthDashboardModule = HealthDashboardModule;
