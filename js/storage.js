@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FitVN Tracker - LocalStorage Service Module
  * Handles safe data persistence, schema validation, and seeding default state.
  */
@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   USER_PROFILE: 'fitvn_user_profile',
   FOOD_LOGS: 'fitvn_food_logs',
   WEIGHT_LOGS: 'fitvn_weight_logs',
+  WORKOUT_LOGS: 'fitvn_workout_logs',
   SETTINGS: 'fitvn_settings',
   CUSTOM_FOODS: 'fitvn_custom_foods',
   WATER_LOGS: 'fitvn_water_logs',
@@ -93,6 +94,112 @@ const DEFAULT_FOOD_LOGS = [
     servingQty: 1,
     time: '16:00',
     date: getTodayDateString()
+  }
+];
+
+// Rich 14-day history for realistic 7-Day Moving Average & Muscle measurements
+const DEFAULT_WEIGHT_LOGS = [
+  { id: 'wt-1', date: '2026-10-07', weight: 71.2, bodyFat: 14.8, note: 'Bụng đói sáng sớm', measurements: { chest: 101, waist: 77.5, arm: 36.5, thigh: 57.0 } },
+  { id: 'wt-2', date: '2026-10-08', weight: 71.5, bodyFat: 14.7, note: 'Sau ngày nạp carb cao' },
+  { id: 'wt-3', date: '2026-10-09', weight: 71.3, bodyFat: 14.7, note: 'Tập ngực vai' },
+  { id: 'wt-4', date: '2026-10-10', weight: 71.8, bodyFat: 14.6, note: 'Giữ nước nhẹ do ăn lẩu' },
+  { id: 'wt-5', date: '2026-10-11', weight: 71.4, bodyFat: 14.6, note: 'Nước tiểu trong, đủ nước' },
+  { id: 'wt-6', date: '2026-10-12', weight: 71.6, bodyFat: 14.5, note: 'Khỏe khoắn' },
+  { id: 'wt-7', date: '2026-10-13', weight: 71.9, bodyFat: 14.5, note: 'Tăng tạ buổi tập chân' },
+  { id: 'wt-8', date: '2026-10-14', weight: 71.8, bodyFat: 14.4, note: 'Bụng đói buổi sáng', measurements: { chest: 101.5, waist: 77.2, arm: 37.0, thigh: 57.5 } },
+  { id: 'wt-9', date: '2026-10-15', weight: 72.1, bodyFat: 14.4, note: 'Ăn thêm bữa phụ' },
+  { id: 'wt-10', date: '2026-10-16', weight: 72.0, bodyFat: 14.3, note: 'Sau buổi tập lưng xô' },
+  { id: 'wt-11', date: '2026-10-17', weight: 72.4, bodyFat: 14.3, note: 'Cơ bắp căng tràn pump' },
+  { id: 'wt-12', date: '2026-10-18', weight: 72.2, bodyFat: 14.2, note: 'Khỏe khoắn, đủ nước' },
+  { id: 'wt-13', date: '2026-10-19', weight: 72.3, bodyFat: 14.2, note: 'Ngủ đủ 8 tiếng' },
+  { id: 'wt-14', date: '2026-10-20', weight: 72.5, bodyFat: 14.1, note: 'Tăng cơ tốt, chuẩn Lean Bulk', measurements: { chest: 102.5, waist: 77.0, arm: 37.5, thigh: 58.0 } }
+];
+
+const DEFAULT_WORKOUT_LOGS = [
+  {
+    id: 'wo-1',
+    userId: 'default-user',
+    title: 'Đẩy ngực & Vai trước (Push Day)',
+    activityType: 'gym',
+    workoutDate: '2026-10-17',
+    startTime: '17:30',
+    endTime: '18:45',
+    durationMinutes: 75,
+    intensity: 'high',
+    distanceKm: null,
+    steps: null,
+    notes: 'Tăng tạ Incline Dumbbell Press lên 28kg/bên. Pump cơ cực tốt.',
+    feeling: 'great',
+    createdAt: '2026-10-17T11:45:00.000Z',
+    updatedAt: '2026-10-17T11:45:00.000Z'
+  },
+  {
+    id: 'wo-2',
+    userId: 'default-user',
+    title: 'Kéo lưng xô & Tay trước (Pull Day)',
+    activityType: 'gym',
+    workoutDate: '2026-10-18',
+    startTime: '18:00',
+    endTime: '19:10',
+    durationMinutes: 70,
+    intensity: 'high',
+    distanceKm: null,
+    steps: null,
+    notes: 'Deadlift 4 hiệp x 8 reps 110kg. Lat pulldown kiểm soát eccentric.',
+    feeling: 'good',
+    createdAt: '2026-10-18T12:10:00.000Z',
+    updatedAt: '2026-10-18T12:10:00.000Z'
+  },
+  {
+    id: 'wo-3',
+    userId: 'default-user',
+    title: 'Chạy bộ phục hồi Zone 2 công viên',
+    activityType: 'running',
+    workoutDate: '2026-10-19',
+    startTime: '06:15',
+    endTime: '07:00',
+    durationMinutes: 45,
+    intensity: 'medium',
+    distanceKm: 5.2,
+    steps: 6400,
+    notes: 'Giữ nhịp tim ổn định 135-140 bpm, hơi thở đều.',
+    feeling: 'great',
+    createdAt: '2026-10-19T00:05:00.000Z',
+    updatedAt: '2026-10-19T00:05:00.000Z'
+  },
+  {
+    id: 'wo-4',
+    userId: 'default-user',
+    title: 'Tập chân & Bụng (Leg Day)',
+    activityType: 'gym',
+    workoutDate: '2026-10-20',
+    startTime: '17:30',
+    endTime: '18:35',
+    durationMinutes: 65,
+    intensity: 'high',
+    distanceKm: null,
+    steps: null,
+    notes: 'Barbell Squat 95kg 4x6, Leg Press căng cơ đùi trước.',
+    feeling: 'tired',
+    createdAt: '2026-10-20T11:35:00.000Z',
+    updatedAt: '2026-10-20T11:35:00.000Z'
+  },
+  {
+    id: 'wo-5',
+    userId: 'default-user',
+    title: 'Yoga giãn cơ & Thở sâu phục hồi',
+    activityType: 'yoga',
+    workoutDate: '2026-10-21',
+    startTime: '20:30',
+    endTime: '21:10',
+    durationMinutes: 40,
+    intensity: 'low',
+    distanceKm: null,
+    steps: null,
+    notes: 'Giãn cơ hông và lưng dưới sau ngày tập chân.',
+    feeling: 'great',
+    createdAt: '2026-10-21T14:10:00.000Z',
+    updatedAt: '2026-10-21T14:10:00.000Z'
   }
 ];
 
@@ -371,6 +478,80 @@ const storageService = {
   },
 
   /**
+   * WORKOUT JOURNAL CRUD METHODS
+   */
+  getWorkoutLogs() {
+    let logs = this.get(STORAGE_KEYS.WORKOUT_LOGS);
+    if (!logs) {
+      logs = DEFAULT_WORKOUT_LOGS;
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, logs);
+    }
+    return logs;
+  },
+
+  addWorkoutLog(workoutData) {
+    const logs = this.getWorkoutLogs();
+    const currentUser = this.getCurrentUser();
+    const nowIso = new Date().toISOString();
+
+    const newLog = {
+      id: workoutData.id || `wo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: currentUser ? currentUser.id : 'default-user',
+      title: (workoutData.title || '').trim() || 'Buổi tập luyện',
+      activityType: workoutData.activityType || 'gym',
+      workoutDate: workoutData.workoutDate || getTodayDateString(),
+      startTime: workoutData.startTime || '',
+      endTime: workoutData.endTime || '',
+      durationMinutes: Math.max(1, parseInt(workoutData.durationMinutes, 10) || 30),
+      intensity: workoutData.intensity || 'medium',
+      distanceKm: workoutData.distanceKm !== null && workoutData.distanceKm !== '' ? parseFloat(Number(workoutData.distanceKm).toFixed(2)) : null,
+      steps: workoutData.steps ? parseInt(workoutData.steps, 10) : null,
+      notes: (workoutData.notes || '').trim(),
+      feeling: workoutData.feeling || 'good',
+      createdAt: workoutData.createdAt || nowIso,
+      updatedAt: nowIso
+    };
+
+    logs.unshift(newLog);
+    this.set(STORAGE_KEYS.WORKOUT_LOGS, logs);
+    return newLog;
+  },
+
+  updateWorkoutLog(id, updatedData) {
+    const logs = this.getWorkoutLogs();
+    const index = logs.findIndex(item => item.id === id);
+    if (index === -1) return null;
+
+    const existing = logs[index];
+    const nowIso = new Date().toISOString();
+
+    const updated = {
+      ...existing,
+      ...updatedData,
+      id: existing.id, // Immutable ID
+      userId: existing.userId,
+      durationMinutes: Math.max(1, parseInt(updatedData.durationMinutes, 10) || existing.durationMinutes),
+      distanceKm: updatedData.distanceKm !== null && updatedData.distanceKm !== '' ? parseFloat(Number(updatedData.distanceKm).toFixed(2)) : null,
+      steps: updatedData.steps ? parseInt(updatedData.steps, 10) : null,
+      updatedAt: nowIso
+    };
+
+    logs[index] = updated;
+    this.set(STORAGE_KEYS.WORKOUT_LOGS, logs);
+    return updated;
+  },
+
+  deleteWorkoutLog(id) {
+    const logs = this.getWorkoutLogs();
+    const filtered = logs.filter(item => item.id !== id);
+    if (filtered.length !== logs.length) {
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, filtered);
+      return true;
+    }
+    return false;
+  },
+
+  /**
    * AUTHENTICATION & USER MANAGEMENT
    */
   getUsers() {
@@ -566,6 +747,7 @@ const storageService = {
       this.set(STORAGE_KEYS.USER_PROFILE, DEFAULT_PROFILE);
       this.set(STORAGE_KEYS.FOOD_LOGS, DEFAULT_FOOD_LOGS);
       this.set(STORAGE_KEYS.WEIGHT_LOGS, DEFAULT_WEIGHT_LOGS);
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, DEFAULT_WORKOUT_LOGS);
       this.set(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
       this.set(STORAGE_KEYS.CUSTOM_FOODS, []);
       this.set(STORAGE_KEYS.WATER_LOGS, {});

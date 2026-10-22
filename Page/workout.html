@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#F7F6F0">
+  <meta name="description" content="Nhật Ký Tập Luyện Thể Chất - FitVN Tracker">
+  <title>Nhật Ký Tập Luyện - FitVN Tracker</title>
+
+  <!-- Google Font Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/glass.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="theme-porcelain">
+
+  <div id="app-layout">
+    <!-- NAVIGATION BAR -->
+    <nav class="app-navigation glass-nav" id="app-nav" aria-label="Main Navigation">
+      <div class="nav-brand-desktop">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">FitVN Tracker</span>
+          <span class="brand-sub">Gym & Nutrition</span>
+        </div>
+      </div>
+
+      <ul class="nav-list" role="tablist">
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link" data-page="home">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="9" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="5" rx="1.5"/>
+              <rect x="14" y="12" width="7" height="9" rx="1.5"/>
+              <rect x="3" y="16" width="7" height="5" rx="1.5"/>
+            </svg>
+            <span class="nav-label">Trang Chủ</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="workout.html" class="nav-link active" data-page="workout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6.5 6.5h11M6.5 17.5h11M6.5 12h11M4 3v18M20 3v18"/>
+            </svg>
+            <span class="nav-label">Tập Luyện</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="food-log.html" class="nav-link" data-page="food">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+              <line x1="6" y1="1" x2="6" y2="4"/>
+              <line x1="10" y1="1" x2="10" y2="4"/>
+              <line x1="14" y1="1" x2="14" y2="4"/>
+            </svg>
+            <span class="nav-label">Nhật Ký</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="food-search.html" class="nav-link" data-page="food-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span class="nav-label">Tra Cứu</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="weight.html" class="nav-link" data-page="weight">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
+            </svg>
+            <span class="nav-label">Cân Nặng</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span class="nav-label">Cá Nhân</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Desktop Sidebar User Snippet -->
+      <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
+        <div class="avatar-pill">VN</div>
+        <div class="user-info-snippet">
+          <span class="user-name">Người dùng FitVN</span>
+          <span class="user-goal-tag">Đang tải hồ sơ...</span>
+        </div>
+      </a>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <header class="app-header glass-header">
+        <div class="header-left">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+            </svg>
+          </div>
+          <span class="brand-title">FitVN Tracker</span>
+        </div>
+        <div class="header-center">
+          <h1 class="header-tab-title" id="header-title">Nhật Ký Tập Luyện</h1>
+          <span class="header-date-badge" id="header-date">Hôm nay</span>
+        </div>
+        <div class="header-right">
+          <a href="auth.html" class="avatar-pill" title="Hồ sơ tài khoản">VN</a>
+        </div>
+      </header>
+
+      <main class="main-viewport">
+        <section class="tab-content active" id="tab-workout">
+          
+          <!-- 3.1. Page Header Toolbar: Add Workout & Quick Time Range Filters -->
+          <div class="section-header" style="flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+            <div>
+              <h2 class="section-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #173F35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6.5 6.5h11M6.5 17.5h11M6.5 12h11M4 3v18M20 3v18"/>
+                </svg>
+                <span>Lịch Sử Tập Luyện & Hoạt Động</span>
+              </h2>
+              <p class="section-subtitle">Ghi lại hoạt động và theo dõi thói quen rèn luyện thể chất</p>
+            </div>
+
+            <button type="button" class="glass-btn glass-btn-primary" id="btn-open-create-workout">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Thêm Buổi Tập Mới
+            </button>
+          </div>
+
+          <!-- Quick Time Range Pills -->
+          <div class="glass-card stat-card" style="padding: 10px 16px; margin-bottom: var(--spacing-md); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
+            <div class="progress-time-pills" role="group" aria-label="Khoảng thời gian thống kê">
+              <button type="button" class="progress-pill-btn" data-workout-range="7d">7 Ngày</button>
+              <button type="button" class="progress-pill-btn active" data-workout-range="30d">30 Ngày</button>
+              <button type="button" class="progress-pill-btn" data-workout-range="90d">3 Tháng</button>
+              <button type="button" class="progress-pill-btn" data-workout-range="180d">6 Tháng</button>
+              <button type="button" class="progress-pill-btn" data-workout-range="all">Tất Cả</button>
+            </div>
+
+            <div class="period-date-range-badge" id="wo-range-dates-badge">
+              <span>📅 Đang hiển thị: <strong id="wo-range-dates-text">30 ngày qua</strong></span>
+            </div>
+          </div>
+
+          <!-- 3.2. Workout Summary Cards (4 Core Cards) -->
+          <div class="grid-cards grid-cards-4">
+            <!-- Card 1: Total Sessions -->
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>TỔNG SỐ BUỔI TẬP</span>
+                <span class="glass-badge glass-badge-emerald" id="wo-stat-sessions-badge">Tần suất</span>
+              </div>
+              <div class="stat-value" id="wo-stat-sessions">0 <span class="stat-unit">buổi</span></div>
+              <div style="font-size: 0.78rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;" id="wo-stat-sessions-sub">
+                Trong khoảng thời gian chọn
+              </div>
+            </div>
+
+            <!-- Card 2: Total Duration -->
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>TỔNG THỜI GIAN</span>
+                <span class="glass-badge glass-badge-cyan">Tích lũy</span>
+              </div>
+              <div class="stat-value" id="wo-stat-duration">0 <span class="stat-unit">phút</span></div>
+              <div style="font-size: 0.78rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;" id="wo-stat-duration-sub">
+                Thời lượng vận động
+              </div>
+            </div>
+
+            <!-- Card 3: Avg Duration -->
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>THỜI LƯỢNG TRUNG BÌNH</span>
+                <span class="glass-badge glass-badge-emerald">Bình quân</span>
+              </div>
+              <div class="stat-value" id="wo-stat-avg">0 <span class="stat-unit">phút/buổi</span></div>
+              <div style="font-size: 0.78rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;">
+                Mỗi buổi rèn luyện
+              </div>
+            </div>
+
+            <!-- Card 4: Active Days -->
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>SỐ NGÀY TẬP THỰC TẾ</span>
+                <span class="glass-badge glass-badge-cyan">Kỷ luật</span>
+              </div>
+              <div class="stat-value" id="wo-stat-days">0 <span class="stat-unit">ngày</span></div>
+              <div style="font-size: 0.78rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;" id="wo-stat-distance-extra">
+                Ngày có phát sinh bài tập
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.7. Workout Statistics Chart -->
+          <div class="glass-card chart-container-card" style="margin-top: var(--spacing-md);">
+            <div class="chart-header-row" style="flex-wrap: wrap; gap: 8px;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary, #173F35); display: flex; align-items: center; gap: 8px;">
+                  <span>📊</span>
+                  <span>Diễn Biến Thời Lượng Tập Luyện (Workout Duration)</span>
+                </h3>
+                <p style="font-size: 0.78rem; color: var(--color-text-secondary, #63756B); margin-top: 2px;">
+                  Tổng số phút tập luyện theo từng ngày trong chu kỳ lọc
+                </p>
+              </div>
+            </div>
+
+            <div class="chart-viewport" style="margin-top: 10px;">
+              <canvas id="workout-chart-canvas"></canvas>
+              <div class="canvas-tooltip" id="workout-chart-tooltip"></div>
+            </div>
+          </div>
+
+          <!-- 3.6. Workout Filters & Search Row -->
+          <div class="glass-card stat-card" style="margin-top: var(--spacing-md); padding: 14px 18px;">
+            <div class="workout-filters-row">
+              <!-- Search box -->
+              <div class="workout-search-wrap">
+                <svg class="workout-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="wo-search-input" class="workout-search-input" placeholder="Tìm theo tên buổi tập, bài tập hoặc ghi chú...">
+              </div>
+
+              <!-- Activity Type Filter -->
+              <select id="wo-filter-type" class="workout-filter-select" aria-label="Lọc theo loại hình">
+                <option value="all">Tất cả loại hình</option>
+                <option value="gym">🏋️‍♂️ Tập Gym</option>
+                <option value="running">🏃‍♂️ Chạy bộ</option>
+                <option value="walking">🚶‍♂️ Đi bộ</option>
+                <option value="cycling">🚴‍♂️ Đạp xe</option>
+                <option value="strength">💪 Tập sức mạnh</option>
+                <option value="yoga">🧘‍♀️ Yoga</option>
+                <option value="swimming">🏊‍♂️ Bơi lội</option>
+                <option value="sports">⚽ Thể thao</option>
+                <option value="other">⚡ Khác</option>
+              </select>
+
+              <!-- Intensity Filter -->
+              <select id="wo-filter-intensity" class="workout-filter-select" aria-label="Lọc theo cường độ">
+                <option value="all">Tất cả cường độ</option>
+                <option value="low">Nhẹ nhàng</option>
+                <option value="medium">Vừa phải</option>
+                <option value="high">Cường độ cao</option>
+              </select>
+
+              <!-- Reset Filters Button -->
+              <button type="button" class="btn-workout-action" id="btn-reset-filters" title="Xóa các bộ lọc">
+                ↺ Đặt lại
+              </button>
+            </div>
+
+            <!-- 3.3. Workout Journal List Container -->
+            <div style="display: flex; flex-direction: column; gap: 10px;" id="wo-list-container">
+              <!-- Dynamically populated via WorkoutJournalModule -->
+            </div>
+
+            <!-- Empty List State -->
+            <div id="wo-empty-state" style="display: none; padding: 2rem; text-align: center; color: var(--color-text-muted, #829087);">
+              <div style="font-size: 2.2rem; margin-bottom: 8px;">🏋️‍♂️</div>
+              <h4 style="margin: 0 0 4px 0; color: var(--color-text, #202B28); font-size: 1rem;">Chưa có nhật ký buổi tập nào</h4>
+              <p style="margin: 0; font-size: 0.84rem;">Nhấn nút <strong>"Thêm Buổi Tập Mới"</strong> phía trên để ghi chép lại hoạt động đầu tiên của bạn.</p>
+            </div>
+
+            <!-- Empty Filter State -->
+            <div id="wo-empty-filter-state" style="display: none; padding: 2rem; text-align: center; color: var(--color-text-muted, #829087);">
+              <div style="font-size: 2rem; margin-bottom: 6px;">🔍</div>
+              <p style="margin: 0; font-size: 0.88rem;">Không tìm thấy buổi tập nào khớp với tiêu chí tìm kiếm và bộ lọc hiện tại.</p>
+              <button type="button" class="glass-btn" id="btn-clear-empty-filter" style="margin-top: 10px; font-size: 0.8rem;">
+                Xóa Bộ Lọc
+              </button>
+            </div>
+
+            <!-- Pagination bar -->
+            <div class="table-pagination-controls" id="wo-pagination-bar" style="margin-top: 1.25rem;">
+              <span id="wo-page-info">Trang 1 / 1</span>
+              <div class="page-btn-group">
+                <button type="button" class="page-btn" id="wo-btn-page-prev" disabled>&larr; Trang trước</button>
+                <button type="button" class="page-btn" id="wo-btn-page-next" disabled>Trang sau &rarr;</button>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT WORKOUT FORM -->
+  <div class="glass-modal-backdrop" id="wo-modal-form" role="dialog" aria-modal="true" aria-labelledby="wo-modal-form-title" style="display: none;">
+    <div class="glass-modal-container" style="max-width: 540px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title" id="wo-modal-form-title">Ghi Nhận Buổi Tập</h3>
+          <p class="modal-subtitle">Ghi chép chi tiết thời lượng, bài tập và cảm nhận rèn luyện</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="wo-modal-form-close" aria-label="Đóng">&times;</button>
+      </div>
+
+      <form id="form-workout-entry" novalidate>
+        <input type="hidden" id="wo-input-id" value="">
+
+        <!-- Title -->
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="wo-input-title" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+            Tên buổi tập <span style="color: var(--color-danger, #B83E42);">*</span>
+          </label>
+          <input type="text" id="wo-input-title" class="form-control" placeholder="Ví dụ: Đẩy ngực vai (Push Day), Chạy bộ Zone 2..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+          <div class="form-invalid-feedback" id="feedback-wo-title">Vui lòng nhập tên buổi tập.</div>
+        </div>
+
+        <!-- Activity Type & Intensity (2 cols) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label for="wo-input-type" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Loại hình <span style="color: var(--color-danger, #B83E42);">*</span>
+            </label>
+            <select id="wo-input-type" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+              <option value="gym">🏋️‍♂️ Tập Gym</option>
+              <option value="running">🏃‍♂️ Chạy bộ</option>
+              <option value="walking">🚶‍♂️ Đi bộ</option>
+              <option value="cycling">🚴‍♂️ Đạp xe</option>
+              <option value="strength">💪 Tập sức mạnh</option>
+              <option value="yoga">🧘‍♀️ Yoga</option>
+              <option value="swimming">🏊‍♂️ Bơi lội</option>
+              <option value="sports">⚽ Thể thao</option>
+              <option value="other">⚡ Khác</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="wo-input-intensity" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Cường độ
+            </label>
+            <select id="wo-input-intensity" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+              <option value="medium">Trung bình</option>
+              <option value="high">Cường độ cao</option>
+              <option value="low">Nhẹ nhàng</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Date & Duration (2 cols) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label for="wo-input-date" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Ngày tập <span style="color: var(--color-danger, #B83E42);">*</span>
+            </label>
+            <input type="date" id="wo-input-date" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+            <div class="form-invalid-feedback" id="feedback-wo-date">Ngày tập không hợp lệ.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="wo-input-duration" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Thời lượng (phút) <span style="color: var(--color-danger, #B83E42);">*</span>
+            </label>
+            <input type="number" min="1" max="720" id="wo-input-duration" class="form-control" placeholder="Ví dụ: 60" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+            <div class="form-invalid-feedback" id="feedback-wo-duration">Thời lượng phải lớn hơn 0 và dưới 720 phút.</div>
+          </div>
+        </div>
+
+        <!-- Start Time & End Time (Optional, 2 cols) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label for="wo-input-start-time" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Giờ bắt đầu
+            </label>
+            <input type="time" id="wo-input-start-time" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+          </div>
+
+          <div class="form-group">
+            <label for="wo-input-end-time" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Giờ kết thúc
+            </label>
+            <input type="time" id="wo-input-end-time" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <div class="form-invalid-feedback" id="feedback-wo-time">Giờ kết thúc phải sau giờ bắt đầu.</div>
+          </div>
+        </div>
+
+        <!-- Distance & Steps (Optional, 2 cols) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label for="wo-input-distance" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Quãng đường (km)
+            </label>
+            <input type="number" step="0.01" min="0" id="wo-input-distance" class="form-control" placeholder="Ví dụ: 5.2" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <div class="form-invalid-feedback" id="feedback-wo-distance">Quãng đường không thể âm.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="wo-input-steps" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+              Số bước chân
+            </label>
+            <input type="number" min="0" id="wo-input-steps" class="form-control" placeholder="Ví dụ: 6400" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <div class="form-invalid-feedback" id="feedback-wo-steps">Số bước chân không thể âm.</div>
+          </div>
+        </div>
+
+        <!-- Feeling -->
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="wo-input-feeling" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+            Cảm nhận sau buổi tập
+          </label>
+          <select id="wo-input-feeling" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <option value="great">🔥 Tuyệt vời, tràn đầy năng lượng</option>
+            <option value="good">👍 Khỏe khoắn, đạt chỉ tiêu</option>
+            <option value="tired">🥱 Hơi mệt, căng cơ tốt</option>
+            <option value="exhausted">😵 Kiệt sức, cần nghỉ ngơi phục hồi</option>
+          </select>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="wo-input-notes" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+            Ghi chú buổi tập (tối đa 500 ký tự)
+          </label>
+          <textarea id="wo-input-notes" maxlength="500" rows="3" class="form-control" placeholder="Nhập các bài tập chính, mức tạ, reps/sets hoặc lưu ý thể trạng..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px; resize: vertical;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="glass-btn" id="wo-modal-form-cancel">Hủy</button>
+          <button type="submit" class="glass-btn glass-btn-primary" id="wo-btn-submit-form">Lưu Buổi Tập</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: WORKOUT DETAIL -->
+  <div class="glass-modal-backdrop" id="wo-modal-detail" role="dialog" aria-modal="true" aria-labelledby="wo-detail-title" style="display: none;">
+    <div class="glass-modal-container" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 class="modal-title" id="wo-detail-title">Chi Tiết Buổi Tập</h3>
+          <p class="modal-subtitle" id="wo-detail-subtitle">Thời gian và thông số bài tập</p>
+        </div>
+        <button type="button" class="modal-close-btn" id="wo-modal-detail-close" aria-label="Đóng">&times;</button>
+      </div>
+
+      <div id="wo-detail-content" style="display: flex; flex-direction: column; gap: 12px; font-size: 0.88rem;">
+        <!-- Dynamically injected detail items -->
+      </div>
+
+      <div style="display: flex; justify-content: space-between; margin-top: 1.25rem; border-top: 1px solid var(--color-border); padding-top: 12px;">
+        <button type="button" class="btn-workout-action text-danger" id="wo-detail-btn-delete">
+          🗑️ Xóa Buổi Tập
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="glass-btn" id="wo-detail-btn-close">Đóng</button>
+          <button type="button" class="glass-btn glass-btn-primary" id="wo-detail-btn-edit">
+            ✏️ Chỉnh Sửa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM DELETE -->
+  <div class="glass-modal-backdrop" id="wo-modal-confirm-delete" role="dialog" aria-modal="true" aria-labelledby="wo-confirm-delete-title" style="display: none;">
+    <div class="glass-modal-container" style="max-width: 420px; text-align: center;">
+      <div style="font-size: 2.2rem; margin-bottom: 8px;">⚠️</div>
+      <h3 class="modal-title" id="wo-confirm-delete-title" style="margin-bottom: 6px;">Xác Nhận Xóa Buổi Tập</h3>
+      <p style="font-size: 0.85rem; color: var(--color-text-secondary, #63756B); margin: 0 0 16px 0;" id="wo-confirm-delete-msg">
+        Bạn có chắc chắn muốn xóa bản ghi buổi tập này? Thao tác này không thể hoàn tác.
+      </p>
+
+      <div style="display: flex; justify-content: center; gap: 10px;">
+        <button type="button" class="glass-btn" id="wo-btn-cancel-delete">Hủy Bỏ</button>
+        <button type="button" class="glass-btn" style="background: var(--color-danger, #B83E42); color: #fff;" id="wo-btn-confirm-delete">
+          Đồng Ý Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- Pure Vanilla Scripts -->
+  <script src="../js/calculator.js"></script>
+  <script src="../js/chart.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

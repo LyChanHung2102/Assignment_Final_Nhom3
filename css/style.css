@@ -2711,6 +2711,53 @@ body.theme-porcelain #app-layout,
   }
 }
 
+/* ==========================================================================
+   WORKOUT JOURNAL FEATURE STYLES (Jade & Porcelain Theme)
+   ========================================================================== */
+
+/* Workout Card Item */
+.workout-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 1rem 1.25rem;
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  transition: all var(--transition-normal, 250ms ease);
+}
+
+.workout-item-card:hover {
+  border-color: var(--color-border-strong, #BECBC0);
+  box-shadow: var(--shadow-card-hover, 0 10px 30px rgba(23, 63, 53, 0.10));
+}
+
+.workout-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workout-item-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workout-type-icon-pill {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--color-primary-soft, #E5EDE7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.workout-item-titles {
 .onboarding-header {
   text-align: center;
   margin-bottom: var(--spacing-lg, 24px);
@@ -2874,6 +2921,8 @@ body.theme-porcelain #app-layout,
   gap: 2px;
 }
 
+.workout-item-title {
+  font-size: 0.98rem;
 .activity-title,
 .goal-title {
   font-size: 0.95rem;
@@ -2881,6 +2930,68 @@ body.theme-porcelain #app-layout,
   color: var(--color-text, #202B28);
 }
 
+.workout-item-meta {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary, #63756B);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.workout-item-stats-strip {
+  display: flex;
+  gap: 14px;
+  font-size: 0.8rem;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border, #DDE3D9);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.workout-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text-secondary, #63756B);
+}
+
+.workout-stat-pill strong {
+  color: var(--color-primary, #173F35);
+}
+
+/* Intensity Badges */
+.badge-intensity-low {
+  background: #E5F0F4;
+  color: #326B82;
+  border: 1px solid rgba(50, 107, 130, 0.2);
+}
+
+.badge-intensity-medium {
+  background: #FBF0D5;
+  color: #946414;
+  border: 1px solid rgba(148, 100, 20, 0.2);
+}
+
+.badge-intensity-high {
+  background: #FBE9E7;
+  color: #B83E42;
+  border: 1px solid rgba(184, 62, 66, 0.2);
+}
+
+/* Action Button Group */
+.workout-item-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-workout-action {
+  background: transparent;
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-sm, 8px);
+  padding: 5px 9px;
+  font-size: 0.76rem;
 .activity-desc,
 .goal-desc {
   font-size: 0.8rem;
@@ -3093,6 +3204,77 @@ body.theme-porcelain #app-layout,
   transition: all var(--transition-fast, 150ms ease);
 }
 
+.btn-workout-action:hover {
+  background: var(--color-surface-raised, #F0F1E9);
+  color: var(--color-primary, #173F35);
+  border-color: var(--color-border-focus, #397866);
+}
+
+.btn-workout-action.text-danger:hover {
+  background: var(--color-danger-bg, #FBE9E7);
+  color: var(--color-danger, #B83E42);
+  border-color: var(--color-danger, #B83E42);
+}
+
+/* Search and Filter Bar */
+.workout-filters-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--spacing-md, 1rem);
+}
+
+.workout-search-wrap {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.workout-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--color-surface, #FFFEFA);
+  font-family: inherit;
+  color: var(--color-text, #202B28);
+}
+
+.workout-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted, #829087);
+  pointer-events: none;
+}
+
+.workout-filter-select {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--color-surface, #FFFEFA);
+  font-family: inherit;
+  color: var(--color-text, #202B28);
+  font-weight: 500;
+}
+
+.form-invalid-feedback {
+  color: var(--color-danger, #B83E42);
+  font-size: 0.75rem;
+  margin-top: 3px;
+  display: none;
+}
+
+.form-control.is-invalid {
+  border-color: var(--color-danger, #B83E42) !important;
+}
+
+.form-control.is-invalid ~ .form-invalid-feedback {
+  display: block;
 .metric-switch-btn:hover {
   color: var(--color-primary, #173F35);
 }

@@ -230,6 +230,22 @@ const HealthCalculator = {
   },
 
   /**
+   * Calculate Workout Statistics Summary
+   * Calculates total sessions, total duration, average duration, unique active days,
+   * total distance, and total steps without counting duplicate days.
+   * @param {Array} workouts Array of workout objects
+   * @returns {Object}
+   */
+  calculateWorkoutSummary(workouts) {
+    if (!workouts || !Array.isArray(workouts) || workouts.length === 0) {
+      return {
+        totalSessions: 0,
+        totalDurationMinutes: 0,
+        formattedDuration: '0 phút',
+        avgDurationMinutes: 0,
+        activeDaysCount: 0,
+        totalDistanceKm: 0,
+        totalSteps: 0,
    * Calculate Summary Statistics for a set of chronological entries in a selected period
    * @param {Array} entries Sorted array of entries { date, weight, bmi, ... }
    * @param {string} metric 'weight' | 'bmi'
@@ -249,6 +265,50 @@ const HealthCalculator = {
       };
     }
 
+    const totalSessions = workouts.length;
+    let totalMinutes = 0;
+    let totalDistance = 0;
+    let totalSteps = 0;
+    const uniqueDaysSet = new Set();
+
+    workouts.forEach(wo => {
+      const mins = Math.max(0, parseInt(wo.durationMinutes, 10) || 0);
+      totalMinutes += mins;
+
+      if (wo.distanceKm && !isNaN(wo.distanceKm)) {
+        totalDistance += Number(wo.distanceKm);
+      }
+
+      if (wo.steps && !isNaN(wo.steps)) {
+        totalSteps += parseInt(wo.steps, 10);
+      }
+
+      if (wo.workoutDate) {
+        uniqueDaysSet.add(wo.workoutDate);
+      }
+    });
+
+    const avgMinutes = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
+    const activeDaysCount = uniqueDaysSet.size;
+
+    // Format total duration: e.g., "5h 25m" or "45 phút"
+    const hours = Math.floor(totalMinutes / 60);
+    const remainderMinutes = totalMinutes % 60;
+    let formattedDuration = '';
+    if (hours > 0) {
+      formattedDuration = `${hours}h ${remainderMinutes > 0 ? remainderMinutes + 'm' : ''}`.trim();
+    } else {
+      formattedDuration = `${totalMinutes} phút`;
+    }
+
+    return {
+      totalSessions,
+      totalDurationMinutes: totalMinutes,
+      formattedDuration,
+      avgDurationMinutes: avgMinutes,
+      activeDaysCount,
+      totalDistanceKm: parseFloat(totalDistance.toFixed(2)),
+      totalSteps,
     const sorted = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
     const firstVal = Number(sorted[0][metric]);
     const lastVal = Number(sorted[sorted.length - 1][metric]);
@@ -303,6 +363,28 @@ const HealthCalculator = {
   },
 
   /**
+   * Group workouts by date for chart rendering
+   * @param {Array} workouts 
+   * @returns {Array} Array of { date, totalMinutes, sessionCount } sorted ascending
+   */
+  groupWorkoutsByDate(workouts) {
+    if (!workouts || workouts.length === 0) return [];
+
+    const map = new Map();
+    workouts.forEach(wo => {
+      const d = wo.workoutDate;
+      if (!d) return;
+      const mins = Math.max(0, parseInt(wo.durationMinutes, 10) || 0);
+
+      if (!map.has(d)) {
+        map.set(d, { date: d, totalMinutes: 0, sessionCount: 0 });
+      }
+      const item = map.get(d);
+      item.totalMinutes += mins;
+      item.sessionCount += 1;
+    });
+
+    return Array.from(map.values()).sort((a, b) => new Date(a.date) - new Date(b.date));
    * Compare two chronological periods (e.g. Current 30 days vs Previous 30 days)
    * Method: Compares representative values (Average and End-of-period)
    * @param {Array} currentEntries 
