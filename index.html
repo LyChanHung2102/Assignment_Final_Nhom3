@@ -54,6 +54,18 @@
               <path d="M6.5 6.5h11M6.5 17.5h11M6.5 12h11M4 3v18M20 3v18"/>
             </svg>
             <span class="nav-label">Tập Luyện</span>
+          <a href="Page/progress-charts.html" class="nav-link" data-page="progress-charts">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span class="nav-label">Tiến Trình</span>
+          <a href="Page/health-dashboard.html" class="nav-link" data-page="health-dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            <span class="nav-label">Sức Khỏe</span>
           </a>
         </li>
         <li class="nav-item">
@@ -355,6 +367,239 @@
 
   <!-- Toast Notification Container -->
   <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ====================================================================
+       ONBOARDING WIZARD MODAL - First-time User Setup
+       ==================================================================== -->
+  <div class="glass-modal-backdrop" id="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" style="display: none;">
+    <div class="glass-modal-container onboarding-container">
+      <!-- Progress Steps Indicator -->
+      <div class="onboarding-steps">
+        <div class="step-indicator active" data-step="1">
+          <span class="step-number">1</span>
+          <span class="step-label">Thông tin cơ bản</span>
+        </div>
+        <div class="step-indicator" data-step="2">
+          <span class="step-number">2</span>
+          <span class="step-label">Vận động</span>
+        </div>
+        <div class="step-indicator" data-step="3">
+          <span class="step-number">3</span>
+          <span class="step-label">Mục tiêu</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Basic Information -->
+      <div class="onboarding-step active" id="onboarding-step-1">
+        <div class="onboarding-header">
+          <div class="onboarding-icon">👋</div>
+          <h2 id="onboarding-title" class="onboarding-title">Chào mừng đến với FitVN Tracker!</h2>
+          <p class="onboarding-subtitle">Hãy cung cấp thông tin cơ bản để chúng tôi tính toán mục tiêu dinh dưỡng phù hợp nhất cho bạn.</p>
+        </div>
+
+        <form id="onboarding-form-step-1" class="onboarding-form">
+          <div class="form-group">
+            <label class="form-label">Giới tính</label>
+            <div class="gender-selector">
+              <label class="gender-option">
+                <input type="radio" name="onboarding-gender" value="male" checked>
+                <span class="gender-icon">👨</span>
+                <span>Nam</span>
+              </label>
+              <label class="gender-option">
+                <input type="radio" name="onboarding-gender" value="female">
+                <span class="gender-icon">👩</span>
+                <span>Nữ</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="onboarding-age">Tuổi</label>
+              <input type="number" id="onboarding-age" class="glass-input" min="12" max="100" placeholder="24" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="onboarding-height">Chiều cao (cm)</label>
+              <input type="number" id="onboarding-height" class="glass-input" min="100" max="250" placeholder="175" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="onboarding-current-weight">Cân nặng hiện tại (kg)</label>
+              <input type="number" id="onboarding-current-weight" class="glass-input" min="30" max="250" step="0.1" placeholder="72.5" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="onboarding-target-weight">Cân nặng mục tiêu (kg)</label>
+              <input type="number" id="onboarding-target-weight" class="glass-input" min="30" max="250" step="0.1" placeholder="75.0" required>
+            </div>
+          </div>
+        </form>
+
+        <div class="onboarding-actions">
+          <button type="button" class="glass-btn" id="onboarding-skip-btn">Bỏ qua</button>
+          <button type="button" class="glass-btn glass-btn-primary" id="onboarding-next-1">Tiếp tục →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Activity Level -->
+      <div class="onboarding-step" id="onboarding-step-2">
+        <div class="onboarding-header">
+          <div class="onboarding-icon">🏃</div>
+          <h2 class="onboarding-title">Mức độ vận động của bạn?</h2>
+          <p class="onboarding-subtitle">Bạn tập thể dục bao nhiêu buổi trong 1 tuần?</p>
+        </div>
+
+        <div class="activity-options">
+          <label class="activity-option">
+            <input type="radio" name="onboarding-activity" value="0">
+            <div class="activity-card">
+              <div class="activity-icon">🛋️</div>
+              <div class="activity-info">
+                <div class="activity-title">Ít/Không vận động</div>
+                <div class="activity-desc">Không tập luyện hoặc ngồi nhiều</div>
+              </div>
+            </div>
+          </label>
+
+          <label class="activity-option">
+            <input type="radio" name="onboarding-activity" value="1">
+            <div class="activity-card">
+              <div class="activity-icon">🚶</div>
+              <div class="activity-info">
+                <div class="activity-title">Nhẹ</div>
+                <div class="activity-desc">1-2 buổi/tuần</div>
+              </div>
+            </div>
+          </label>
+
+          <label class="activity-option">
+            <input type="radio" name="onboarding-activity" value="3" checked>
+            <div class="activity-card">
+              <div class="activity-icon">🏋️</div>
+              <div class="activity-info">
+                <div class="activity-title">Trung bình</div>
+                <div class="activity-desc">3-5 buổi/tuần</div>
+              </div>
+            </div>
+          </label>
+
+          <label class="activity-option">
+            <input type="radio" name="onboarding-activity" value="6">
+            <div class="activity-card">
+              <div class="activity-icon">💪</div>
+              <div class="activity-info">
+                <div class="activity-title">Năng động</div>
+                <div class="activity-desc">6-7 buổi/tuần</div>
+              </div>
+            </div>
+          </label>
+
+          <label class="activity-option">
+            <input type="radio" name="onboarding-activity" value="8">
+            <div class="activity-card">
+              <div class="activity-icon">🔥</div>
+              <div class="activity-info">
+                <div class="activity-title">Rất nặng</div>
+                <div class="activity-desc">Vận động nặng hàng ngày</div>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="onboarding-actions">
+          <button type="button" class="glass-btn" id="onboarding-back-2">← Quay lại</button>
+          <button type="button" class="glass-btn glass-btn-primary" id="onboarding-next-2">Tiếp tục →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Fitness Goal -->
+      <div class="onboarding-step" id="onboarding-step-3">
+        <div class="onboarding-header">
+          <div class="onboarding-icon">🎯</div>
+          <h2 class="onboarding-title">Mục tiêu thể hình của bạn?</h2>
+          <p class="onboarding-subtitle">Chọn mục tiêu để chúng tôi đề xuất kế hoạch dinh dưỡng phù hợp.</p>
+        </div>
+
+        <div class="goal-options">
+          <label class="goal-option">
+            <input type="radio" name="onboarding-goal" value="cut">
+            <div class="goal-card">
+              <div class="goal-icon">📉</div>
+              <div class="goal-info">
+                <div class="goal-title">Giảm cân</div>
+                <div class="goal-desc">Thâm hụt calo để giảm mỡ thừa</div>
+              </div>
+            </div>
+          </label>
+
+          <label class="goal-option">
+            <input type="radio" name="onboarding-goal" value="maintain" checked>
+            <div class="goal-card">
+              <div class="goal-icon">⚖️</div>
+              <div class="goal-info">
+                <div class="goal-title">Giữ cân</div>
+                <div class="goal-desc">Duy trì vóc dáng hiện tại</div>
+              </div>
+            </div>
+          </label>
+
+          <label class="goal-option">
+            <input type="radio" name="onboarding-goal" value="lean_bulk">
+            <div class="goal-card">
+              <div class="goal-icon">💪</div>
+              <div class="goal-info">
+                <div class="goal-title">Tăng cơ - Tăng cân</div>
+                <div class="goal-desc">Thặng dư calo để xây dựng cơ bắp</div>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="onboarding-summary" id="onboarding-summary" style="display: none;">
+          <div class="summary-card">
+            <h4>📊 Tóm tắt kế hoạch của bạn</h4>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="summary-label">BMR (Cơ bản)</span>
+                <span class="summary-value" id="summary-bmr">-- kcal</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">TDEE (Tổng năng lượng)</span>
+                <span class="summary-value" id="summary-tdee">-- kcal</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Mục tiêu Calo</span>
+                <span class="summary-value highlight" id="summary-calories">-- kcal</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Protein</span>
+                <span class="summary-value" id="summary-protein">-- g</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Carbs</span>
+                <span class="summary-value" id="summary-carbs">-- g</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Fat</span>
+                <span class="summary-value" id="summary-fat">-- g</span>
+              </div>
+            </div>
+            <div class="timeline-info" id="summary-timeline">
+              <span class="timeline-label">⏱️ Dự kiến đạt mục tiêu:</span>
+              <span class="timeline-value">-- tuần (ước tính)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="onboarding-actions">
+          <button type="button" class="glass-btn" id="onboarding-back-3">← Quay lại</button>
+          <button type="button" class="glass-btn glass-btn-primary" id="onboarding-complete">Hoàn tất & Bắt đầu ✨</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Vanilla JavaScript -->
   <script src="js/foodDatabase.js"></script>

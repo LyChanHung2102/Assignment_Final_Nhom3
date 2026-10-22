@@ -264,10 +264,9 @@ const storageService = {
     if (!this.get(STORAGE_KEYS.FOOD_LOGS)) {
       this.set(STORAGE_KEYS.FOOD_LOGS, DEFAULT_FOOD_LOGS);
     }
-    // Check if weight logs is missing or has less than 5 items
-    const existingWeights = this.get(STORAGE_KEYS.WEIGHT_LOGS);
-    if (!existingWeights || existingWeights.length < 5) {
-      this.set(STORAGE_KEYS.WEIGHT_LOGS, DEFAULT_WEIGHT_LOGS);
+    // Initialize empty weight logs array (no default data since it's user-specific)
+    if (!this.get(STORAGE_KEYS.WEIGHT_LOGS)) {
+      this.set(STORAGE_KEYS.WEIGHT_LOGS, []);
     }
     if (!this.get(STORAGE_KEYS.SETTINGS)) {
       this.set(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
@@ -371,9 +370,16 @@ const storageService = {
    * WEIGHT & BODY METRICS METHODS
    */
   getWeightLogs() {
-    const logs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      return [];
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    // Filter logs for current user only
+    const userLogs = allLogs.filter(log => log.userId === currentUser.email);
     // Ensure chronological sort
-    return logs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return userLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
   },
 
   /**
@@ -381,16 +387,23 @@ const storageService = {
    * @param {Object} entry { date, weight, bodyFat, note, measurements }
    */
   addWeightLog(entry) {
-    const logs = this.getWeightLogs();
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      console.warn('Cannot add weight log: No user logged in');
+      return null;
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
     const cleanDate = entry.date || getTodayDateString();
     const cleanWeight = parseFloat(Number(entry.weight).toFixed(1));
     const cleanBodyFat = entry.bodyFat ? parseFloat(Number(entry.bodyFat).toFixed(1)) : null;
 
-    // Check if entry for date exists
-    const existingIndex = logs.findIndex(log => log.date === cleanDate);
+    // Check if entry for date exists for this user
+    const existingIndex = allLogs.findIndex(log => log.date === cleanDate && log.userId === currentUser.email);
 
     const newEntry = {
-      id: existingIndex >= 0 ? logs[existingIndex].id : `wt-${Date.now()}`,
+      id: existingIndex >= 0 ? allLogs[existingIndex].id : `wt-${Date.now()}`,
+      userId: currentUser.email,
       date: cleanDate,
       weight: cleanWeight,
       bodyFat: cleanBodyFat,
@@ -399,13 +412,13 @@ const storageService = {
     };
 
     if (existingIndex >= 0) {
-      logs[existingIndex] = newEntry;
+      allLogs[existingIndex] = newEntry;
     } else {
-      logs.push(newEntry);
+      allLogs.push(newEntry);
     }
 
-    logs.sort((a, b) => new Date(a.date) - new Date(b.date));
-    this.set(STORAGE_KEYS.WEIGHT_LOGS, logs);
+    allLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    this.set(STORAGE_KEYS.WEIGHT_LOGS, allLogs);
 
     // Update current weight in user profile
     const profile = this.get(STORAGE_KEYS.USER_PROFILE, {});
@@ -416,10 +429,16 @@ const storageService = {
   },
 
   removeWeightLog(logId) {
-    const logs = this.getWeightLogs();
-    const filtered = logs.filter(log => log.id !== logId);
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      console.warn('Cannot remove weight log: No user logged in');
+      return false;
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    const filtered = allLogs.filter(log => log.id !== logId || log.userId !== currentUser.email);
     this.set(STORAGE_KEYS.WEIGHT_LOGS, filtered);
-    return filtered.length < logs.length;
+    return filtered.length < allLogs.length;
   },
 
   getLatestWeight() {
@@ -608,15 +627,28 @@ const storageService = {
     if (user.height) profile.height = user.height;
     if (user.weight) {
       profile.currentWeight = user.weight;
-      // also record initial weight if no weight logs exist yet
-      const weightLogs = this.getWeightLogs();
-      if (weightLogs.length === 0) {
-        this.addWeightLog({ date: getTodayDateString(), weight: user.weight, note: 'Khởi tạo tài khoản' });
+      // also record initial weight if no weight logs exist yet for this user
+      const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+      const userLogs = allLogs.filter(log => log.userId === user.email);
+      if (userLogs.length === 0) {
+        // Add initial weight log directly with userId
+        const newEntry = {
+          id: `wt-${Date.now()}`,
+          userId: user.email,
+          date: getTodayDateString(),
+          weight: parseFloat(Number(user.weight).toFixed(1)),
+          bodyFat: null,
+          note: 'Khởi tạo tài khoản',
+          measurements: null
+        };
+        allLogs.push(newEntry);
+        allLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+        this.set(STORAGE_KEYS.WEIGHT_LOGS, allLogs);
       }
     }
     if (user.gender) profile.gender = user.gender;
     if (user.fitnessGoal) profile.fitnessGoal = user.fitnessGoal;
-    
+
     // Estimate target calories
     if (window.calcService && typeof window.calcService.calculateTDEE === 'function') {
       const bmr = window.calcService.calculateBMR(profile.currentWeight, profile.height, profile.age, profile.gender);
