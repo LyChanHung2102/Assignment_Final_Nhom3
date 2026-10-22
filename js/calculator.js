@@ -230,6 +230,132 @@ const HealthCalculator = {
   },
 
   /**
+   * Calculate Summary Statistics for a set of chronological entries in a selected period
+   * @param {Array} entries Sorted array of entries { date, weight, bmi, ... }
+   * @param {string} metric 'weight' | 'bmi'
+   * @returns {Object} { startVal, endVal, diff, percentChange, trend, hasData }
+   */
+  calculatePeriodStats(entries, metric = 'weight') {
+    if (!entries || entries.length === 0) {
+      return {
+        startVal: null,
+        endVal: null,
+        diff: 0,
+        percentChange: 0,
+        trend: 'no_data',
+        trendLabel: 'Chưa có dữ liệu',
+        badgeClass: 'glass-badge-muted',
+        hasData: false
+      };
+    }
+
+    const sorted = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const firstVal = Number(sorted[0][metric]);
+    const lastVal = Number(sorted[sorted.length - 1][metric]);
+
+    if (isNaN(firstVal) || isNaN(lastVal) || sorted.length === 1) {
+      const singleVal = isNaN(lastVal) ? firstVal : lastVal;
+      return {
+        startVal: singleVal,
+        endVal: singleVal,
+        diff: 0,
+        percentChange: 0,
+        trend: 'single',
+        trendLabel: 'Bản ghi duy nhất',
+        badgeClass: 'glass-badge-cyan',
+        hasData: true
+      };
+    }
+
+    const diff = parseFloat((lastVal - firstVal).toFixed(2));
+    let percentChange = 0;
+    if (firstVal > 0) {
+      percentChange = parseFloat(((diff / firstVal) * 100).toFixed(1));
+    }
+
+    let trend = 'stable';
+    let trendLabel = 'Duy trì ổn định';
+    let badgeClass = 'glass-badge-emerald';
+
+    // Threshold of 0.2kg or 0.1 BMI point to avoid declaring noise as significant trend
+    const threshold = metric === 'bmi' ? 0.1 : 0.2;
+
+    if (diff > threshold) {
+      trend = 'increasing';
+      trendLabel = `Tăng +${diff} (${percentChange > 0 ? '+' : ''}${percentChange}%)`;
+      badgeClass = 'glass-badge-cyan';
+    } else if (diff < -threshold) {
+      trend = 'decreasing';
+      trendLabel = `Giảm ${Math.abs(diff)} (${percentChange}%)`;
+      badgeClass = 'glass-badge-emerald';
+    }
+
+    return {
+      startVal: firstVal,
+      endVal: lastVal,
+      diff,
+      percentChange,
+      trend,
+      trendLabel,
+      badgeClass,
+      hasData: true
+    };
+  },
+
+  /**
+   * Compare two chronological periods (e.g. Current 30 days vs Previous 30 days)
+   * Method: Compares representative values (Average and End-of-period)
+   * @param {Array} currentEntries 
+   * @param {Array} previousEntries 
+   * @param {string} metric 'weight' | 'bmi'
+   * @returns {Object}
+   */
+  comparePeriods(currentEntries, previousEntries, metric = 'weight') {
+    if (!currentEntries || currentEntries.length === 0) {
+      return {
+        hasComparison: false,
+        reason: 'Không có dữ liệu trong khoảng thời gian đang chọn.'
+      };
+    }
+
+    if (!previousEntries || previousEntries.length === 0) {
+      return {
+        hasComparison: false,
+        reason: 'Chưa có đủ bản ghi ở giai đoạn liền trước để đối chiếu.'
+      };
+    }
+
+    const getAvg = (list) => {
+      const valid = list.map(item => Number(item[metric])).filter(val => !isNaN(val) && val > 0);
+      if (valid.length === 0) return 0;
+      const sum = valid.reduce((acc, curr) => acc + curr, 0);
+      return parseFloat((sum / valid.length).toFixed(2));
+    };
+
+    const currentAvg = getAvg(currentEntries);
+    const previousAvg = getAvg(previousEntries);
+
+    const diff = parseFloat((currentAvg - previousAvg).toFixed(2));
+    let percentChange = 0;
+    if (previousAvg > 0) {
+      percentChange = parseFloat(((diff / previousAvg) * 100).toFixed(1));
+    }
+
+    let trendDescription = 'Tương đương giai đoạn trước';
+    if (diff > 0.15) {
+      trendDescription = `Tăng cao hơn ${diff} so với chu kỳ trước`;
+    } else if (diff < -0.15) {
+      trendDescription = `Thấp hơn ${Math.abs(diff)} so với chu kỳ trước`;
+    }
+
+    return {
+      hasComparison: true,
+      currentAvg,
+      previousAvg,
+      diff,
+      percentChange,
+      trendDescription
+    };
    * Calculate BMR using Mifflin-St Jeor Equation
    * Formula:
    * - Male: BMR = (10 × weight) + (6.25 × height) - (5 × age) + 5
