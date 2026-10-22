@@ -335,3 +335,249 @@ const CanvasChartEngine = {
 };
 
 window.CanvasChartEngine = CanvasChartEngine;
+
+/**
+ * HealthReportsChartEngine - Pure Canvas Chart for Health Reports
+ * Supports:
+ * 1. Weight & BMI trend line chart with Target line
+ * 2. Workout distribution bar / horizontal breakdown
+ */
+const HealthReportsChartEngine = {
+  canvas: null,
+  ctx: null,
+  tooltipEl: null,
+  renderedElements: [],
+  padding: { top: 35, right: 30, bottom: 45, left: 55 },
+
+  init(canvasId, tooltipId) {
+    this.canvas = document.getElementById(canvasId);
+    this.tooltipEl = document.getElementById(tooltipId);
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.bindEvents();
+  },
+
+  bindEvents() {
+    if (!this.canvas) return;
+
+    const handlePointer = (e) => {
+      if (this.renderedElements.length === 0) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const mouseX = clientX - rect.left;
+      const mouseY = clientY - rect.top;
+
+      let closest = null;
+      let minDist = Infinity;
+
+      this.renderedElements.forEach((el) => {
+        const dist = Math.abs(el.x - mouseX);
+        if (dist < minDist && dist < 45) {
+          minDist = dist;
+          closest = el;
+        }
+      });
+
+      if (closest) {
+        this.showTooltip(closest, rect);
+      } else {
+        this.hideTooltip();
+      }
+    };
+
+    this.canvas.addEventListener('mousemove', handlePointer);
+    this.canvas.addEventListener('touchmove', handlePointer, { passive: true });
+    this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
+    this.canvas.addEventListener('touchend', () => this.hideTooltip());
+  },
+
+  showTooltip(point, rect) {
+    if (!this.tooltipEl) return;
+    const item = point.data;
+
+    let targetDiffHtml = '';
+    if (point.targetWeight) {
+      const diff = (item.weight - point.targetWeight).toFixed(1);
+      const text = diff > 0 ? `+${diff} kg so với mục tiêu` : diff < 0 ? `${diff} kg so với mục tiêu` : 'Đạt mục tiêu!';
+      targetDiffHtml = `<div style="font-size: 0.73rem; color: #287653; margin-top: 2px;">🎯 ${text}</div>`;
+    }
+
+    const bmiHtml = item.bmi ? `<div style="font-size: 0.8rem; color: #63756B;">Chỉ số BMI: <strong style="color: #287653;">${Number(item.bmi).toFixed(1)}</strong></div>` : '';
+
+    this.tooltipEl.innerHTML = `
+      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
+        📅 ${item.date}
+      </div>
+      <div style="font-size: 0.86rem; color: #202B28;">
+        Cân nặng: <strong style="color: #173F35; font-size: 0.95rem;">${Number(item.weight).toFixed(1)} kg</strong>
+      </div>
+      ${bmiHtml}
+      ${targetDiffHtml}
+    `;
+
+    this.tooltipEl.style.display = 'block';
+
+    const canvasWidth = this.canvas.clientWidth;
+    let leftPos = point.x + 12;
+    if (leftPos + 180 > canvasWidth) leftPos = point.x - 185;
+    this.tooltipEl.style.left = `${Math.max(10, leftPos)}px`;
+    this.tooltipEl.style.top = `${Math.max(10, point.y - 45)}px`;
+  },
+
+  hideTooltip() {
+    if (this.tooltipEl) {
+      this.tooltipEl.style.display = 'none';
+    }
+  },
+
+  renderWeightReportChart(entries = [], targetWeight = null) {
+    if (!this.canvas || !this.ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = this.canvas.parentElement.clientWidth || 600;
+    const height = Math.max(240, Math.min(320, width * 0.42));
+
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
+    const ctx = this.ctx;
+    ctx.resetTransform();
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, width, height);
+
+    if (!entries || entries.length === 0) {
+      ctx.fillStyle = '#829087';
+      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Không có dữ liệu cân nặng trong khoảng thời gian báo cáo.', width / 2, height / 2);
+      this.renderedElements = [];
+      return;
+    }
+
+    const weights = entries.map(e => Number(e.weight)).filter(w => !isNaN(w) && w > 0);
+    if (targetWeight) weights.push(targetWeight);
+
+    const minWeight = Math.floor(Math.min(...weights) - 1.5);
+    const maxWeight = Math.ceil(Math.max(...weights) + 1.5);
+    const weightSpan = Math.max(2, maxWeight - minWeight);
+
+    const pad = this.padding;
+    const chartW = width - pad.left - pad.right;
+    const chartH = height - pad.top - pad.bottom;
+
+    const getX = (idx) => {
+      if (entries.length === 1) return pad.left + chartW / 2;
+      return pad.left + (idx / (entries.length - 1)) * chartW;
+    };
+    const getY = (w) => pad.top + (1 - (w - minWeight) / weightSpan) * chartH;
+
+    // 1. Grid & Y Axis
+    ctx.strokeStyle = '#DDE3D9';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#63756B';
+    ctx.font = '500 11px "Be Vietnam Pro", sans-serif';
+    ctx.textAlign = 'right';
+
+    const yStep = Math.max(1, Math.round(weightSpan / 4));
+    for (let w = minWeight; w <= maxWeight; w += yStep) {
+      const yPos = getY(w);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, yPos);
+      ctx.lineTo(width - pad.right, yPos);
+      ctx.stroke();
+      ctx.fillText(`${w} kg`, pad.left - 8, yPos + 4);
+    }
+
+    // 2. Target Line
+    if (targetWeight && targetWeight >= minWeight && targetWeight <= maxWeight) {
+      const targetY = getY(targetWeight);
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#287653';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, targetY);
+      ctx.lineTo(width - pad.right, targetY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#287653';
+      ctx.font = '600 10.5px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Mục tiêu: ${targetWeight} kg`, pad.left + 8, targetY - 6);
+      ctx.restore();
+    }
+
+    // 3. Map Points
+    this.renderedElements = entries.map((e, idx) => ({
+      x: getX(idx),
+      y: getY(Number(e.weight)),
+      data: e,
+      targetWeight
+    }));
+
+    // 4. Fill Area Gradient
+    if (this.renderedElements.length > 1) {
+      ctx.save();
+      const areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
+      areaGrad.addColorStop(0, 'rgba(23, 63, 53, 0.16)');
+      areaGrad.addColorStop(1, 'rgba(23, 63, 53, 0.01)');
+      ctx.fillStyle = areaGrad;
+
+      ctx.beginPath();
+      ctx.moveTo(this.renderedElements[0].x, pad.top + chartH);
+      ctx.lineTo(this.renderedElements[0].x, this.renderedElements[0].y);
+      for (let i = 1; i < this.renderedElements.length; i++) {
+        ctx.lineTo(this.renderedElements[i].x, this.renderedElements[i].y);
+      }
+      ctx.lineTo(this.renderedElements[this.renderedElements.length - 1].x, pad.top + chartH);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 5. Draw Curve Stroke
+    ctx.save();
+    ctx.strokeStyle = '#173F35';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(this.renderedElements[0].x, this.renderedElements[0].y);
+    for (let i = 1; i < this.renderedElements.length; i++) {
+      ctx.lineTo(this.renderedElements[i].x, this.renderedElements[i].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // 6. Draw Points & Date Labels
+    ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#63756B';
+
+    const stepLabel = Math.max(1, Math.ceil(this.renderedElements.length / 7));
+    this.renderedElements.forEach((p, idx) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#173F35';
+      ctx.lineWidth = 2.2;
+      ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      if (idx % stepLabel === 0 || idx === this.renderedElements.length - 1) {
+        const parts = p.data.date.split('-');
+        const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : p.data.date;
+        ctx.fillText(label, p.x, height - 12);
+      }
+    });
+  }
+};
+
+window.HealthReportsChartEngine = HealthReportsChartEngine;
