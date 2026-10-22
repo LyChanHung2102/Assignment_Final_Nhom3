@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    FitVN Tracker - Main Application Stylesheet
    Mobile-First Architecture & Responsive Navigation (Option C)
    ========================================================================== */
@@ -1713,4 +1713,121 @@ body {
   .auth-title {
     font-size: var(--font-size-xl, 1.25rem);
   }
+}
+
+
+/* ==========================================================================
+   FITVN TRACKER - DATA BACKUP & RESTORE MODULE (cai-dat-va-sao-luu-du-lieu)
+   ========================================================================== */
+.backup-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.backup-action-card {
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  transition: all var(--transition-normal);
+}
+
+.backup-action-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--glass-border-hover);
+  transform: translateY(-2px);
+}
+
+.backup-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.backup-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  border: 1px solid var(--glass-border);
+}
+
+.backup-icon-export {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: rgba(0, 240, 255, 0.3);
+  color: var(--accent-cyan);
+}
+
+.backup-icon-import {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--accent-emerald);
+}
+
+.backup-icon-danger {
+  background: rgba(255, 71, 87, 0.1);
+  border-color: rgba(255, 71, 87, 0.3);
+  color: var(--accent-flame);
+}
+
+.backup-card-body h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.backup-card-body p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.glass-btn-emerald {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(6, 182, 212, 0.25) 100%);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: var(--text-primary);
+}
+
+.glass-btn-emerald:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(6, 182, 212, 0.4) 100%);
+  border-color: var(--accent-emerald);
+  box-shadow: var(--glow-emerald);
+}
+
+.glass-btn-danger {
+  background: rgba(255, 71, 87, 0.15);
+  border-color: rgba(255, 71, 87, 0.4);
+  color: var(--accent-flame);
+}
+
+.glass-btn-danger:hover {
+  background: rgba(255, 71, 87, 0.28);
+  border-color: var(--accent-flame);
+  box-shadow: 0 0 16px rgba(255, 71, 87, 0.3);
+}
+
+.danger-zone-card {
+  border: 1px solid rgba(255, 71, 87, 0.25);
+  background: rgba(255, 71, 87, 0.03);
+}
+
+.danger-zone-card:hover {
+  border-color: rgba(255, 71, 87, 0.5);
+}
+
+.modal-confirm-box {
+  max-width: 480px;
+  text-align: center;
+  padding: var(--spacing-xl);
 }

@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#07090e">
-  <meta name="description" content="Cài Đặt Hồ Sơ & Mục Tiêu Thể Hình - FitVN Tracker">
-  <title>Cài Đặt Cá Nhân - FitVN Tracker</title>
+  <meta name="description" content="Cài Đặt Hồ Sơ, Mục Tiêu Thể Hình & Sao Lưu Dữ Liệu - FitVN Tracker">
+  <title>Cài Đặt Cá Nhân & Sao Lưu - FitVN Tracker</title>
 
   <!-- Google Font Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,15 +84,300 @@
         </li>
       </ul>
 
-            <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
+      <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
         <div class="avatar-pill">VN</div>
         <div class="user-info-snippet">
-          <span class="user-name">Người dùng FitVN</span>
-          <span class="user-goal-tag">Đang tải hồ sơ...</span>
+          <span class="user-name">Gymer FitVN</span>
+          <span class="user-goal-tag">Tăng Cơ (Lean Bulk)</span>
         </div>
       </a>
+    </nav>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="content-wrapper">
+      <header class="app-header glass-header">
+        <div class="header-left">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+            </svg>
+          </div>
+          <span class="brand-title">FitVN Tracker</span>
+        </div>
+        <div class="header-center">
+          <h1 class="header-tab-title" id="header-title">Cài Đặt & Sao Lưu</h1>
+          <span class="header-date-badge" id="header-date">Hôm nay</span>
+        </div>
+        <div class="header-right">
+          <div class="avatar-pill" title="Tài khoản gymer">VN</div>
+        </div>
+      </header>
+
+      <main class="main-viewport">
+        <!-- SETTINGS CONTENT -->
+        <section class="tab-content active" id="tab-settings">
+          <div class="section-header">
+            <h2 class="section-title">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Hồ Sơ & Thiết Lập Gymer
+            </h2>
+          </div>
+
+          <div class="grid-cards" style="grid-template-columns: 1fr; gap: var(--spacing-lg);">
+            <!-- FORM 1: PERSONAL & NUTRITION GOALS -->
+            <form id="form-user-settings" class="glass-card stat-card">
+              <div class="stat-header">
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Thông Số Thể Hình & Mục Tiêu Dinh Dưỡng</h3>
+                  <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">Cá nhân hóa các chỉ số Calo, Macro và Thể trọng theo chu kỳ tập luyện</p>
+                </div>
+                <span class="glass-badge glass-badge-cyan">Hồ Sơ Cốt Lõi</span>
+              </div>
+              
+              <!-- Body metrics -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md); margin-top: var(--spacing-md);">
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Họ tên gymer</label>
+                  <input type="text" class="glass-input" id="setting-name" value="Gymer FitVN" placeholder="Tên của bạn" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Giới tính</label>
+                  <select class="glass-input" id="setting-gender" style="background: rgba(15, 23, 42, 0.9);">
+                    <option value="male">Nam giới</option>
+                    <option value="female">Nữ giới</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Tuổi</label>
+                  <input type="number" class="glass-input" id="setting-age" value="24" min="12" max="100">
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Chiều cao (cm)</label>
+                  <input type="number" class="glass-input" id="setting-height" value="175" min="100" max="230" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Cân nặng hiện tại (kg)</label>
+                  <input type="number" step="0.1" class="glass-input" id="setting-current-weight" value="72.5" required>
+                </div>
+                <div>
+                  <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Cân nặng mục tiêu (kg)</label>
+                  <input type="number" step="0.5" class="glass-input" id="setting-target-weight" value="76" required>
+                </div>
+              </div>
+
+              <!-- Nutrition & Macro split -->
+              <div style="border-top: 1px solid var(--glass-border); padding-top: var(--spacing-md); margin-top: var(--spacing-md);">
+                <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: var(--spacing-sm);">
+                  🎯 Mục Tiêu Dinh Dưỡng Hàng Ngày
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
+                  <div>
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Mục tiêu thể hình</label>
+                    <select class="glass-input" id="setting-goal" style="background: rgba(15, 23, 42, 0.9);">
+                      <option value="lean_bulk">Tăng cơ nạc (Lean Bulk)</option>
+                      <option value="cut">Cắt nét / Giảm mỡ (Cutting)</option>
+                      <option value="maintain">Duy trì vóc dáng (Maintain)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 6px;">Calo mục tiêu (kcal/ngày)</label>
+                    <input type="number" class="glass-input" id="setting-calories" value="2600" required>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.8rem; color: var(--accent-cyan); display: block; margin-bottom: 6px; font-weight: 600;">Protein (Đạm - g)</label>
+                    <input type="number" class="glass-input" id="setting-protein" value="165" required>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.8rem; color: #fbbf24; display: block; margin-bottom: 6px; font-weight: 600;">Carbohydrate (Tinh bột - g)</label>
+                    <input type="number" class="glass-input" id="setting-carbs" value="325" required>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.8rem; color: var(--accent-flame); display: block; margin-bottom: 6px; font-weight: 600;">Fat (Chất béo tốt - g)</label>
+                    <input type="number" class="glass-input" id="setting-fat" value="72" required>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.8rem; color: var(--accent-emerald); display: block; margin-bottom: 6px; font-weight: 600;">Nước uống mục tiêu (ml)</label>
+                    <input type="number" step="250" class="glass-input" id="setting-water" value="3000" required>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: var(--spacing-lg); display: flex; justify-content: flex-end;">
+                <button type="submit" class="glass-btn glass-btn-primary">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  Lưu Thay Đổi Hồ Sơ
+                </button>
+              </div>
+            </form>
+
+            <!-- SECTION 2: DATA BACKUP & RESTORE (FEATURE: cai-dat-va-sao-luu-du-lieu) -->
+            <div class="glass-card stat-card">
+              <div class="stat-header">
+                <div>
+                  <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <span>💾</span>
+                    <span>Sao Lưu & Khôi Phục Dữ Liệu (Backup & Restore)</span>
+                  </h3>
+                  <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                    Bảo vệ dữ liệu cá nhân, chuyển đổi giữa điện thoại và máy tính, hoặc khôi phục an toàn
+                  </p>
+                </div>
+                <span class="glass-badge glass-badge-emerald">JSON Snapshot</span>
+              </div>
+
+              <div class="backup-actions-grid">
+                <!-- Action 1: Export -->
+                <div class="backup-action-card">
+                  <div class="backup-card-header">
+                    <div class="backup-icon-box backup-icon-export">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                    </div>
+                    <div class="backup-card-body">
+                      <h4>Xuất Dữ Liệu Sao Lưu</h4>
+                      <p>Tải toàn bộ nhật ký ăn uống, lịch sử cân nặng, nước uống và hồ sơ thể hình thành file <code>.json</code> để lưu trữ an toàn.</p>
+                    </div>
+                  </div>
+                  <button type="button" class="glass-btn glass-btn-primary" id="btn-export-backup" style="width: 100%;">
+                    Tải File Sao Lưu (.json)
+                  </button>
+                </div>
+
+                <!-- Action 2: Import -->
+                <div class="backup-action-card">
+                  <div class="backup-card-header">
+                    <div class="backup-icon-box backup-icon-import">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                    </div>
+                    <div class="backup-card-body">
+                      <h4>Khôi Phục Dữ Liệu</h4>
+                      <p>Chọn file <code>fitvn_backup_*.json</code> đã xuất trước đó để phục hồi lại toàn bộ dữ liệu trên thiết bị này.</p>
+                    </div>
+                  </div>
+                  <!-- Hidden file input -->
+                  <input type="file" id="input-backup-file" accept=".json,application/json" style="display: none;">
+                  <button type="button" class="glass-btn glass-btn-emerald" id="btn-trigger-import" style="width: 100%;">
+                    Chọn File Khôi Phục
+                  </button>
+                </div>
+
+                <!-- Action 3: Danger Reset -->
+                <div class="backup-action-card danger-zone-card">
+                  <div class="backup-card-header">
+                    <div class="backup-icon-box backup-icon-danger">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                      </svg>
+                    </div>
+                    <div class="backup-card-body">
+                      <h4 style="color: var(--accent-flame);">Khôi Phục Cài Đặt Gốc</h4>
+                      <p>Xóa toàn bộ dữ liệu người dùng tùy biến và khôi phục về trạng thái dữ liệu mẫu ban đầu của FitVN Tracker.</p>
+                    </div>
+                  </div>
+                  <button type="button" class="glass-btn glass-btn-danger" id="btn-reset-data" style="width: 100%;">
+                    Khôi Phục Mẫu Ban Đầu
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 3: APP PREFERENCES -->
+            <div class="glass-card stat-card">
+              <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: var(--spacing-sm);">Tùy Chọn Ứng Dụng</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--glass-border);">
+                <div>
+                  <div style="font-weight: 600;">Chế độ Dark Mode (Kính mờ)</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Tối ưu bảo vệ mắt khi tập luyện và xem trong phòng gym</div>
+                </div>
+                <span class="glass-badge glass-badge-cyan">Đang bật</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--glass-border);">
+                <div>
+                  <div style="font-weight: 600;">Hệ đơn vị</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">Metric (kg, cm, ml, kcal) chuẩn Việt Nam</div>
+                </div>
+                <span class="glass-badge glass-badge-emerald">Chuẩn VN</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0;">
+                <div>
+                  <div style="font-weight: 600;">Phiên bản ứng dụng</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">FitVN Tracker v1.2 (Feature: cai-dat-va-sao-luu-du-lieu)</div>
+                </div>
+                <span class="glass-badge">v1.2 Stable</span>
+              </div>
+            </div>
+          </div>
         </section>
       </main>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: CONFIRM IMPORT BACKUP DATA
+       ==================================================================== -->
+  <div class="glass-modal-backdrop" id="modal-confirm-import" role="dialog" aria-modal="true" aria-labelledby="modal-import-title">
+    <div class="glass-modal-container modal-confirm-box">
+      <div style="font-size: 2.5rem; margin-bottom: 8px;">📥</div>
+      <h3 id="modal-import-title" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">
+        Khôi Phục Dữ Liệu Sao Lưu
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+        Hệ thống phát hiện bản sao lưu hợp lệ từ: <strong id="import-file-name" style="color: var(--accent-cyan);">fitvn_backup.json</strong>
+        <br>Vui lòng chọn phương thức khôi phục:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: var(--spacing-lg);">
+        <button type="button" class="glass-btn glass-btn-primary" id="btn-confirm-import-overwrite" style="width: 100%; justify-content: center;">
+          Ghi Đè Toàn Bộ (Khuyên Dùng)
+        </button>
+        <button type="button" class="glass-btn glass-btn-emerald" id="btn-confirm-import-merge" style="width: 100%; justify-content: center;">
+          Gộp Thêm Dữ Liệu (Không Xóa Cũ)
+        </button>
+        <button type="button" class="glass-btn" id="btn-cancel-import" style="width: 100%; justify-content: center;">
+          Hủy Bỏ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: CONFIRM FACTORY RESET
+       ==================================================================== -->
+  <div class="glass-modal-backdrop" id="modal-confirm-reset" role="dialog" aria-modal="true" aria-labelledby="modal-reset-title">
+    <div class="glass-modal-container modal-confirm-box" style="border-color: rgba(255, 71, 87, 0.4);">
+      <div style="font-size: 2.5rem; margin-bottom: 8px;">⚠️</div>
+      <h3 id="modal-reset-title" style="font-size: 1.25rem; font-weight: 800; color: var(--accent-flame); margin-bottom: 6px;">
+        Xác Nhận Khôi Phục Cài Đặt Gốc
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: var(--spacing-lg); line-height: 1.5;">
+        Hành động này sẽ <strong>xóa toàn bộ</strong> nhật ký ăn uống, lịch sử cân nặng và thông số tùy biến, đưa ứng dụng về trạng thái mẫu ban đầu.
+        <br><span style="color: var(--accent-flame);">Hành động này không thể hoàn tác nếu bạn chưa sao lưu!</span>
+      </p>
+
+      <div style="display: flex; gap: var(--spacing-sm);">
+        <button type="button" class="glass-btn" id="btn-cancel-reset" style="flex: 1; justify-content: center;">
+          Hủy Bỏ
+        </button>
+        <button type="button" class="glass-btn glass-btn-danger" id="btn-confirm-reset" style="flex: 1; justify-content: center;">
+          Đồng Ý Khôi Phục
+        </button>
+      </div>
     </div>
   </div>
 
