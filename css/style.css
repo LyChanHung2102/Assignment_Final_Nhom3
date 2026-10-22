@@ -1275,6 +1275,372 @@ body {
   border: 1px solid var(--color-border, #DDE3D9);
 }
 
+/* ==========================================================================
+   Interactive Water Hydration Tracker with Dynamic Cups
+   ========================================================================== */
+.water-tracker-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 12px);
+  position: relative;
+  overflow: visible !important;
+}
+
+/* Top Row: Title, Amount, Circular Progress */
+.water-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.water-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.water-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #63756B);
+}
+
+.water-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.water-big-number {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--color-primary, #173F35);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.water-unit-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #63756B);
+}
+
+.water-sub-oz {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #829087);
+}
+
+/* Circular Gauge Button (Top Right) */
+.water-quick-add-wrap {
+  flex-shrink: 0;
+}
+
+.water-circular-gauge {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: var(--radius-full, 9999px);
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+.water-circular-gauge:hover {
+  transform: scale(1.08);
+}
+
+.water-circular-gauge:active {
+  transform: scale(0.96);
+}
+
+.water-gauge-svg {
+  width: 44px !important;
+  height: 44px !important;
+  transform: rotate(-90deg);
+  overflow: visible;
+  display: block;
+}
+
+.water-gauge-bg {
+  fill: none !important;
+  stroke: var(--color-surface-raised, #E5EDE7);
+  stroke-width: 3.5;
+}
+
+.water-gauge-bar {
+  fill: none !important;
+  stroke: var(--color-water, #528BA0);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 113.1;
+  stroke-dashoffset: 113.1;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
+}
+
+.water-gauge-plus {
+  position: absolute;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Middle Section: Dedicated Cup Holder Box */
+.water-cups-section {
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  padding: 10px 12px;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong, #BECBC0) transparent;
+}
+
+.water-cups-section::-webkit-scrollbar {
+  width: 4px;
+}
+
+.water-cups-section::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong, #BECBC0);
+  border-radius: 4px;
+}
+
+.water-cups-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Individual Cup Item */
+.water-cup-item {
+  width: 24px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex-shrink: 0;
+  outline: none;
+}
+
+.water-cup-item:hover {
+  transform: translateY(-2px) scale(1.15);
+}
+
+.water-cup-item:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.water-cup-svg {
+  width: 24px !important;
+  height: 36px !important;
+  display: block;
+  overflow: visible;
+}
+
+/* Cup Interior SVGs */
+.cup-glass-bg {
+  fill: #FFFFFF !important;
+  transition: fill 0.2s ease;
+}
+
+.cup-water-rect {
+  fill: var(--color-water, #528BA0) !important;
+  transition: y 0.35s ease, height 0.35s ease;
+}
+
+.cup-water-surface {
+  stroke: #7bb5cc;
+  stroke-width: 1.2;
+}
+
+.cup-glass-stroke {
+  stroke: var(--color-border-strong, #BECBC0) !important;
+  stroke-width: 1.4;
+  fill: none !important;
+  transition: stroke 0.2s ease;
+}
+
+.cup-glass-rim {
+  stroke: var(--color-border-strong, #BECBC0) !important;
+  stroke-width: 1.4;
+  fill: rgba(255, 255, 255, 0.7) !important;
+}
+
+.cup-plus-icon {
+  fill: var(--color-water, #528BA0) !important;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-family, sans-serif);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Cup Status Classes */
+.water-cup-item.cup-empty .cup-glass-bg {
+  fill: #FFFFFF !important;
+}
+
+.water-cup-item.cup-filled .cup-glass-stroke {
+  stroke: var(--color-water, #528BA0) !important;
+}
+
+.water-cup-item.cup-filled .cup-glass-rim {
+  stroke: var(--color-water, #528BA0) !important;
+  fill: #e0f2fe !important;
+}
+
+.water-cup-item.cup-next-action {
+  filter: drop-shadow(0 2px 5px rgba(82, 139, 160, 0.35));
+}
+
+.water-cup-item.cup-next-action .cup-glass-stroke {
+  stroke: var(--color-water, #528BA0) !important;
+  stroke-dasharray: 2 1;
+}
+
+/* Quick Stepper Bar right under cups */
+.water-quick-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.water-step-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  color: var(--color-primary, #173F35);
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+  font-family: inherit;
+}
+
+.water-step-btn:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-border-focus, #397866);
+}
+
+.water-step-btn:active {
+  transform: translateY(1px);
+}
+
+/* Bottom Row */
+.water-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2px;
+}
+
+.water-goal-caption {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary, #63756B);
+  font-weight: 500;
+}
+
+.water-goal-caption span {
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+}
+
+.water-menu-wrapper {
+  position: relative;
+}
+
+.btn-water-dots {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full, 9999px);
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted, #829087);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.btn-water-dots:hover {
+  background: var(--color-surface-raised, #F0F1E9);
+  color: var(--color-primary, #173F35);
+}
+
+.water-dropdown-panel {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  width: 210px;
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-dropdown, 0 8px 24px rgba(23, 63, 53, 0.12));
+  padding: 6px;
+  z-index: 120;
+}
+
+.water-dropdown-btn {
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-text, #202B28);
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 120ms ease;
+  font-family: inherit;
+}
+
+.water-dropdown-btn:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  color: var(--color-primary, #173F35);
+}
+
+.water-dropdown-btn.text-danger {
+  color: var(--color-danger, #B83E42);
+}
+
+.water-dropdown-btn.text-danger:hover {
+  background: var(--color-danger-bg, #FBE9E7);
+}
+
+.water-dropdown-divider {
+  height: 1px;
+  background: var(--color-border, #DDE3D9);
+  margin: 4px 0;
+}
+
+/* Fallback button compatibility */
 .btn-water-action {
   background: var(--color-surface-raised, #F0F1E9);
   border: 1px solid var(--color-border, #DDE3D9);
@@ -1295,12 +1661,10 @@ body {
 .btn-water-action:hover {
   background: var(--color-primary-soft, #E5EDE7);
   border-color: var(--color-border-focus, #397866);
-  color: var(--color-primary, #173F35);
-  transform: translateY(-1px);
 }
 
 .btn-water-action:active {
-  transform: translateY(0);
+  transform: translateY(1px);
 }
 
 .btn-water-reset {
