@@ -2469,3 +2469,17 @@ body.theme-porcelain #app-layout,
   background-color: #F7F6F0 !important;
   color: #202B28 !important;
 }
+
+/* Form utilities */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #3F5247);
+  display: block;
+}
