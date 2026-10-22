@@ -614,6 +614,7 @@ const FoodLogModule = {
   activeMealType: 'breakfast',
   activeCategory: 'all',
   currentSearchQuery: '',
+  selectedDate: null,
   modalBackdropEl: null,
   searchResultsEl: null,
   searchInputEl: null,
@@ -630,8 +631,115 @@ const FoodLogModule = {
     this.searchResultsEl = document.getElementById('modal-food-results');
     this.searchInputEl = document.getElementById('modal-food-search');
 
+    // Default to today (YYYY-MM-DD)
+    this.selectedDate = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+
     this.bindEvents();
+    this.bindDateEvents();
+    this.updateDateUI();
     this.renderFoodLogs();
+  },
+
+  bindDateEvents() {
+    const btnPrev = document.getElementById('btn-prev-day');
+    const btnNext = document.getElementById('btn-next-day');
+    const btnToday = document.getElementById('btn-jump-today');
+    const inputDate = document.getElementById('input-food-log-date');
+
+    if (btnPrev) {
+      btnPrev.addEventListener('click', () => this.changeDate(-1));
+    }
+
+    if (btnNext) {
+      btnNext.addEventListener('click', () => this.changeDate(1));
+    }
+
+    if (btnToday) {
+      btnToday.addEventListener('click', () => this.setDate(window.getTodayDateString()));
+    }
+
+    if (inputDate) {
+      inputDate.addEventListener('change', (e) => {
+        if (e.target.value) {
+          this.setDate(e.target.value);
+        }
+      });
+    }
+  },
+
+  changeDate(offsetDays) {
+    const [y, m, d] = (this.selectedDate || window.getTodayDateString()).split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + offsetDays);
+    const ny = dt.getFullYear();
+    const nm = String(dt.getMonth() + 1).padStart(2, '0');
+    const nd = String(dt.getDate()).padStart(2, '0');
+    this.setDate(`${ny}-${nm}-${nd}`);
+  },
+
+  setDate(newDateStr) {
+    if (!newDateStr) return;
+    this.selectedDate = newDateStr;
+    this.updateDateUI();
+    this.renderFoodLogs();
+  },
+
+  formatDateVN(dateStr) {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const dt = new Date(year, month - 1, day);
+    const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    const dayName = daysOfWeek[dt.getDay()];
+    return `${dayName}, ${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+  },
+
+  updateDateUI() {
+    const curDateStr = this.selectedDate || window.getTodayDateString();
+    const todayStr = window.getTodayDateString();
+
+    const dateTextEl = document.getElementById('food-log-current-date-text');
+    const todayBadgeEl = document.getElementById('food-log-today-badge');
+    const inputDateEl = document.getElementById('input-food-log-date');
+    const headerDateEl = document.getElementById('header-date');
+
+    if (dateTextEl) {
+      dateTextEl.textContent = this.formatDateVN(curDateStr);
+    }
+
+    if (inputDateEl) {
+      inputDateEl.value = curDateStr;
+    }
+
+    if (todayBadgeEl) {
+      if (curDateStr === todayStr) {
+        todayBadgeEl.style.display = 'inline-flex';
+        todayBadgeEl.textContent = 'Hôm nay';
+        todayBadgeEl.className = 'glass-badge glass-badge-emerald';
+      } else {
+        const [cy, cm, cd] = curDateStr.split('-').map(Number);
+        const [ty, tm, td] = todayStr.split('-').map(Number);
+        const curDt = new Date(cy, cm - 1, cd);
+        const todayDt = new Date(ty, tm - 1, td);
+        const diffDays = Math.round((curDt - todayDt) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === -1) {
+          todayBadgeEl.style.display = 'inline-flex';
+          todayBadgeEl.textContent = 'Hôm qua';
+          todayBadgeEl.className = 'glass-badge';
+        } else if (diffDays === 1) {
+          todayBadgeEl.style.display = 'inline-flex';
+          todayBadgeEl.textContent = 'Ngày mai';
+          todayBadgeEl.className = 'glass-badge';
+        } else {
+          todayBadgeEl.style.display = 'none';
+        }
+      }
+    }
+
+    // Synchronize header date badge
+    if (headerDateEl) {
+      headerDateEl.textContent = this.formatDateVN(curDateStr);
+    }
   },
 
   bindEvents() {
@@ -715,8 +823,9 @@ const FoodLogModule = {
   openModal(mealType = 'breakfast') {
     this.activeMealType = mealType;
     const titleEl = document.getElementById('modal-meal-name');
+    const dateFormatted = this.formatDateVN(this.selectedDate || window.getTodayDateString());
     if (titleEl) {
-      titleEl.textContent = `Thêm vào ${this.mealNames[mealType] || 'Bữa ăn'}`;
+      titleEl.textContent = `Thêm vào ${this.mealNames[mealType] || 'Bữa ăn'} • ${dateFormatted}`;
     }
 
     if (this.modalBackdropEl) {
@@ -756,44 +865,31 @@ const FoodLogModule = {
       if (!queryNormalized) return true;
 
       const nameNormalized = window.removeVietnameseTones ? window.removeVietnameseTones(food.name) : food.name.toLowerCase();
-      const tagNormalized = food.tag ? (window.removeVietnameseTones ? window.removeVietnameseTones(food.tag) : food.tag.toLowerCase()) : '';
-      const barcode = food.barcode || '';
-
-      return nameNormalized.includes(queryNormalized) || tagNormalized.includes(queryNormalized) || barcode.includes(queryNormalized);
+      return nameNormalized.includes(queryNormalized);
     });
 
-    this.renderSearchResults(filtered);
-  },
-
-  /**
-   * Render Search Results List
-   * @param {Array} foods 
-   */
-  renderSearchResults(foods) {
     if (!this.searchResultsEl) return;
 
-    if (foods.length === 0) {
+    if (filtered.length === 0) {
       this.searchResultsEl.innerHTML = `
-        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
-          <div style="font-size: 2rem; margin-bottom: 8px;">🔍</div>
-          <div>Không tìm thấy món ăn nào khớp với từ khóa.</div>
-          <div style="font-size: 0.8rem; margin-top: 4px;">Thử tìm "phở", "gà", "cơm", hoặc quét Barcode.</div>
+        <div style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+          Không tìm thấy món ăn phù hợp với từ khóa "<strong>${this.currentSearchQuery}</strong>"
         </div>
       `;
       return;
     }
 
-    this.searchResultsEl.innerHTML = foods.map((food) => `
+    this.searchResultsEl.innerHTML = filtered.map((food) => `
       <div class="food-item-row">
         <div class="food-item-info">
           <div class="food-icon-circle">${food.icon || '🍽️'}</div>
           <div class="food-details">
-            <div class="food-name" title="${food.name}">${food.name}</div>
-            <div class="food-serving">${food.serving} ${food.tag ? `• <span style="color: var(--accent-cyan);">${food.tag}</span>` : ''}</div>
+            <div class="food-name">${food.name}</div>
+            <div class="food-serving">${food.serving}</div>
             <div class="food-macros-line">
-              <span style="color: var(--accent-cyan);">P: ${food.protein}g</span>
-              <span style="color: #fbbf24;">C: ${food.carbs}g</span>
-              <span style="color: var(--accent-flame);">F: ${food.fat}g</span>
+              <span style="color: var(--color-primary, #173F35); font-weight: 600;">P: ${food.protein}g</span>
+              <span style="color: #d97706; font-weight: 600;">C: ${food.carbs}g</span>
+              <span style="color: var(--color-danger, #D9534F); font-weight: 600;">F: ${food.fat}g</span>
             </div>
           </div>
         </div>
@@ -802,7 +898,7 @@ const FoodLogModule = {
             <div class="food-calories-value">${food.calories}</div>
             <div class="food-calories-unit">kcal</div>
           </div>
-          <button type="button" class="btn-quick-add" data-food-id="${food.id}" title="1-Tap Thêm Ngay Vào Bữa Ăn" aria-label="Thêm ${food.name}">
+          <button type="button" class="btn-quick-add" data-food-id="${food.id}" title="Nạp nhanh món này vào nhật ký">
             +
           </button>
         </div>
@@ -811,13 +907,15 @@ const FoodLogModule = {
   },
 
   /**
-   * Quick Add 1-Tap Action
+   * 1-Tap Quick Add a food item into the active meal of the selected date
    * @param {string} foodId 
    */
   quickAdd(foodId) {
     const allFoods = window.storageService.getAllFoods();
     const food = allFoods.find(item => item.id === foodId);
     if (!food) return;
+
+    const targetDate = this.selectedDate || window.getTodayDateString();
 
     const newLog = window.storageService.addFoodLog({
       mealType: this.activeMealType,
@@ -827,15 +925,19 @@ const FoodLogModule = {
       protein: food.protein,
       carbs: food.carbs,
       fat: food.fat,
-      servingQty: 1
+      servingQty: 1,
+      date: targetDate
     });
 
-    ToastModule.show(`Đã nạp ${food.name} (${food.calories} kcal) vào ${this.mealNames[this.activeMealType]}!`);
+    const dateFormatted = this.formatDateVN(targetDate);
+    ToastModule.show(`Đã nạp ${food.name} (${food.calories} kcal) vào ${this.mealNames[this.activeMealType]} (${dateFormatted})!`);
     
     // Close modal & re-render
     this.closeModal();
     this.renderFoodLogs();
-    DashboardModule.updateUI();
+    if (window.DashboardModule && typeof window.DashboardModule.updateUI === 'function') {
+      window.DashboardModule.updateUI();
+    }
   },
 
   /**
@@ -847,18 +949,21 @@ const FoodLogModule = {
     if (success) {
       ToastModule.show('Đã xóa món ăn khỏi nhật ký.', 'flame');
       this.renderFoodLogs();
-      DashboardModule.updateUI();
+      if (window.DashboardModule && typeof window.DashboardModule.updateUI === 'function') {
+        window.DashboardModule.updateUI();
+      }
     }
   },
 
   /**
-   * Render Food Logs across 4 meal boxes in the Food Log tab
+   * Render Food Logs across 4 meal boxes for the currently selected date
    */
   renderFoodLogs() {
-    const todayDate = window.getTodayDateString();
-    const dayLogs = window.storageService.getFoodLogs(todayDate);
+    const targetDate = this.selectedDate || window.getTodayDateString();
+    const dayLogs = window.storageService.getFoodLogs(targetDate);
 
     const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+    let dayTotalCalories = 0;
 
     mealTypes.forEach((type) => {
       const containerEl = document.getElementById(`meal-items-${type}`);
@@ -867,6 +972,7 @@ const FoodLogModule = {
 
       const items = dayLogs.filter(log => log.mealType === type);
       const totalMealCals = items.reduce((sum, item) => sum + (Number(item.calories) || 0), 0);
+      dayTotalCalories += totalMealCals;
 
       if (calBadgeEl) {
         calBadgeEl.textContent = `${totalMealCals.toLocaleString()} kcal`;
@@ -890,15 +996,15 @@ const FoodLogModule = {
                 ${item.name}
               </div>
               <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
-                <span style="color: var(--accent-cyan);">P: ${item.protein}g</span> • 
-                <span style="color: #fbbf24;">C: ${item.carbs}g</span> • 
-                <span style="color: var(--accent-flame);">F: ${item.fat}g</span> • 
+                <span style="color: var(--color-primary, #173F35); font-weight: 600;">P: ${item.protein}g</span> • 
+                <span style="color: #d97706; font-weight: 600;">C: ${item.carbs}g</span> • 
+                <span style="color: var(--color-danger, #D9534F); font-weight: 600;">F: ${item.fat}g</span> • 
                 <span style="color: var(--text-secondary);">${item.time || ''}</span>
               </div>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-            <strong style="color: var(--accent-cyan); font-size: 0.92rem;">${item.calories} kcal</strong>
+            <strong style="color: var(--color-primary, #173F35); font-size: 0.95rem;">${item.calories} kcal</strong>
             <button type="button" class="btn-delete-log" data-log-id="${item.id}" title="Xóa món ăn" aria-label="Xóa ${item.name}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -909,6 +1015,12 @@ const FoodLogModule = {
         </div>
       `).join('');
     });
+
+    // Update Day Total Summary
+    const dayTotalEl = document.getElementById('food-log-day-total-cals');
+    if (dayTotalEl) {
+      dayTotalEl.textContent = `${dayTotalCalories.toLocaleString()} kcal`;
+    }
   }
 };
 

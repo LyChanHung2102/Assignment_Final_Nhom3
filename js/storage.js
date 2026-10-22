@@ -216,7 +216,10 @@ const storageService = {
   getFoodLogs(dateString = null) {
     const logs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
     if (!dateString) return logs;
-    return logs.filter(log => log.date === dateString);
+    return logs.filter(log => {
+      const logDate = log.date || getTodayDateString();
+      return logDate === dateString;
+    });
   },
 
   /**
