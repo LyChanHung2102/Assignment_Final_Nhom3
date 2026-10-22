@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FitVN Tracker - Main Application Controller
  * Handles Navigation, Food Logging, Real-time Search, Barcode Scanner, and Dashboard Sync
  */
@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Conditional Page Module Initialization
   if (document.getElementById('dash-stat-calories')) {
     DashboardModule.init();
+  }
+
+  if (document.getElementById('progress-chart-canvas')) {
+    ProgressChartsModule.init();
   }
 
   if (document.getElementById('modal-food-results') || document.getElementById('meal-items-breakfast')) {
@@ -1749,3 +1753,553 @@ const SettingsModule = {
 };
 
 window.SettingsModule = SettingsModule;
+
+/**
+ * ProgressChartsModule - Controller for Health Progress Charts Page
+ * Manages metric switching (Weight/BMI), 6 time range filters, summary statistics,
+ * period comparisons, goal tracking, table sorting, pagination, and insights generation.
+ */
+const ProgressChartsModule = {
+  dom: {},
+  currentMetric: 'weight', // 'weight' | 'bmi'
+  currentRange: '90d',     // '7d' | '30d' | '90d' | '180d' | '365d' | 'all'
+  sortAscending: false,    // false = newest first, true = oldest first
+  currentPage: 1,
+  pageSize: 8,
+  cachedAllEntries: [],
+  cachedFilteredEntries: [],
+  previousPeriodEntries: [],
+
+  init() {
+    this.cacheDOM();
+    this.bindEvents();
+    this.loadDataAndRender();
+  },
+
+  cacheDOM() {
+    this.dom = {
+      // Metric buttons
+      btnMetricWeight: document.getElementById('btn-metric-weight'),
+      btnMetricBmi: document.getElementById('btn-metric-bmi'),
+      metricButtons: document.querySelectorAll('.metric-switch-btn'),
+
+      // Time pills
+      rangeButtons: document.querySelectorAll('.progress-pill-btn'),
+      rangeDatesText: document.getElementById('pc-range-dates-text'),
+
+      // 5 Summary Cards
+      startVal: document.getElementById('pc-start-val'),
+      unitStart: document.getElementById('pc-unit-start'),
+      startSub: document.getElementById('pc-start-sub'),
+      startDateBadge: document.getElementById('pc-start-date-badge'),
+
+      endVal: document.getElementById('pc-end-val'),
+      unitEnd: document.getElementById('pc-unit-end'),
+      endSub: document.getElementById('pc-end-sub'),
+      endDateBadge: document.getElementById('pc-end-date-badge'),
+
+      diffVal: document.getElementById('pc-diff-val'),
+      unitDiff: document.getElementById('pc-unit-diff'),
+      diffBadge: document.getElementById('pc-diff-badge'),
+      diffSub: document.getElementById('pc-diff-sub'),
+
+      percentVal: document.getElementById('pc-percent-val'),
+      percentBadge: document.getElementById('pc-percent-badge'),
+      percentSub: document.getElementById('pc-percent-sub'),
+
+      trendVal: document.getElementById('pc-trend-val'),
+      trendBadge: document.getElementById('pc-trend-badge'),
+      trendSub: document.getElementById('pc-trend-sub'),
+
+      // Chart meta
+      chartTitle: document.getElementById('pc-chart-title'),
+      chartDesc: document.getElementById('pc-chart-desc'),
+      legendTargetItem: document.getElementById('pc-legend-target-item'),
+
+      // Period comparison
+      compCurrentVal: document.getElementById('pc-comp-current-val'),
+      compPrevVal: document.getElementById('pc-comp-prev-val'),
+      compResultText: document.getElementById('pc-comparison-result-text'),
+      compBadge: document.getElementById('pc-comparison-badge'),
+
+      // Goal progress
+      goalBadge: document.getElementById('pc-goal-badge'),
+      goalInitText: document.getElementById('pc-goal-init-text'),
+      goalCurrText: document.getElementById('pc-goal-curr-text'),
+      goalTargetText: document.getElementById('pc-goal-target-text'),
+      goalFillBar: document.getElementById('pc-goal-fill-bar'),
+      goalStatusText: document.getElementById('pc-goal-status-text'),
+      goalDiffText: document.getElementById('pc-goal-diff-text'),
+
+      // Insights
+      insightsText: document.getElementById('pc-insights-text'),
+
+      // Table & Pagination
+      tableTbody: document.getElementById('pc-table-tbody'),
+      tableEmpty: document.getElementById('pc-table-empty'),
+      btnToggleSort: document.getElementById('btn-toggle-sort'),
+      labelSortOrder: document.getElementById('label-sort-order'),
+      iconSortOrder: document.getElementById('icon-sort-order'),
+      pageInfo: document.getElementById('pc-page-info'),
+      btnPagePrev: document.getElementById('btn-page-prev'),
+      btnPageNext: document.getElementById('btn-page-next')
+    };
+  },
+
+  bindEvents() {
+    // 1. Metric switcher (Weight vs BMI)
+    if (this.dom.metricButtons) {
+      this.dom.metricButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          this.dom.metricButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentMetric = btn.getAttribute('data-metric') || 'weight';
+          this.renderMetricChanges();
+        });
+      });
+    }
+
+    // 2. Time range selector
+    if (this.dom.rangeButtons) {
+      this.dom.rangeButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          this.dom.rangeButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentRange = btn.getAttribute('data-range') || '90d';
+          this.currentPage = 1;
+          this.filterDataAndRender();
+        });
+      });
+    }
+
+    // 3. Table sorting toggle
+    if (this.dom.btnToggleSort) {
+      this.dom.btnToggleSort.addEventListener('click', () => {
+        this.sortAscending = !this.sortAscending;
+        if (this.dom.labelSortOrder) {
+          this.dom.labelSortOrder.textContent = this.sortAscending ? 'Cũ nhất trước' : 'Mới nhất trước';
+        }
+        if (this.dom.iconSortOrder) {
+          this.dom.iconSortOrder.textContent = this.sortAscending ? '↑' : '↓';
+        }
+        this.currentPage = 1;
+        this.renderTable();
+      });
+    }
+
+    // 4. Pagination controls
+    if (this.dom.btnPagePrev) {
+      this.dom.btnPagePrev.addEventListener('click', () => {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          this.renderTable();
+        }
+      });
+    }
+
+    if (this.dom.btnPageNext) {
+      this.dom.btnPageNext.addEventListener('click', () => {
+        const totalPages = Math.ceil(this.cachedFilteredEntries.length / this.pageSize) || 1;
+        if (this.currentPage < totalPages) {
+          this.currentPage++;
+          this.renderTable();
+        }
+      });
+    }
+  },
+
+  loadDataAndRender() {
+    const rawLogs = window.storageService ? window.storageService.getWeightLogs() : [];
+    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
+    const height = Number(profile.height) || 175;
+
+    // Enhance entries with accurate historical BMI
+    this.cachedAllEntries = rawLogs.map((entry) => {
+      let bmiVal = null;
+      if (height > 0 && window.HealthCalculator) {
+        const calcRes = window.HealthCalculator.calculateBMI(entry.weight, height);
+        bmiVal = calcRes.bmi;
+      }
+      return {
+        ...entry,
+        bmi: bmiVal
+      };
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Initialize ProgressChartEngine
+    if (window.ProgressChartEngine) {
+      ProgressChartEngine.init('progress-chart-canvas', 'progress-chart-tooltip');
+      ProgressChartEngine.setTargetWeight(profile.targetWeight || null);
+    }
+
+    this.filterDataAndRender();
+  },
+
+  filterDataAndRender() {
+    const all = this.cachedAllEntries;
+    if (all.length === 0) {
+      this.cachedFilteredEntries = [];
+      this.previousPeriodEntries = [];
+      this.renderEmptyState();
+      return;
+    }
+
+    // 1. Determine date filter boundary
+    const now = new Date();
+    let daysCutoff = null;
+    if (this.currentRange === '7d') daysCutoff = 7;
+    else if (this.currentRange === '30d') daysCutoff = 30;
+    else if (this.currentRange === '90d') daysCutoff = 90;
+    else if (this.currentRange === '180d') daysCutoff = 180;
+    else if (this.currentRange === '365d') daysCutoff = 365;
+
+    if (daysCutoff === null) {
+      // 'all'
+      this.cachedFilteredEntries = [...all];
+      this.previousPeriodEntries = [];
+    } else {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysCutoff);
+
+      const previousCutoffDate = new Date();
+      previousCutoffDate.setDate(previousCutoffDate.getDate() - (daysCutoff * 2));
+
+      this.cachedFilteredEntries = all.filter(e => new Date(e.date) >= cutoffDate);
+      this.previousPeriodEntries = all.filter(e => {
+        const d = new Date(e.date);
+        return d >= previousCutoffDate && d < cutoffDate;
+      });
+    }
+
+    this.renderActiveDateRange();
+    this.renderSummaryCards();
+    this.renderChart();
+    this.renderPeriodComparison();
+    this.renderGoalProgress();
+    this.renderInsights();
+    this.renderTable();
+  },
+
+  renderMetricChanges() {
+    const isWeight = this.currentMetric === 'weight';
+    if (this.dom.chartTitle) {
+      this.dom.chartTitle.textContent = isWeight ? 'Biểu Đồ Xu Hướng Cân Nặng' : 'Biểu Đồ Xu Hướng Chỉ Số BMI';
+    }
+    if (this.dom.chartDesc) {
+      this.dom.chartDesc.textContent = isWeight 
+        ? 'Biểu diễn các điểm dữ liệu lịch sử và đường mục tiêu tham chiếu' 
+        : 'Theo dõi sự thay đổi BMI theo thời gian kèm các ngưỡng tham khảo y tế (18.5, 25.0)';
+    }
+    if (this.dom.legendTargetItem) {
+      this.dom.legendTargetItem.style.display = isWeight ? 'inline-flex' : 'none';
+    }
+
+    this.renderSummaryCards();
+    this.renderChart();
+    this.renderPeriodComparison();
+    this.renderInsights();
+    this.renderTable();
+  },
+
+  renderActiveDateRange() {
+    if (!this.dom.rangeDatesText) return;
+
+    if (this.cachedFilteredEntries.length === 0) {
+      this.dom.rangeDatesText.textContent = 'Không có dữ liệu trong khoảng này';
+      return;
+    }
+
+    const first = this.cachedFilteredEntries[0].date;
+    const last = this.cachedFilteredEntries[this.cachedFilteredEntries.length - 1].date;
+
+    const fmt = (dStr) => {
+      const p = dStr.split('-');
+      return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dStr;
+    };
+
+    if (first === last) {
+      this.dom.rangeDatesText.textContent = `Ngày ${fmt(first)} (1 bản ghi)`;
+    } else {
+      this.dom.rangeDatesText.textContent = `Từ ${fmt(first)} đến ${fmt(last)} (${this.cachedFilteredEntries.length} bản ghi)`;
+    }
+  },
+
+  renderSummaryCards() {
+    const isWeight = this.currentMetric === 'weight';
+    const unit = isWeight ? 'kg' : 'kg/m²';
+
+    if (this.dom.unitStart) this.dom.unitStart.textContent = unit;
+    if (this.dom.unitEnd) this.dom.unitEnd.textContent = unit;
+    if (this.dom.unitDiff) this.dom.unitDiff.textContent = unit;
+
+    if (!window.HealthCalculator) return;
+    const stats = window.HealthCalculator.calculatePeriodStats(this.cachedFilteredEntries, this.currentMetric);
+
+    if (!stats.hasData || stats.startVal === null) {
+      if (this.dom.startVal) this.dom.startVal.innerHTML = `-- <span class="stat-unit">${unit}</span>`;
+      if (this.dom.endVal) this.dom.endVal.innerHTML = `-- <span class="stat-unit">${unit}</span>`;
+      if (this.dom.diffVal) this.dom.diffVal.innerHTML = `-- <span class="stat-unit">${unit}</span>`;
+      if (this.dom.percentVal) this.dom.percentVal.innerHTML = `-- <span class="stat-unit">%</span>`;
+      if (this.dom.trendVal) this.dom.trendVal.textContent = 'Chưa có dữ liệu';
+      return;
+    }
+
+    // 1. Start Value
+    if (this.dom.startVal) {
+      this.dom.startVal.innerHTML = `${Number(stats.startVal).toFixed(1)} <span class="stat-unit">${unit}</span>`;
+    }
+    if (this.dom.startDateBadge && this.cachedFilteredEntries.length > 0) {
+      this.dom.startDateBadge.textContent = this.cachedFilteredEntries[0].date;
+    }
+
+    // 2. End Value
+    if (this.dom.endVal) {
+      this.dom.endVal.innerHTML = `${Number(stats.endVal).toFixed(1)} <span class="stat-unit">${unit}</span>`;
+    }
+    if (this.dom.endDateBadge && this.cachedFilteredEntries.length > 0) {
+      this.dom.endDateBadge.textContent = this.cachedFilteredEntries[this.cachedFilteredEntries.length - 1].date;
+    }
+
+    // 3. Absolute Difference
+    if (this.dom.diffVal) {
+      const sign = stats.diff > 0 ? `+${stats.diff}` : `${stats.diff}`;
+      this.dom.diffVal.innerHTML = `${sign} <span class="stat-unit">${unit}</span>`;
+    }
+    if (this.dom.diffBadge) {
+      this.dom.diffBadge.className = `glass-badge ${stats.badgeClass}`;
+      this.dom.diffBadge.textContent = stats.diff > 0 ? 'Tăng' : stats.diff < 0 ? 'Giảm' : 'Ổn định';
+    }
+
+    // 4. Percent Change
+    if (this.dom.percentVal) {
+      const sign = stats.percentChange > 0 ? `+${stats.percentChange}` : `${stats.percentChange}`;
+      this.dom.percentVal.innerHTML = `${sign} <span class="stat-unit">%</span>`;
+    }
+    if (this.dom.percentBadge) {
+      this.dom.percentBadge.className = `glass-badge ${stats.badgeClass}`;
+      this.dom.percentBadge.textContent = `${Math.abs(stats.percentChange)}%`;
+    }
+
+    // 5. Trend
+    if (this.dom.trendVal) {
+      this.dom.trendVal.textContent = stats.trend === 'increasing' ? 'Đang Tăng' : stats.trend === 'decreasing' ? 'Đang Giảm' : 'Duy Trì';
+      this.dom.trendVal.style.color = stats.trend === 'increasing' ? '#173F35' : stats.trend === 'decreasing' ? '#287653' : '#63756B';
+    }
+    if (this.dom.trendBadge) {
+      this.dom.trendBadge.className = `glass-badge ${stats.badgeClass}`;
+      this.dom.trendBadge.textContent = stats.trendLabel;
+    }
+  },
+
+  renderChart() {
+    if (!window.ProgressChartEngine) return;
+    ProgressChartEngine.render(this.cachedFilteredEntries, this.currentMetric);
+  },
+
+  renderPeriodComparison() {
+    if (!window.HealthCalculator) return;
+    const isWeight = this.currentMetric === 'weight';
+    const unit = isWeight ? 'kg' : 'BMI';
+
+    const comp = window.HealthCalculator.comparePeriods(
+      this.cachedFilteredEntries,
+      this.previousPeriodEntries,
+      this.currentMetric
+    );
+
+    if (!comp.hasComparison) {
+      if (this.dom.compCurrentVal) this.dom.compCurrentVal.textContent = '--';
+      if (this.dom.compPrevVal) this.dom.compPrevVal.textContent = '--';
+      if (this.dom.compResultText) {
+        this.dom.compResultText.textContent = comp.reason;
+        this.dom.compResultText.style.color = 'var(--color-text-muted, #829087)';
+      }
+      if (this.dom.compBadge) {
+        this.dom.compBadge.className = 'glass-badge glass-badge-muted';
+        this.dom.compBadge.textContent = 'Chưa đủ dữ liệu';
+      }
+      return;
+    }
+
+    if (this.dom.compCurrentVal) {
+      this.dom.compCurrentVal.textContent = `${comp.currentAvg} ${unit}`;
+    }
+    if (this.dom.compPrevVal) {
+      this.dom.compPrevVal.textContent = `${comp.previousAvg} ${unit}`;
+    }
+    if (this.dom.compResultText) {
+      const sign = comp.diff > 0 ? `+${comp.diff}` : `${comp.diff}`;
+      this.dom.compResultText.textContent = `Chênh lệch: ${sign} ${unit} (${comp.percentChange > 0 ? '+' : ''}${comp.percentChange}%). ${comp.trendDescription}.`;
+      this.dom.compResultText.style.color = 'var(--color-primary, #173F35)';
+    }
+    if (this.dom.compBadge) {
+      this.dom.compBadge.className = 'glass-badge glass-badge-emerald';
+      this.dom.compBadge.textContent = `${comp.diff > 0 ? '+' : ''}${comp.diff} ${unit}`;
+    }
+  },
+
+  renderGoalProgress() {
+    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
+    const targetWeight = Number(profile.targetWeight) || null;
+    const all = this.cachedAllEntries;
+
+    if (!targetWeight || all.length === 0 || !window.HealthCalculator) {
+      if (this.dom.goalBadge) {
+        this.dom.goalBadge.className = 'glass-badge glass-badge-muted';
+        this.dom.goalBadge.textContent = 'Chưa đặt mục tiêu';
+      }
+      if (this.dom.goalStatusText) {
+        this.dom.goalStatusText.textContent = 'Bạn chưa thiết lập cân nặng mục tiêu trong Cài Đặt.';
+      }
+      return;
+    }
+
+    const initialWeight = Number(all[0].weight);
+    const currentWeight = Number(all[all.length - 1].weight);
+
+    if (this.dom.goalInitText) this.dom.goalInitText.textContent = `${initialWeight} kg`;
+    if (this.dom.goalCurrText) this.dom.goalCurrText.textContent = `${currentWeight} kg`;
+    if (this.dom.goalTargetText) this.dom.goalTargetText.textContent = `${targetWeight} kg`;
+
+    const goalRes = window.HealthCalculator.calculateGoalProgress(initialWeight, currentWeight, targetWeight);
+
+    if (this.dom.goalBadge) {
+      this.dom.goalBadge.className = goalRes.isCompleted ? 'glass-badge glass-badge-emerald' : 'glass-badge glass-badge-cyan';
+      this.dom.goalBadge.textContent = goalRes.isCompleted ? 'Đã đạt mục tiêu' : `Đạt ${goalRes.percent}%`;
+    }
+    if (this.dom.goalFillBar) {
+      this.dom.goalFillBar.style.width = `${goalRes.percent}%`;
+    }
+    if (this.dom.goalStatusText) {
+      this.dom.goalStatusText.textContent = goalRes.statusText;
+    }
+    if (this.dom.goalDiffText) {
+      this.dom.goalDiffText.textContent = goalRes.isCompleted ? 'Hoàn thành!' : `Cách đích ${goalRes.remainingDiff} kg`;
+    }
+  },
+
+  renderInsights() {
+    if (!this.dom.insightsText) return;
+
+    if (this.cachedFilteredEntries.length === 0) {
+      this.dom.insightsText.textContent = 'Chưa có đủ dữ liệu trong khoảng thời gian này để đưa ra nhận xét xu hướng.';
+      return;
+    }
+
+    if (this.cachedFilteredEntries.length === 1) {
+      this.dom.insightsText.textContent = 'Hệ thống mới ghi nhận 1 mốc dữ liệu trong khoảng thời gian này. Hãy tiếp tục ghi nhận đều đặn để xây dựng biểu đồ tiến trình hoàn chỉnh.';
+      return;
+    }
+
+    const isWeight = this.currentMetric === 'weight';
+    const stats = window.HealthCalculator.calculatePeriodStats(this.cachedFilteredEntries, this.currentMetric);
+    const count = this.cachedFilteredEntries.length;
+
+    let insightStr = '';
+    if (isWeight) {
+      insightStr = `Trong chu kỳ đã chọn với ${count} lần ghi nhận, cân nặng của bạn có xu hướng ${stats.trend === 'increasing' ? 'tăng' : stats.trend === 'decreasing' ? 'giảm' : 'ổn định'} (${stats.diff > 0 ? '+' : ''}${stats.diff} kg, tương đương ${stats.percentChange}%).`;
+    } else {
+      insightStr = `Chỉ số khối cơ thể (BMI) của bạn dịch chuyển từ ${Number(stats.startVal).toFixed(1)} đến ${Number(stats.endVal).toFixed(1)} (${stats.diff > 0 ? '+' : ''}${stats.diff} điểm).`;
+    }
+
+    insightStr += ` Lưu ý: Xu hướng tăng hay giảm cần được đối chiếu với mục tiêu cụ thể của bạn (Tăng cơ Lean Bulk hay Giảm mỡ Cut), không nên đánh giá chỉ số đơn thuần là tốt hay xấu khi chưa xét tổng thể.`;
+
+    this.dom.insightsText.textContent = insightStr;
+  },
+
+  renderTable() {
+    if (!this.dom.tableTbody) return;
+
+    const entries = [...this.cachedFilteredEntries];
+    if (entries.length === 0) {
+      this.dom.tableTbody.innerHTML = '';
+      if (this.dom.tableEmpty) this.dom.tableEmpty.style.display = 'block';
+      if (this.dom.pageInfo) this.dom.pageInfo.textContent = 'Trang 0 / 0';
+      if (this.dom.btnPagePrev) this.dom.btnPagePrev.disabled = true;
+      if (this.dom.btnPageNext) this.dom.btnPageNext.disabled = true;
+      return;
+    }
+
+    if (this.dom.tableEmpty) this.dom.tableEmpty.style.display = 'none';
+
+    // Sort
+    entries.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return this.sortAscending ? dateA - dateB : dateB - dateA;
+    });
+
+    // Pagination slice
+    const totalPages = Math.ceil(entries.length / this.pageSize) || 1;
+    this.currentPage = Math.min(this.currentPage, totalPages);
+    const startIdx = (this.currentPage - 1) * this.pageSize;
+    const pageItems = entries.slice(startIdx, startIdx + this.pageSize);
+
+    // Build rows
+    const rowsHtml = pageItems.map((item, idx) => {
+      // Find diff compared to previous chronological entry in all entries
+      const allSortedAsc = [...this.cachedAllEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const masterIdx = allSortedAsc.findIndex(e => e.id === item.id || (e.date === item.date && e.weight === item.weight));
+
+      let diffHtml = '<span style="color: var(--color-text-muted);">--</span>';
+      if (masterIdx > 0) {
+        const prevItem = allSortedAsc[masterIdx - 1];
+        const d = parseFloat((item.weight - prevItem.weight).toFixed(1));
+        if (d > 0) {
+          diffHtml = `<span style="color: #326B82; font-weight: 600;">+${d} kg</span>`;
+        } else if (d < 0) {
+          diffHtml = `<span style="color: #287653; font-weight: 600;">${d} kg</span>`;
+        } else {
+          diffHtml = `<span style="color: var(--color-text-muted);">0.0 kg</span>`;
+        }
+      }
+
+      const bmiDisplay = item.bmi ? `${Number(item.bmi).toFixed(1)} kg/m²` : '--';
+      const noteDisplay = item.note ? item.note : '<span style="color: var(--color-text-muted); font-style: italic;">Không có</span>';
+
+      return `
+        <tr>
+          <td style="font-weight: 600; color: var(--color-primary, #173F35); white-space: nowrap;">
+            📅 ${item.date}
+          </td>
+          <td style="font-weight: 700;">
+            ${Number(item.weight).toFixed(1)} kg
+          </td>
+          <td style="font-weight: 600;">
+            ${bmiDisplay}
+          </td>
+          <td>
+            ${diffHtml}
+          </td>
+          <td style="color: var(--color-text-secondary, #63756B); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${noteDisplay}
+          </td>
+        </tr>
+      `;
+    });
+
+    this.dom.tableTbody.innerHTML = rowsHtml.join('');
+
+    // Pagination controls state
+    if (this.dom.pageInfo) {
+      this.dom.pageInfo.textContent = `Trang ${this.currentPage} / ${totalPages} (${entries.length} bản ghi)`;
+    }
+    if (this.dom.btnPagePrev) {
+      this.dom.btnPagePrev.disabled = this.currentPage <= 1;
+    }
+    if (this.dom.btnPageNext) {
+      this.dom.btnPageNext.disabled = this.currentPage >= totalPages;
+    }
+  },
+
+  renderEmptyState() {
+    this.renderSummaryCards();
+    this.renderChart();
+    this.renderPeriodComparison();
+    this.renderGoalProgress();
+    this.renderInsights();
+    this.renderTable();
+  }
+};
+
+window.ProgressChartsModule = ProgressChartsModule;
