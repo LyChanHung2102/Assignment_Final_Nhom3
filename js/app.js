@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('form-login') || document.getElementById('form-signup')) {
     if (window.AuthModule) window.AuthModule.init();
   }
+
+  if (document.getElementById('food-search-input') || document.getElementById('food-cards-grid')) {
+    if (window.FoodSearchModule) window.FoodSearchModule.init();
+  }
 });
 
 /**
