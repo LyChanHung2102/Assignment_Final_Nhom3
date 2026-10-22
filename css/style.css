@@ -2483,3 +2483,140 @@ body.theme-porcelain #app-layout,
   color: var(--color-text-secondary, #3F5247);
   display: block;
 }
+
+/* --------------------------------------------------------------------------
+   Food Diary - Date Navigator Bar (Jade & Porcelain)
+   -------------------------------------------------------------------------- */
+.food-date-navigator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 12px);
+  padding: 12px 18px;
+  margin-bottom: var(--spacing-md, 18px);
+  background: var(--color-surface, #FFFEFA);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 2px 8px rgba(23, 63, 53, 0.04);
+}
+
+.date-nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border, #DDE3D9);
+  background: var(--color-surface, #FFFEFA);
+  color: var(--color-primary, #173F35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.date-arrow-btn:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-primary, #173F35);
+  transform: scale(1.05);
+}
+
+.date-picker-trigger {
+  position: relative;
+  cursor: pointer;
+}
+
+.date-display-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  transition: all 0.2s ease;
+}
+
+.date-picker-trigger:hover .date-display-box {
+  border-color: var(--color-border-focus, #397866);
+  background: #FFFFFF;
+}
+
+.active-date-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-primary, #173F35);
+}
+
+.date-picker-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.date-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.glass-btn-subtle {
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  color: var(--color-primary, #173F35);
+  font-weight: 600;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-md, 12px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.glass-btn-subtle:hover {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-primary, #173F35);
+}
+
+.day-total-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+}
+
+.summary-label {
+  color: var(--color-text-secondary, #63756B);
+}
+
+.summary-value {
+  color: var(--color-primary, #173F35);
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+@media (max-width: 680px) {
+  .food-date-navigator {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .date-nav-controls {
+    justify-content: space-between;
+  }
+  .date-display-box {
+    flex: 1;
+    justify-content: center;
+  }
+  .date-quick-actions {
+    justify-content: space-between;
+  }
+}
