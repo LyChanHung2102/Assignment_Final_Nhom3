@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FitVN Tracker - LocalStorage Service Module
  * Handles safe data persistence, schema validation, and seeding default state.
  */
@@ -458,101 +458,6 @@ const storageService = {
     }
 
     this.set(STORAGE_KEYS.USER_PROFILE, profile);
-  },
-
-  /**
-   * DATA BACKUP & RESTORE METHODS
-   */
-  exportBackupData() {
-    const backupSnapshot = {
-      app: 'FitVN Tracker',
-      version: '1.2',
-      exportedAt: new Date().toISOString(),
-      data: {
-        [STORAGE_KEYS.USER_PROFILE]: this.get(STORAGE_KEYS.USER_PROFILE),
-        [STORAGE_KEYS.FOOD_LOGS]: this.get(STORAGE_KEYS.FOOD_LOGS),
-        [STORAGE_KEYS.WEIGHT_LOGS]: this.get(STORAGE_KEYS.WEIGHT_LOGS),
-        [STORAGE_KEYS.WATER_LOGS]: this.get(STORAGE_KEYS.WATER_LOGS),
-        [STORAGE_KEYS.SETTINGS]: this.get(STORAGE_KEYS.SETTINGS),
-        [STORAGE_KEYS.CUSTOM_FOODS]: this.get(STORAGE_KEYS.CUSTOM_FOODS),
-        [STORAGE_KEYS.USERS_LIST]: this.get(STORAGE_KEYS.USERS_LIST),
-        [STORAGE_KEYS.AUTH_USER]: this.get(STORAGE_KEYS.AUTH_USER)
-      }
-    };
-    return JSON.stringify(backupSnapshot, null, 2);
-  },
-
-  validateBackupData(jsonObj) {
-    if (!jsonObj || typeof jsonObj !== 'object') {
-      return { valid: false, message: 'Dữ liệu không phải là đối tượng JSON hợp lệ.' };
-    }
-    if (jsonObj.app !== 'FitVN Tracker') {
-      return { valid: false, message: 'File không phải là bản sao lưu của ứng dụng FitVN Tracker.' };
-    }
-    if (!jsonObj.data || typeof jsonObj.data !== 'object') {
-      return { valid: false, message: 'File thiếu phần dữ liệu cốt lõi (data).' };
-    }
-    return { valid: true };
-  },
-
-  importBackupData(jsonObj, isMerge = false) {
-    const validation = this.validateBackupData(jsonObj);
-    if (!validation.valid) {
-      return { success: false, message: validation.message };
-    }
-
-    try {
-      const data = jsonObj.data;
-
-      if (!isMerge) {
-        // Complete overwrite
-        if (data[STORAGE_KEYS.USER_PROFILE]) this.set(STORAGE_KEYS.USER_PROFILE, data[STORAGE_KEYS.USER_PROFILE]);
-        if (data[STORAGE_KEYS.FOOD_LOGS]) this.set(STORAGE_KEYS.FOOD_LOGS, data[STORAGE_KEYS.FOOD_LOGS]);
-        if (data[STORAGE_KEYS.WEIGHT_LOGS]) this.set(STORAGE_KEYS.WEIGHT_LOGS, data[STORAGE_KEYS.WEIGHT_LOGS]);
-        if (data[STORAGE_KEYS.WATER_LOGS]) this.set(STORAGE_KEYS.WATER_LOGS, data[STORAGE_KEYS.WATER_LOGS]);
-        if (data[STORAGE_KEYS.SETTINGS]) this.set(STORAGE_KEYS.SETTINGS, data[STORAGE_KEYS.SETTINGS]);
-        if (data[STORAGE_KEYS.CUSTOM_FOODS]) this.set(STORAGE_KEYS.CUSTOM_FOODS, data[STORAGE_KEYS.CUSTOM_FOODS]);
-        if (data[STORAGE_KEYS.USERS_LIST]) this.set(STORAGE_KEYS.USERS_LIST, data[STORAGE_KEYS.USERS_LIST]);
-        if (data[STORAGE_KEYS.AUTH_USER]) this.set(STORAGE_KEYS.AUTH_USER, data[STORAGE_KEYS.AUTH_USER]);
-      } else {
-        // Smart merge lists
-        if (data[STORAGE_KEYS.FOOD_LOGS] && Array.isArray(data[STORAGE_KEYS.FOOD_LOGS])) {
-          const currentLogs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
-          const existingIds = new Set(currentLogs.map(item => item.id));
-          const newItems = data[STORAGE_KEYS.FOOD_LOGS].filter(item => !existingIds.has(item.id));
-          this.set(STORAGE_KEYS.FOOD_LOGS, [...newItems, ...currentLogs]);
-        }
-        if (data[STORAGE_KEYS.WEIGHT_LOGS] && Array.isArray(data[STORAGE_KEYS.WEIGHT_LOGS])) {
-          const currentWeights = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
-          const existingDates = new Set(currentWeights.map(w => w.date));
-          const newWeights = data[STORAGE_KEYS.WEIGHT_LOGS].filter(w => !existingDates.has(w.date));
-          const merged = [...currentWeights, ...newWeights].sort((a, b) => new Date(a.date) - new Date(b.date));
-          this.set(STORAGE_KEYS.WEIGHT_LOGS, merged);
-        }
-        if (data[STORAGE_KEYS.USER_PROFILE]) {
-          this.set(STORAGE_KEYS.USER_PROFILE, { ...this.get(STORAGE_KEYS.USER_PROFILE, {}), ...data[STORAGE_KEYS.USER_PROFILE] });
-        }
-      }
-
-      return { success: true, message: 'Khôi phục dữ liệu sao lưu thành công!' };
-    } catch (error) {
-      console.error('[storageService] importBackupData error:', error);
-      return { success: false, message: 'Lỗi trong quá trình ghi dữ liệu: ' + error.message };
-    }
-  },
-
-  resetToDefaultData() {
-    try {
-      this.set(STORAGE_KEYS.USER_PROFILE, DEFAULT_PROFILE);
-      this.set(STORAGE_KEYS.FOOD_LOGS, DEFAULT_FOOD_LOGS);
-      this.set(STORAGE_KEYS.WEIGHT_LOGS, DEFAULT_WEIGHT_LOGS);
-      this.set(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
-      this.set(STORAGE_KEYS.CUSTOM_FOODS, []);
-      this.set(STORAGE_KEYS.WATER_LOGS, {});
-      return { success: true, message: 'Đã khôi phục toàn bộ dữ liệu mẫu ban đầu!' };
-    } catch (error) {
-      return { success: false, message: error.message };
-    }
   }
 };
 
