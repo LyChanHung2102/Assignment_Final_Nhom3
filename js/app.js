@@ -1800,14 +1800,22 @@ const OnboardingModule = {
 
   init() {
     this.modal = document.getElementById('onboarding-modal');
-    if (!this.modal) return;
+    if (!this.modal) {
+      console.log('Onboarding modal not found');
+      return;
+    }
 
     // Check if user has completed onboarding
     const hasCompletedOnboarding = localStorage.getItem('fitvn_onboarding_completed');
 
+    console.log('Has completed onboarding:', hasCompletedOnboarding);
+
     // Show onboarding immediately if not completed (before auth modal)
     if (!hasCompletedOnboarding) {
-      this.showModal();
+      // Small delay to ensure DOM is ready
+      setTimeout(() => this.showModal(), 100);
+    } else {
+      console.log('Onboarding already completed. To reset, run: localStorage.removeItem("fitvn_onboarding_completed")');
     }
 
     this.bindEvents();
@@ -1816,6 +1824,7 @@ const OnboardingModule = {
   showModal() {
     if (this.modal) {
       this.modal.style.display = 'flex';
+      this.modal.classList.add('active');
       this.currentStep = 1;
       this.updateStepUI();
     }
@@ -1823,7 +1832,10 @@ const OnboardingModule = {
 
   hideModal() {
     if (this.modal) {
-      this.modal.style.display = 'none';
+      this.modal.classList.remove('active');
+      setTimeout(() => {
+        this.modal.style.display = 'none';
+      }, 300); // Wait for transition
     }
   },
 
@@ -2042,6 +2054,13 @@ const OnboardingModule = {
     localStorage.removeItem('fitvn_onboarding_completed');
     this.userData = {};
     this.showModal();
+  },
+
+  // Debug helper to reset onboarding (call from console: OnboardingModule.resetOnboarding())
+  resetOnboarding() {
+    localStorage.removeItem('fitvn_onboarding_completed');
+    console.log('Onboarding reset. Please reload the page.');
+    location.reload();
   }
 };
 
