@@ -1,6 +1,7 @@
 const STORAGE_KEYS = {
   USER_PROFILE: 'fitvn_user_profile',
   FOOD_LOGS: 'fitvn_food_logs',
+  DAILY_CALORIE_LOGS: 'fitvn_daily_calorie_logs',
   WEIGHT_LOGS: 'fitvn_weight_logs',
   WORKOUT_LOGS: 'fitvn_workout_logs',
   SETTINGS: 'fitvn_settings',
@@ -50,6 +51,8 @@ function fallbackHash(str) {
 }
 
 const storageService = {
+  minimumCalorieTarget: 1200,
+
   get(key, defaultValue = null) {
     try {
       const item = localStorage.getItem(key);
@@ -361,6 +364,10 @@ const storageService = {
     };
     allLogs.unshift(newLog);
     this.set(STORAGE_KEYS.FOOD_LOGS, allLogs);
+    const profile = this.getUserProfile();
+    if (profile) {
+      this.saveDayLog(newLog.date, this.calculateDayTotals(newLog.date).calories, profile.targetCalories);
+    }
     return newLog;
   },
 
@@ -369,8 +376,14 @@ const storageService = {
     if (!currentUser) return false;
     const allLogs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
     const filtered = allLogs.filter(log => !(log.id === logId && log.userId === currentUser.id));
-    this.set(STORAGE_KEYS.FOOD_LOGS, filtered);
-    return filtered.length < allLogs.length;
+    if (filtered.length === allLogs.length) return false;
+    const removedLog = allLogs.find(log => log.id === logId && log.userId === currentUser.id);
+    if (!this.set(STORAGE_KEYS.FOOD_LOGS, filtered)) return false;
+    const profile = this.getUserProfile();
+    if (profile && removedLog) {
+      this.saveDayLog(removedLog.date || getTodayDateString(), this.calculateDayTotals(removedLog.date).calories, profile.targetCalories);
+    }
+    return true;
   },
 
   calculateDayTotals(dateString = null) {
@@ -384,6 +397,145 @@ const storageService = {
       acc.count += 1;
       return acc;
     }, { calories: 0, protein: 0, carbs: 0, fat: 0, count: 0 });
+  },
+
+  getDailyCalorieLogs() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return [];
+    return this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, [])
+      .filter(log => log.userId === currentUser.id)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
+
+  getDailyCalorieLog(date) {
+    return this.getDailyCalorieLogs().find(log => log.date === date) || null;
+  },
+
+  calculateDailyTarget(date = getTodayDateString(), historyData = null, baseTargetOverride = null) {
+    const profile = this.getUserProfile();
+    const baseTarget = Math.max(this.minimumCalorieTarget, Number(baseTargetOverride) || Number(profile && profile.targetCalories) || 2000);
+    const history = Array.isArray(historyData) ? historyData : this.getDailyCalorieLogs();
+    const logsByDate = new Map(history.map(log => [log.date, log]));
+    const [year, month, day] = date.split('-').map(Number);
+    const cursor = new Date(year, month - 1, day);
+    cursor.setDate(cursor.getDate() - 1);
+    const previousDays = [];
+
+    while (true) {
+      const previousDate = [
+        cursor.getFullYear(),
+        String(cursor.getMonth() + 1).padStart(2, '0'),
+        String(cursor.getDate()).padStart(2, '0')
+      ].join('-');
+      const previousLog = logsByDate.get(previousDate);
+      const foodTotals = previousLog ? null : this.calculateDayTotals(previousDate);
+      const hasRecord = Boolean(previousLog || (foodTotals && foodTotals.count > 0));
+      if (!hasRecord) break;
+
+      previousDays.push({
+        consumed: previousLog ? Number(previousLog.consumedCalories) || 0 : Number(foodTotals.calories) || 0,
+        baseTarget: Math.max(1, Number(previousLog && previousLog.baseTarget) || baseTarget)
+      });
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    let previousSurplus = 0;
+    for (let index = previousDays.length - 1; index >= 0; index--) {
+      const previousTarget = Math.max(this.minimumCalorieTarget, previousDays[index].baseTarget - previousSurplus);
+      previousSurplus = Math.max(0, previousDays[index].consumed - previousTarget);
+    }
+    return Math.max(this.minimumCalorieTarget, baseTarget - previousSurplus);
+  },
+
+  saveDayLog(date, consumedCalories, baseTarget) {
+    const currentUser = this.getCurrentUser();
+    const consumed = Number(consumedCalories);
+    const base = Number(baseTarget);
+    if (!currentUser || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(consumed) || consumed < 0 || !Number.isFinite(base) || base <= 0) {
+      return null;
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, []);
+    const history = allLogs.filter(log => log.userId === currentUser.id);
+    const adjustedTarget = this.calculateDailyTarget(date, history, base);
+    const surplus = Math.max(0, consumed - adjustedTarget);
+    const deficit = Math.max(0, adjustedTarget - consumed);
+    const dayLog = {
+      userId: currentUser.id,
+      date,
+      consumedCalories: Math.round(consumed),
+      baseTarget: Math.round(base),
+      adjustedTarget: Math.round(adjustedTarget),
+      surplus: Math.round(surplus),
+      deficit: Math.round(deficit),
+      updatedAt: new Date().toISOString()
+    };
+    const existingIndex = allLogs.findIndex(log => log.userId === currentUser.id && log.date === date);
+    if (existingIndex >= 0) {
+      allLogs[existingIndex] = dayLog;
+    } else {
+      allLogs.push(dayLog);
+    }
+
+    const userHistory = allLogs.filter(log => log.userId === currentUser.id).sort((a, b) => a.date.localeCompare(b.date));
+    userHistory.forEach(log => {
+      if (log.date <= date) return;
+      log.adjustedTarget = Math.round(this.calculateDailyTarget(log.date, userHistory, log.baseTarget));
+      log.surplus = Math.max(0, log.consumedCalories - log.adjustedTarget);
+      log.deficit = Math.max(0, log.adjustedTarget - log.consumedCalories);
+    });
+
+    return this.set(STORAGE_KEYS.DAILY_CALORIE_LOGS, allLogs) ? dayLog : null;
+  },
+
+  getWeeklySummary(currentDate = getTodayDateString(), historyData = null) {
+    const [year, month, day] = currentDate.split('-').map(Number);
+    const endDate = new Date(year, month - 1, day);
+    const startDate = new Date(endDate);
+    const daysFromMonday = (startDate.getDay() + 6) % 7;
+    startDate.setDate(startDate.getDate() - daysFromMonday);
+    const history = Array.isArray(historyData) ? historyData : this.getDailyCalorieLogs();
+    const logsByDate = new Map(history.map(log => [log.date, log]));
+    const summary = {
+      startDate: [startDate.getFullYear(), String(startDate.getMonth() + 1).padStart(2, '0'), String(startDate.getDate()).padStart(2, '0')].join('-'),
+      endDate: currentDate,
+      totalTarget: 0,
+      totalConsumed: 0,
+      daysOverTarget: 0,
+      daysMetTarget: 0,
+      totalSurplus: 0,
+      totalDeficit: 0,
+      netDifference: 0,
+      daysTracked: 0
+    };
+
+    for (const cursor = new Date(startDate); cursor <= endDate; cursor.setDate(cursor.getDate() + 1)) {
+      const date = [cursor.getFullYear(), String(cursor.getMonth() + 1).padStart(2, '0'), String(cursor.getDate()).padStart(2, '0')].join('-');
+      const dayLog = logsByDate.get(date);
+      const foodTotals = dayLog ? null : this.calculateDayTotals(date);
+      const consumed = dayLog
+        ? Number(dayLog.consumedCalories) || 0
+        : Number(foodTotals && foodTotals.calories) || 0;
+      const hasRecord = Boolean(dayLog || (foodTotals && foodTotals.count > 0));
+      const target = this.calculateDailyTarget(date, history, dayLog && dayLog.baseTarget);
+
+      summary.totalTarget += target;
+      summary.totalConsumed += consumed;
+      if (hasRecord) {
+        summary.daysTracked += 1;
+        if (consumed > target) {
+          const surplus = consumed - target;
+          summary.daysOverTarget += 1;
+          summary.totalSurplus += surplus;
+        } else {
+          summary.daysMetTarget += 1;
+          summary.totalDeficit += target - consumed;
+        }
+      }
+    }
+
+    summary.netDifference = summary.totalSurplus - summary.totalDeficit;
+    return summary;
   },
 
   getWeightLogs() {
@@ -575,6 +727,7 @@ const storageService = {
       data: {
         profile: this.getUserProfile(),
         foodLogs: this.getFoodLogs(),
+        dailyCalorieLogs: this.getDailyCalorieLogs(),
         weightLogs: this.getWeightLogs(),
         workoutLogs: this.getWorkoutLogs(),
         water: currentUser ? (this.get(STORAGE_KEYS.WATER_LOGS, {})[currentUser.id] || {}) : {}
@@ -617,6 +770,11 @@ const storageService = {
         const importedFood = data.foodLogs.map(l => ({ ...l, userId: currentUser.id }));
         this.set(STORAGE_KEYS.FOOD_LOGS, [...importedFood, ...allFood]);
       }
+      if (data.dailyCalorieLogs && Array.isArray(data.dailyCalorieLogs)) {
+        const allDailyCalories = this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, []).filter(log => log.userId !== currentUser.id);
+        const importedDailyCalories = data.dailyCalorieLogs.map(log => ({ ...log, userId: currentUser.id }));
+        this.set(STORAGE_KEYS.DAILY_CALORIE_LOGS, [...importedDailyCalories, ...allDailyCalories]);
+      }
       if (data.weightLogs && Array.isArray(data.weightLogs)) {
         const allWeight = this.get(STORAGE_KEYS.WEIGHT_LOGS, []).filter(l => l.userId !== currentUser.id && l.userId !== currentUser.email);
         const importedWeight = data.weightLogs.map(l => ({ ...l, userId: currentUser.id }));
@@ -644,6 +802,9 @@ const storageService = {
     try {
       const allFood = this.get(STORAGE_KEYS.FOOD_LOGS, []).filter(l => l.userId !== currentUser.id);
       this.set(STORAGE_KEYS.FOOD_LOGS, allFood);
+
+      const allDailyCalories = this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, []).filter(log => log.userId !== currentUser.id);
+      this.set(STORAGE_KEYS.DAILY_CALORIE_LOGS, allDailyCalories);
 
       const allWeight = this.get(STORAGE_KEYS.WEIGHT_LOGS, []).filter(l => l.userId !== currentUser.id && l.userId !== currentUser.email);
       this.set(STORAGE_KEYS.WEIGHT_LOGS, allWeight);
