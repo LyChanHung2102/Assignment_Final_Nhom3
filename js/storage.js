@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FitVN Tracker - LocalStorage Service Module
  * Handles safe data persistence, schema validation, and seeding default state.
  */
@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   USER_PROFILE: 'fitvn_user_profile',
   FOOD_LOGS: 'fitvn_food_logs',
   WEIGHT_LOGS: 'fitvn_weight_logs',
+  WORKOUT_LOGS: 'fitvn_workout_logs',
   SETTINGS: 'fitvn_settings',
   CUSTOM_FOODS: 'fitvn_custom_foods',
   WATER_LOGS: 'fitvn_water_logs',
@@ -114,6 +115,94 @@ const DEFAULT_WEIGHT_LOGS = [
   { id: 'wt-14', date: '2026-10-20', weight: 72.5, bodyFat: 14.1, note: 'Tăng cơ tốt, chuẩn Lean Bulk', measurements: { chest: 102.5, waist: 77.0, arm: 37.5, thigh: 58.0 } }
 ];
 
+const DEFAULT_WORKOUT_LOGS = [
+  {
+    id: 'wo-1',
+    userId: 'default-user',
+    title: 'Đẩy ngực & Vai trước (Push Day)',
+    activityType: 'gym',
+    workoutDate: '2026-10-17',
+    startTime: '17:30',
+    endTime: '18:45',
+    durationMinutes: 75,
+    intensity: 'high',
+    distanceKm: null,
+    steps: null,
+    notes: 'Tăng tạ Incline Dumbbell Press lên 28kg/bên. Pump cơ cực tốt.',
+    feeling: 'great',
+    createdAt: '2026-10-17T11:45:00.000Z',
+    updatedAt: '2026-10-17T11:45:00.000Z'
+  },
+  {
+    id: 'wo-2',
+    userId: 'default-user',
+    title: 'Kéo lưng xô & Tay trước (Pull Day)',
+    activityType: 'gym',
+    workoutDate: '2026-10-18',
+    startTime: '18:00',
+    endTime: '19:10',
+    durationMinutes: 70,
+    intensity: 'high',
+    distanceKm: null,
+    steps: null,
+    notes: 'Deadlift 4 hiệp x 8 reps 110kg. Lat pulldown kiểm soát eccentric.',
+    feeling: 'good',
+    createdAt: '2026-10-18T12:10:00.000Z',
+    updatedAt: '2026-10-18T12:10:00.000Z'
+  },
+  {
+    id: 'wo-3',
+    userId: 'default-user',
+    title: 'Chạy bộ phục hồi Zone 2 công viên',
+    activityType: 'running',
+    workoutDate: '2026-10-19',
+    startTime: '06:15',
+    endTime: '07:00',
+    durationMinutes: 45,
+    intensity: 'medium',
+    distanceKm: 5.2,
+    steps: 6400,
+    notes: 'Giữ nhịp tim ổn định 135-140 bpm, hơi thở đều.',
+    feeling: 'great',
+    createdAt: '2026-10-19T00:05:00.000Z',
+    updatedAt: '2026-10-19T00:05:00.000Z'
+  },
+  {
+    id: 'wo-4',
+    userId: 'default-user',
+    title: 'Tập chân & Bụng (Leg Day)',
+    activityType: 'gym',
+    workoutDate: '2026-10-20',
+    startTime: '17:30',
+    endTime: '18:35',
+    durationMinutes: 65,
+    intensity: 'high',
+    distanceKm: null,
+    steps: null,
+    notes: 'Barbell Squat 95kg 4x6, Leg Press căng cơ đùi trước.',
+    feeling: 'tired',
+    createdAt: '2026-10-20T11:35:00.000Z',
+    updatedAt: '2026-10-20T11:35:00.000Z'
+  },
+  {
+    id: 'wo-5',
+    userId: 'default-user',
+    title: 'Yoga giãn cơ & Thở sâu phục hồi',
+    activityType: 'yoga',
+    workoutDate: '2026-10-21',
+    startTime: '20:30',
+    endTime: '21:10',
+    durationMinutes: 40,
+    intensity: 'low',
+    distanceKm: null,
+    steps: null,
+    notes: 'Giãn cơ hông và lưng dưới sau ngày tập chân.',
+    feeling: 'great',
+    createdAt: '2026-10-21T14:10:00.000Z',
+    updatedAt: '2026-10-21T14:10:00.000Z'
+  }
+];
+
 const DEFAULT_SETTINGS = {
   theme: 'dark',
   unitSystem: 'metric',
@@ -175,10 +264,9 @@ const storageService = {
     if (!this.get(STORAGE_KEYS.FOOD_LOGS)) {
       this.set(STORAGE_KEYS.FOOD_LOGS, DEFAULT_FOOD_LOGS);
     }
-    // Check if weight logs is missing or has less than 5 items
-    const existingWeights = this.get(STORAGE_KEYS.WEIGHT_LOGS);
-    if (!existingWeights || existingWeights.length < 5) {
-      this.set(STORAGE_KEYS.WEIGHT_LOGS, DEFAULT_WEIGHT_LOGS);
+    // Initialize empty weight logs array (no default data since it's user-specific)
+    if (!this.get(STORAGE_KEYS.WEIGHT_LOGS)) {
+      this.set(STORAGE_KEYS.WEIGHT_LOGS, []);
     }
     if (!this.get(STORAGE_KEYS.SETTINGS)) {
       this.set(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
@@ -282,9 +370,16 @@ const storageService = {
    * WEIGHT & BODY METRICS METHODS
    */
   getWeightLogs() {
-    const logs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      return [];
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    // Filter logs for current user only
+    const userLogs = allLogs.filter(log => log.userId === currentUser.email);
     // Ensure chronological sort
-    return logs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return userLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
   },
 
   /**
@@ -292,16 +387,23 @@ const storageService = {
    * @param {Object} entry { date, weight, bodyFat, note, measurements }
    */
   addWeightLog(entry) {
-    const logs = this.getWeightLogs();
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      console.warn('Cannot add weight log: No user logged in');
+      return null;
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
     const cleanDate = entry.date || getTodayDateString();
     const cleanWeight = parseFloat(Number(entry.weight).toFixed(1));
     const cleanBodyFat = entry.bodyFat ? parseFloat(Number(entry.bodyFat).toFixed(1)) : null;
 
-    // Check if entry for date exists
-    const existingIndex = logs.findIndex(log => log.date === cleanDate);
+    // Check if entry for date exists for this user
+    const existingIndex = allLogs.findIndex(log => log.date === cleanDate && log.userId === currentUser.email);
 
     const newEntry = {
-      id: existingIndex >= 0 ? logs[existingIndex].id : `wt-${Date.now()}`,
+      id: existingIndex >= 0 ? allLogs[existingIndex].id : `wt-${Date.now()}`,
+      userId: currentUser.email,
       date: cleanDate,
       weight: cleanWeight,
       bodyFat: cleanBodyFat,
@@ -310,13 +412,13 @@ const storageService = {
     };
 
     if (existingIndex >= 0) {
-      logs[existingIndex] = newEntry;
+      allLogs[existingIndex] = newEntry;
     } else {
-      logs.push(newEntry);
+      allLogs.push(newEntry);
     }
 
-    logs.sort((a, b) => new Date(a.date) - new Date(b.date));
-    this.set(STORAGE_KEYS.WEIGHT_LOGS, logs);
+    allLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    this.set(STORAGE_KEYS.WEIGHT_LOGS, allLogs);
 
     // Update current weight in user profile
     const profile = this.get(STORAGE_KEYS.USER_PROFILE, {});
@@ -327,10 +429,16 @@ const storageService = {
   },
 
   removeWeightLog(logId) {
-    const logs = this.getWeightLogs();
-    const filtered = logs.filter(log => log.id !== logId);
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      console.warn('Cannot remove weight log: No user logged in');
+      return false;
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    const filtered = allLogs.filter(log => log.id !== logId || log.userId !== currentUser.email);
     this.set(STORAGE_KEYS.WEIGHT_LOGS, filtered);
-    return filtered.length < logs.length;
+    return filtered.length < allLogs.length;
   },
 
   getLatestWeight() {
@@ -367,6 +475,80 @@ const storageService = {
     waterData[date] = 0;
     this.set(STORAGE_KEYS.WATER_LOGS, waterData);
     return 0;
+  },
+
+  /**
+   * WORKOUT JOURNAL CRUD METHODS
+   */
+  getWorkoutLogs() {
+    let logs = this.get(STORAGE_KEYS.WORKOUT_LOGS);
+    if (!logs) {
+      logs = DEFAULT_WORKOUT_LOGS;
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, logs);
+    }
+    return logs;
+  },
+
+  addWorkoutLog(workoutData) {
+    const logs = this.getWorkoutLogs();
+    const currentUser = this.getCurrentUser();
+    const nowIso = new Date().toISOString();
+
+    const newLog = {
+      id: workoutData.id || `wo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: currentUser ? currentUser.id : 'default-user',
+      title: (workoutData.title || '').trim() || 'Buổi tập luyện',
+      activityType: workoutData.activityType || 'gym',
+      workoutDate: workoutData.workoutDate || getTodayDateString(),
+      startTime: workoutData.startTime || '',
+      endTime: workoutData.endTime || '',
+      durationMinutes: Math.max(1, parseInt(workoutData.durationMinutes, 10) || 30),
+      intensity: workoutData.intensity || 'medium',
+      distanceKm: workoutData.distanceKm !== null && workoutData.distanceKm !== '' ? parseFloat(Number(workoutData.distanceKm).toFixed(2)) : null,
+      steps: workoutData.steps ? parseInt(workoutData.steps, 10) : null,
+      notes: (workoutData.notes || '').trim(),
+      feeling: workoutData.feeling || 'good',
+      createdAt: workoutData.createdAt || nowIso,
+      updatedAt: nowIso
+    };
+
+    logs.unshift(newLog);
+    this.set(STORAGE_KEYS.WORKOUT_LOGS, logs);
+    return newLog;
+  },
+
+  updateWorkoutLog(id, updatedData) {
+    const logs = this.getWorkoutLogs();
+    const index = logs.findIndex(item => item.id === id);
+    if (index === -1) return null;
+
+    const existing = logs[index];
+    const nowIso = new Date().toISOString();
+
+    const updated = {
+      ...existing,
+      ...updatedData,
+      id: existing.id, // Immutable ID
+      userId: existing.userId,
+      durationMinutes: Math.max(1, parseInt(updatedData.durationMinutes, 10) || existing.durationMinutes),
+      distanceKm: updatedData.distanceKm !== null && updatedData.distanceKm !== '' ? parseFloat(Number(updatedData.distanceKm).toFixed(2)) : null,
+      steps: updatedData.steps ? parseInt(updatedData.steps, 10) : null,
+      updatedAt: nowIso
+    };
+
+    logs[index] = updated;
+    this.set(STORAGE_KEYS.WORKOUT_LOGS, logs);
+    return updated;
+  },
+
+  deleteWorkoutLog(id) {
+    const logs = this.getWorkoutLogs();
+    const filtered = logs.filter(item => item.id !== id);
+    if (filtered.length !== logs.length) {
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, filtered);
+      return true;
+    }
+    return false;
   },
 
   /**
@@ -445,15 +627,28 @@ const storageService = {
     if (user.height) profile.height = user.height;
     if (user.weight) {
       profile.currentWeight = user.weight;
-      // also record initial weight if no weight logs exist yet
-      const weightLogs = this.getWeightLogs();
-      if (weightLogs.length === 0) {
-        this.addWeightLog({ date: getTodayDateString(), weight: user.weight, note: 'Khởi tạo tài khoản' });
+      // also record initial weight if no weight logs exist yet for this user
+      const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+      const userLogs = allLogs.filter(log => log.userId === user.email);
+      if (userLogs.length === 0) {
+        // Add initial weight log directly with userId
+        const newEntry = {
+          id: `wt-${Date.now()}`,
+          userId: user.email,
+          date: getTodayDateString(),
+          weight: parseFloat(Number(user.weight).toFixed(1)),
+          bodyFat: null,
+          note: 'Khởi tạo tài khoản',
+          measurements: null
+        };
+        allLogs.push(newEntry);
+        allLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+        this.set(STORAGE_KEYS.WEIGHT_LOGS, allLogs);
       }
     }
     if (user.gender) profile.gender = user.gender;
     if (user.fitnessGoal) profile.fitnessGoal = user.fitnessGoal;
-    
+
     // Estimate target calories
     if (window.calcService && typeof window.calcService.calculateTDEE === 'function') {
       const bmr = window.calcService.calculateBMR(profile.currentWeight, profile.height, profile.age, profile.gender);
@@ -552,6 +747,7 @@ const storageService = {
       this.set(STORAGE_KEYS.USER_PROFILE, DEFAULT_PROFILE);
       this.set(STORAGE_KEYS.FOOD_LOGS, DEFAULT_FOOD_LOGS);
       this.set(STORAGE_KEYS.WEIGHT_LOGS, DEFAULT_WEIGHT_LOGS);
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, DEFAULT_WORKOUT_LOGS);
       this.set(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
       this.set(STORAGE_KEYS.CUSTOM_FOODS, []);
       this.set(STORAGE_KEYS.WATER_LOGS, {});
