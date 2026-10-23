@@ -144,13 +144,67 @@
           <!-- BMI Input Form -->
           <div class="glass-card" style="margin-bottom: var(--spacing-lg);">
             <form id="bmi-form" class="bmi-form">
+              <!-- Unit System Toggle -->
+              <div class="form-group" style="margin-bottom: var(--spacing-md, 16px);">
+                <label>Hệ đơn vị</label>
+                <div class="unit-toggle-group">
+                  <button type="button" class="unit-toggle-btn active" data-unit="metric" id="btn-unit-metric">
+                    Metric (kg, cm)
+                  </button>
+                  <button type="button" class="unit-toggle-btn" data-unit="imperial" id="btn-unit-imperial">
+                    Imperial (lbs, inches)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Gender Selection -->
+              <div class="form-group" style="margin-bottom: var(--spacing-md, 16px);">
+                <label>Giới tính</label>
+                <div class="gender-toggle-group">
+                  <button type="button" class="gender-toggle-btn active" data-gender="male" id="btn-gender-male">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="5" r="3"/>
+                      <path d="M12 8v8"/>
+                      <path d="M8 12h8"/>
+                      <path d="M12 16l-4 4"/>
+                      <path d="M12 16l4 4"/>
+                    </svg>
+                    Nam
+                  </button>
+                  <button type="button" class="gender-toggle-btn" data-gender="female" id="btn-gender-female">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="5" r="3"/>
+                      <path d="M12 8v8"/>
+                      <path d="M8 12h8"/>
+                      <path d="M12 16l-4 4"/>
+                      <path d="M12 16l4 4"/>
+                    </svg>
+                    Nữ
+                  </button>
+                </div>
+              </div>
+
+              <!-- Classification Standard -->
+              <div class="form-group" style="margin-bottom: var(--spacing-md, 16px);">
+                <label>Chuẩn phân loại</label>
+                <div class="standard-toggle-group">
+                  <button type="button" class="standard-toggle-btn active" data-standard="WHO" id="btn-standard-who">
+                    WHO (Quốc tế)
+                  </button>
+                  <button type="button" class="standard-toggle-btn" data-standard="Asian" id="btn-standard-asian">
+                    Châu Á (Asian)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Weight & Height Inputs -->
               <div class="form-row">
                 <div class="form-group">
-                  <label for="bmi-weight">Cân nặng (kg)</label>
+                  <label for="bmi-weight" id="label-weight">Cân nặng (kg)</label>
                   <input type="number" id="bmi-weight" class="glass-input" placeholder="VD: 70" min="30" max="300" step="0.1" required>
                 </div>
                 <div class="form-group">
-                  <label for="bmi-height">Chiều cao (cm)</label>
+                  <label for="bmi-height" id="label-height">Chiều cao (cm)</label>
                   <input type="number" id="bmi-height" class="glass-input" placeholder="VD: 175" min="100" max="250" step="1" required>
                 </div>
               </div>
@@ -208,26 +262,63 @@
               </div>
             </div>
 
-            <!-- BMI Description -->
-            <div class="bmi-description" id="bmi-description">
-              <p>Nhập cân nặng và chiều cao để xem kết quả</p>
-            </div>
+            <!-- Body Visual & Analysis Grid -->
+            <div class="bmi-analysis-grid">
+              <!-- Body Visual Illustration -->
+              <div class="glass-card body-visual-card">
+                <div class="body-visual-header">
+                  <h4>Hình Minh Họa</h4>
+                </div>
+                <div class="body-visual-container" id="body-visual">
+                  <svg class="body-svg" viewBox="0 0 100 200" id="body-svg">
+                    <!-- Body silhouette will be dynamically updated -->
+                    <ellipse cx="50" cy="25" rx="15" ry="18" fill="#E8E4D9" stroke="#173F35" stroke-width="2"/>
+                    <path d="M50 43 L50 90 M50 55 L30 75 M50 55 L70 75 M50 90 L35 140 M50 90 L65 140 M35 140 L25 190 M65 140 L75 190" stroke="#173F35" stroke-width="3" fill="none" stroke-linecap="round"/>
+                  </svg>
+                  <div class="body-visual-label" id="body-visual-label">Bình thường</div>
+                </div>
+              </div>
 
-            <!-- Ideal Weight Range -->
-            <div class="bmi-ideal-weight" id="bmi-ideal-weight">
-              <div class="ideal-weight-label">Cân nặng lý tưởng cho chiều cao của bạn:</div>
-              <div class="ideal-weight-range">
-                <span class="ideal-min" id="ideal-min">--</span>
-                <span class="ideal-separator">-</span>
-                <span class="ideal-max" id="ideal-max">--</span>
-                <span class="ideal-unit">kg</span>
+              <!-- Detailed Health Analysis Table -->
+              <div class="glass-card analysis-table-card">
+                <div class="analysis-table-header">
+                  <h4>Bảng Phân Tích Sức Khỏe Chi Tiết</h4>
+                </div>
+                <table class="analysis-table">
+                  <tbody>
+                    <tr>
+                      <td class="analysis-label">Chỉ số BMI</td>
+                      <td class="analysis-value" id="analysis-bmi">-- kg/m²</td>
+                      <td class="analysis-status" id="analysis-bmi-status">--</td>
+                    </tr>
+                    <tr>
+                      <td class="analysis-label">Cân nặng hiện tại</td>
+                      <td class="analysis-value" id="analysis-current-weight">-- kg</td>
+                      <td class="analysis-status"></td>
+                    </tr>
+                    <tr>
+                      <td class="analysis-label">Khoảng cân nặng lý tưởng</td>
+                      <td class="analysis-value" id="analysis-ideal-range">-- kg</td>
+                      <td class="analysis-status"></td>
+                    </tr>
+                    <tr>
+                      <td class="analysis-label">Chỉ số Ponderal</td>
+                      <td class="analysis-value" id="analysis-ponderal">-- kg/m³</td>
+                      <td class="analysis-status" id="analysis-ponderal-status">--</td>
+                    </tr>
+                    <tr>
+                      <td class="analysis-label">Khoảng cách tới ngưỡng thừa cân</td>
+                      <td class="analysis-value" id="analysis-distance">-- kg</td>
+                      <td class="analysis-status"></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <!-- Weight Difference -->
-            <div class="bmi-weight-diff" id="bmi-weight-diff">
-              <div class="weight-diff-icon" id="weight-diff-icon">📊</div>
-              <div class="weight-diff-text" id="weight-diff-text">--</div>
+            <!-- BMI Description -->
+            <div class="bmi-description" id="bmi-description">
+              <p>Nhập cân nặng và chiều cao để xem kết quả</p>
             </div>
 
             <!-- Recommendation -->
