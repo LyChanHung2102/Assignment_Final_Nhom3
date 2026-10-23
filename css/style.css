@@ -2202,6 +2202,130 @@ body {
   margin-bottom: 12px;
 }
 
+.food-card-cal-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.food-cal-number {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-text, #202B28);
+}
+
+.food-cal-unit {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted, #829087);
+}
+
+/* 4 Nutrients breakdown */
+.food-card-nutrients {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.nutrient-pill {
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  padding: 6px 2px;
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nutri-label {
+  font-size: 0.68rem;
+  color: var(--color-text-muted, #829087);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.nutri-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text, #202B28);
+}
+
+.pill-p .nutri-val { color: #397866; }
+.pill-c .nutri-val { color: #D5A64B; }
+.pill-f .nutri-val { color: #C47D60; }
+.pill-fiber .nutri-val { color: #287653; }
+
+.btn-card-detail {
+  background: transparent;
+  border: none;
+  color: var(--color-sage, #397866);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: right;
+  margin-top: auto;
+  cursor: pointer;
+  padding: 8px 0 0 0;
+  border-top: 1px dashed var(--color-border, #DDE3D9);
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.btn-card-detail:hover {
+  color: var(--color-primary, #173F35);
+  transform: translateX(2px);
+}
+
+/* Detail Modal Styles */
+.detail-food-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.detail-food-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--color-surface-raised, #F0F1E9);
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: var(--radius-md, 12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+}
+
+.detail-food-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary, #173F35);
+  margin: 4px 0 2px 0;
+}
+
+.detail-food-tag {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary, #63756B);
+  font-weight: 500;
+}
+
+.detail-food-desc {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary, #63756B);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--color-surface-raised, #F0F1E9);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-primary, #173F35);
+}
+
 .serving-selector-box {
   background: var(--color-surface, #FFFEFA);
   border: 1px solid var(--color-border, #DDE3D9);
