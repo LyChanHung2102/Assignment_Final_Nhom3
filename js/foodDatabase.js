@@ -476,7 +476,8 @@ const FoodService = {
 
   
   calculateServingNutrition(food, factor = 1) {
-    const multiplier = Math.max(0.1, Number(factor) || 1);
+    const parsedFactor = Number(factor);
+    const multiplier = Number.isFinite(parsedFactor) && parsedFactor > 0 ? parsedFactor : 1;
     return {
       calories: Math.round(food.calories * multiplier),
       protein: parseFloat((food.protein * multiplier).toFixed(1)),

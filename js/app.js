@@ -684,6 +684,7 @@ const FoodLogModule = {
   modalBackdropEl: null,
   searchResultsEl: null,
   searchInputEl: null,
+  selectedFood: null,
 
   mealNames: {
     breakfast: 'Bữa Sáng (Breakfast)',
@@ -857,6 +858,15 @@ const FoodLogModule = {
       });
     }
 
+    const servingInput = document.getElementById('food-serving-grams');
+    if (servingInput) {
+      servingInput.addEventListener('input', () => this.renderServingPreview());
+    }
+    const confirmServingBtn = document.getElementById('btn-confirm-food-serving');
+    if (confirmServingBtn) {
+      confirmServingBtn.addEventListener('click', () => this.addSelectedFood());
+    }
+
     // Auto-calculate calories preview for custom food form
     ['custom-food-protein', 'custom-food-carbs', 'custom-food-fat'].forEach(id => {
       const el = document.getElementById(id);
@@ -878,16 +888,12 @@ const FoodLogModule = {
 
     
     document.addEventListener('click', (e) => {
-      
-      const addBtn = e.target.closest('.btn-quick-add');
-      if (addBtn) {
-        const foodId = addBtn.getAttribute('data-food-id');
-        if (foodId) {
-          this.quickAdd(foodId);
-        }
+      const foodRow = e.target.closest('.food-item-row');
+      if (foodRow) {
+        const foodId = foodRow.getAttribute('data-food-id');
+        if (foodId) this.selectFood(foodId);
       }
 
-      
       const deleteBtn = e.target.closest('.btn-delete-log');
       if (deleteBtn) {
         const logId = deleteBtn.getAttribute('data-log-id');
@@ -896,6 +902,7 @@ const FoodLogModule = {
         }
       }
     });
+
   },
 
   openModal(mealType = 'breakfast') {
@@ -924,6 +931,9 @@ const FoodLogModule = {
     if (this.modalBackdropEl) {
       this.modalBackdropEl.classList.remove('active');
     }
+    this.selectedFood = null;
+    const editor = document.getElementById('food-serving-editor');
+    if (editor) editor.style.display = 'none';
   },
 
   
@@ -956,7 +966,7 @@ const FoodLogModule = {
     }
 
     this.searchResultsEl.innerHTML = filtered.map((food) => `
-      <div class="food-item-row">
+      <div class="food-item-row" data-food-id="${food.id}" role="group" aria-label="Chọn ${food.name} để nhập khẩu phần">
         <div class="food-item-info">
           <div class="food-icon-circle">${food.icon || '🍽️'}</div>
           <div class="food-details">
@@ -974,7 +984,7 @@ const FoodLogModule = {
             <div class="food-calories-value">${food.calories}</div>
             <div class="food-calories-unit">kcal</div>
           </div>
-          <button type="button" class="btn-quick-add" data-food-id="${food.id}" title="Nạp nhanh món này vào nhật ký">
+          <button type="button" class="btn-quick-add" title="Chọn khẩu phần món này" aria-label="Chọn khẩu phần ${food.name}">
             +
           </button>
         </div>
@@ -983,27 +993,77 @@ const FoodLogModule = {
   },
 
   
-  quickAdd(foodId) {
+  selectFood(foodId) {
     const allFoods = window.storageService.getAllFoods();
     const food = allFoods.find(item => item.id === foodId);
     if (!food) return;
 
+    this.selectedFood = food;
+    const baseGrams = Number(food.servingWeightGrams) || 100;
+    const editor = document.getElementById('food-serving-editor');
+    const nameEl = document.getElementById('food-serving-editor-name');
+    const gramsInput = document.getElementById('food-serving-grams');
+    const baseEl = document.getElementById('food-serving-base');
+    if (!editor || !nameEl || !gramsInput || !baseEl) return;
+
+    nameEl.textContent = food.name;
+    gramsInput.value = baseGrams;
+    baseEl.textContent = `Khẩu phần gốc: ${food.serving} (${baseGrams}g)`;
+    editor.style.display = 'block';
+    this.renderServingPreview();
+    gramsInput.focus();
+  },
+
+  renderServingPreview() {
+    if (!this.selectedFood) return;
+    const gramsInput = document.getElementById('food-serving-grams');
+    const preview = document.getElementById('food-serving-preview');
+    if (!gramsInput || !preview) return;
+
+    const grams = Number(gramsInput.value);
+    const baseGrams = Number(this.selectedFood.servingWeightGrams) || 100;
+    if (!Number.isFinite(grams) || grams <= 0) {
+      preview.textContent = 'Vui lòng nhập số gram lớn hơn 0.';
+      return;
+    }
+
+    const nutrition = window.FoodService.calculateServingNutrition(this.selectedFood, grams / baseGrams);
+    preview.textContent = `${nutrition.calories} kcal · Đạm ${nutrition.protein}g · Carb ${nutrition.carbs}g · Béo ${nutrition.fat}g`;
+  },
+
+  addSelectedFood() {
+    if (!this.selectedFood) return;
+    const food = this.selectedFood;
+    const gramsInput = document.getElementById('food-serving-grams');
+    const grams = Number(gramsInput && gramsInput.value);
+    const baseGrams = Number(food.servingWeightGrams) || 100;
+    if (!Number.isFinite(grams) || grams <= 0) {
+      ToastModule.show('Vui lòng nhập khẩu phần lớn hơn 0 gram.', 'flame');
+      return;
+    }
+    const factor = grams / baseGrams;
+    const nutrition = window.FoodService.calculateServingNutrition(food, factor);
     const targetDate = this.selectedDate || window.getTodayDateString();
 
     const newLog = window.storageService.addFoodLog({
       mealType: this.activeMealType,
       foodId: food.id,
       name: food.name,
-      calories: food.calories,
-      protein: food.protein,
-      carbs: food.carbs,
-      fat: food.fat,
-      servingQty: 1,
+      calories: nutrition.calories,
+      protein: nutrition.protein,
+      carbs: nutrition.carbs,
+      fat: nutrition.fat,
+      servingQty: factor,
+      servingGrams: grams,
       date: targetDate
     });
+    if (!newLog) {
+      ToastModule.show('Không thể lưu món ăn. Vui lòng thử lại.', 'flame');
+      return;
+    }
 
     const dateFormatted = this.formatDateVN(targetDate);
-    ToastModule.show(`Đã nạp ${food.name} (${food.calories} kcal) vào ${this.mealNames[this.activeMealType]} (${dateFormatted})!`);
+    ToastModule.show(`Đã nạp ${food.name} ${grams}g (${nutrition.calories} kcal) vào ${this.mealNames[this.activeMealType]} (${dateFormatted})!`);
     
     
     this.closeModal();
@@ -1064,6 +1124,7 @@ const FoodLogModule = {
                 ${item.name}
               </div>
               <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                ${item.servingGrams ? `<span>${item.servingGrams}g • </span>` : ''}
                 <span style="color: var(--color-primary, #173F35); font-weight: 600;">P: ${item.protein}g</span> • 
                 <span style="color: #d97706; font-weight: 600;">C: ${item.carbs}g</span> • 
                 <span style="color: var(--color-danger, #D9534F); font-weight: 600;">F: ${item.fat}g</span> • 

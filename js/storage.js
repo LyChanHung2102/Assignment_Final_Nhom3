@@ -355,6 +355,7 @@ const storageService = {
       carbs: parseFloat((Number(entry.carbs) || 0).toFixed(1)),
       fat: parseFloat((Number(entry.fat) || 0).toFixed(1)),
       servingQty: entry.servingQty || 1,
+      servingGrams: Number(entry.servingGrams) > 0 ? Number(entry.servingGrams) : null,
       time: entry.time || new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       date: entry.date || getTodayDateString()
     };
