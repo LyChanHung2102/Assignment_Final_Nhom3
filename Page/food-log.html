@@ -179,9 +179,16 @@
               <button type="button" class="glass-btn-subtle" id="btn-jump-today">
                 Về Hôm Nay
               </button>
-              <div class="day-total-summary">
-                <span class="summary-label">Tổng calo trong ngày:</span>
-                <strong class="summary-value" id="food-log-day-total-cals">0 kcal</strong>
+              <div class="day-total-summary" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <div>
+                  <span class="summary-label">Tổng calo trong ngày:</span>
+                  <strong class="summary-value" id="food-log-day-total-cals">0 kcal</strong>
+                </div>
+                <div style="font-size: 0.8rem; display: flex; gap: 10px; font-weight: 600;">
+                  <span style="color: var(--color-primary, #173F35);">P: <strong id="food-log-day-total-p">0</strong>g</span>
+                  <span style="color: #d97706;">C: <strong id="food-log-day-total-c">0</strong>g</span>
+                  <span style="color: var(--color-danger, #D9534F);">F: <strong id="food-log-day-total-f">0</strong>g</span>
+                </div>
               </div>
             </div>
           </div>
@@ -284,6 +291,14 @@
           </svg>
           Quét Barcode Siêu Thị
         </button>
+        <button type="button" class="modal-tab-btn" data-view="custom">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          + Tự Nhập Món Ăn
+        </button>
       </div>
 
       
@@ -336,6 +351,61 @@
           <div class="barcode-presets-title">Sản Phẩm Siêu Thị & Gymer Phổ Biến (Click để quét nhanh)</div>
           <div class="barcode-presets-grid" id="barcode-preset-list"></div>
         </div>
+      </div>
+
+      <!-- TAB 3: TỰ NHẬP MÓN ĂN MỚI CỦA NGƯỜI DÙNG -->
+      <div class="modal-body" id="modal-view-custom" style="display: none; flex-direction: column; gap: 14px;">
+        <div style="background: var(--color-surface-raised, #F0F1E9); padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--color-primary, #173F35); font-size: 0.85rem; color: var(--color-text-secondary, #63756B);">
+          💡 Nhập tên món và thành phần dinh dưỡng (Carb, Protein, Fat). Món sẽ được lưu vào nhật ký và tự động cộng dồn vào tổng calo & macro trong ngày!
+        </div>
+
+        <form id="form-custom-food" onsubmit="event.preventDefault(); FoodLogModule.handleCustomFoodSubmit();">
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+            <label for="custom-food-name" style="font-size: 0.86rem; font-weight: 700; color: var(--color-text, #202B28);">Tên món ăn <span style="color: var(--color-danger, #D9534F);">*</span></label>
+            <input type="text" class="glass-input" id="custom-food-name" placeholder="VD: Cơm gạo lứt thịt bò xào, Yến mạch chuối..." required autocomplete="off">
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="custom-food-protein" style="font-size: 0.82rem; font-weight: 700; color: var(--color-primary, #173F35);">Đạm (Protein)</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="number" step="0.1" min="0" class="glass-input" id="custom-food-protein" placeholder="0" style="width: 100%; padding-right: 24px;" required>
+                <span style="position: absolute; right: 10px; font-size: 0.78rem; color: var(--color-text-muted, #829087); font-weight: 600;">g</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="custom-food-carbs" style="font-size: 0.82rem; font-weight: 700; color: #d97706;">Tinh bột (Carb)</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="number" step="0.1" min="0" class="glass-input" id="custom-food-carbs" placeholder="0" style="width: 100%; padding-right: 24px;" required>
+                <span style="position: absolute; right: 10px; font-size: 0.78rem; color: var(--color-text-muted, #829087); font-weight: 600;">g</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="custom-food-fat" style="font-size: 0.82rem; font-weight: 700; color: var(--color-danger, #D9534F);">Chất béo (Fat)</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="number" step="0.1" min="0" class="glass-input" id="custom-food-fat" placeholder="0" style="width: 100%; padding-right: 24px;" required>
+                <span style="position: absolute; right: 10px; font-size: 0.78rem; color: var(--color-text-muted, #829087); font-weight: 600;">g</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: var(--color-surface, #FFFEFA); border: 1px solid var(--color-border, #DDE3D9); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.76rem; color: var(--color-text-muted, #829087); font-weight: 600; text-transform: uppercase;">Calo ước tính tự động</div>
+              <div style="font-size: 0.74rem; color: var(--color-text-secondary, #63756B);">1g Đạm/Carb = 4 kcal • 1g Béo = 9 kcal</div>
+            </div>
+            <div style="text-align: right;">
+              <strong id="custom-food-calories-preview" style="font-size: 1.5rem; color: var(--color-primary, #173F35); font-weight: 800;">0</strong>
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--color-text-muted, #829087);">kcal</span>
+            </div>
+          </div>
+
+          <button type="submit" class="glass-btn glass-btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; font-weight: 700;">
+            + Thêm Món Vào Nhật Ký
+          </button>
+        </form>
       </div>
     </div>
   </div>
