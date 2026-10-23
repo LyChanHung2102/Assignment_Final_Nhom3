@@ -45,8 +45,15 @@ const OnboardingModule = {
   },
 
   show() {
-    if (!this.modal) return;
+    console.log('[OnboardingModule] show() called');
+    if (!this.modal) {
+      console.log('[OnboardingModule] Modal is null, cannot show');
+      return;
+    }
+    console.log('[OnboardingModule] Setting modal display to flex');
     this.modal.style.display = 'flex';
+    console.log('[OnboardingModule] Modal display set to:', this.modal.style.display);
+    console.log('[OnboardingModule] Modal visibility:', window.getComputedStyle(this.modal).display);
     this.currentStep = 1;
     this.updateStepUI();
     this.prefillUserData();
