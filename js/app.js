@@ -840,8 +840,12 @@ const FoodLogModule = {
         tab.classList.add('active');
 
         const targetView = tab.getAttribute('data-view');
-        document.getElementById('modal-view-database').style.display = targetView === 'database' ? 'flex' : 'none';
-        document.getElementById('modal-view-barcode').style.display = targetView === 'barcode' ? 'flex' : 'none';
+        const dbView = document.getElementById('modal-view-database');
+        const barcodeView = document.getElementById('modal-view-barcode');
+        const customView = document.getElementById('modal-view-custom');
+        if (dbView) dbView.style.display = targetView === 'database' ? 'flex' : 'none';
+        if (barcodeView) barcodeView.style.display = targetView === 'barcode' ? 'flex' : 'none';
+        if (customView) customView.style.display = targetView === 'custom' ? 'flex' : 'none';
       });
     });
 
@@ -852,6 +856,14 @@ const FoodLogModule = {
         this.filterAndRenderFoods();
       });
     }
+
+    // Auto-calculate calories preview for custom food form
+    ['custom-food-protein', 'custom-food-carbs', 'custom-food-fat'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => this.updateCustomCaloriesPreview());
+      }
+    });
 
     
     const chipBtns = document.querySelectorAll('.chip-btn');
@@ -1076,6 +1088,80 @@ const FoodLogModule = {
     const dayTotalEl = document.getElementById('food-log-day-total-cals');
     if (dayTotalEl) {
       dayTotalEl.textContent = `${dayTotalCalories.toLocaleString()} kcal`;
+    }
+
+    // Cập nhật tổng Macro cả ngày
+    const dayTotals = window.storageService.calculateDayTotals(targetDate);
+    const pEl = document.getElementById('food-log-day-total-p');
+    const cEl = document.getElementById('food-log-day-total-c');
+    const fEl = document.getElementById('food-log-day-total-f');
+    if (pEl) pEl.textContent = Math.round(dayTotals.protein);
+    if (cEl) cEl.textContent = Math.round(dayTotals.carbs);
+    if (fEl) fEl.textContent = Math.round(dayTotals.fat);
+  },
+
+  updateCustomCaloriesPreview() {
+    const p = parseFloat(document.getElementById('custom-food-protein')?.value) || 0;
+    const c = parseFloat(document.getElementById('custom-food-carbs')?.value) || 0;
+    const f = parseFloat(document.getElementById('custom-food-fat')?.value) || 0;
+    const calories = Math.round((p * 4) + (c * 4) + (f * 9));
+    const previewEl = document.getElementById('custom-food-calories-preview');
+    if (previewEl) {
+      previewEl.textContent = calories;
+    }
+  },
+
+  handleCustomFoodSubmit() {
+    const nameInput = document.getElementById('custom-food-name');
+    const pInput = document.getElementById('custom-food-protein');
+    const cInput = document.getElementById('custom-food-carbs');
+    const fInput = document.getElementById('custom-food-fat');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const protein = parseFloat(pInput?.value) || 0;
+    const carbs = parseFloat(cInput?.value) || 0;
+    const fat = parseFloat(fInput?.value) || 0;
+
+    if (!name) {
+      if (window.ToastModule) window.ToastModule.show('Vui lòng nhập tên món ăn!', 'flame');
+      return;
+    }
+
+    const calories = Math.round((protein * 4) + (carbs * 4) + (fat * 9));
+    const targetDate = this.selectedDate || window.getTodayDateString();
+
+    // 1. Thêm bản ghi vào food logs
+    const newLog = window.storageService.addFoodLog({
+      mealType: this.activeMealType || 'lunch',
+      foodId: 'custom_' + Date.now(),
+      name: name,
+      calories: calories,
+      protein: protein,
+      carbs: carbs,
+      fat: fat,
+      servingQty: 1,
+      date: targetDate
+    });
+
+    const dateFormatted = this.formatDateVN(targetDate);
+    const mealLabel = this.mealNames[this.activeMealType] || 'Bữa ăn';
+
+    if (window.ToastModule) {
+      window.ToastModule.show(`Đã thêm "${name}" (${calories} kcal) vào ${mealLabel} (${dateFormatted})!`, 'emerald');
+    }
+
+    // 2. Reset form
+    const form = document.getElementById('form-custom-food');
+    if (form) form.reset();
+    const previewEl = document.getElementById('custom-food-calories-preview');
+    if (previewEl) previewEl.textContent = '0';
+
+    // 3. Đóng modal và render lại
+    this.closeModal();
+    this.renderFoodLogs();
+
+    if (window.DashboardModule && typeof window.DashboardModule.updateUI === 'function') {
+      window.DashboardModule.updateUI();
     }
   }
 };
