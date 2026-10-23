@@ -2675,6 +2675,14 @@ body.theme-porcelain #app-layout,
 .report-type-pills {
   display: inline-flex;
   flex-wrap: wrap;
+  background: var(--color-surface-raised, #F0F1E9);
+  padding: 3px;
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid var(--color-border, #DDE3D9);
+  gap: 2px;
+}
+
+/* ==========================================================================
    WORKOUT JOURNAL FEATURE STYLES (Jade & Porcelain Theme)
    ========================================================================== */
 
@@ -2721,6 +2729,11 @@ body.theme-porcelain #app-layout,
 }
 
 .workout-item-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .onboarding-header {
   text-align: center;
   margin-bottom: var(--spacing-lg, 24px);
@@ -2790,91 +2803,186 @@ body.theme-porcelain #app-layout,
 
 
 .gender-selector {
-  display: flex;
-  gap: var(--spacing-md, 16px);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 .gender-option {
-  flex: 1;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0.85rem 1rem;
+  gap: 10px;
+  padding: 0.8rem 1rem;
   background: var(--color-surface, #FFFEFA);
   border: 1.5px solid var(--color-border, #DDE3D9);
   border-radius: var(--radius-md, 12px);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  font-weight: 600;
+  color: var(--color-text, #202B28);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.gender-option::after {
+  content: '';
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full, 9999px);
+  border: 1.5px solid var(--color-border-strong, #BECBC0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .gender-option:hover {
-  background: var(--color-primary-soft, #E5EDE7);
   border-color: var(--color-border-focus, #397866);
-}
-
-.gender-option input[type="radio"] {
-  display: none;
+  background: var(--color-primary-soft, #E5EDE7);
 }
 
 .gender-option:has(input:checked) {
+  background: var(--color-primary-soft, #E5EDE7);
+  border-color: var(--color-primary, #173F35);
+}
+
+.gender-option:has(input:checked)::after {
+  content: '✓';
   background: var(--color-primary, #173F35);
   border-color: var(--color-primary, #173F35);
   color: #FFFFFF;
+}
+
+.gender-option:has(input:focus-visible) {
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(57, 120, 102, 0.20));
 }
 
 .gender-icon {
   font-size: 1.5rem;
 }
 
+.gender-option input[type="radio"],
+.activity-option input[type="radio"],
+.goal-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
 
 .activity-options,
 .goal-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm, 8px);
+  display: grid;
+  gap: 10px;
   margin-bottom: var(--spacing-lg, 24px);
+}
+
+.goal-options {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .activity-option,
 .goal-option {
+  position: relative;
   cursor: pointer;
-}
-
-.activity-option input[type="radio"],
-.goal-option input[type="radio"] {
-  display: none;
 }
 
 .activity-card,
 .goal-card {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md, 16px);
-  padding: var(--spacing-md, 16px);
   background: var(--color-surface, #FFFEFA);
   border: 1.5px solid var(--color-border, #DDE3D9);
   border-radius: var(--radius-md, 12px);
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.activity-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px 10px 10px;
+}
+
+.goal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 12px 14px;
+  text-align: center;
+}
+
+.activity-card::after,
+.goal-card::after {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full, 9999px);
+  border: 1.5px solid var(--color-border-strong, #BECBC0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.activity-card::after {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.goal-card::after {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 .activity-card:hover,
 .goal-card:hover {
-  background: var(--color-primary-soft, #E5EDE7);
   border-color: var(--color-border-focus, #397866);
-  transform: translateX(4px);
+  background: var(--color-primary-soft, #E5EDE7);
 }
 
-.activity-option:has(input:checked) .activity-card,
-.goal-option:has(input:checked) .goal-card {
+.activity-option input:checked + .activity-card,
+.goal-option input:checked + .goal-card {
   background: var(--color-primary-soft, #E5EDE7);
   border-color: var(--color-primary, #173F35);
-  box-shadow: 0 4px 12px rgba(23, 63, 53, 0.1);
+}
+
+.activity-option input:checked + .activity-card::after,
+.goal-option input:checked + .goal-card::after {
+  content: '✓';
+  background: var(--color-primary, #173F35);
+  border-color: var(--color-primary, #173F35);
+  color: #FFFFFF;
+}
+
+.activity-option input:focus-visible + .activity-card,
+.goal-option input:focus-visible + .goal-card {
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(57, 120, 102, 0.20));
+  border-color: var(--color-border-focus, #397866);
 }
 
 .activity-icon,
 .goal-icon {
-  font-size: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-primary-soft, #E5EDE7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
   flex-shrink: 0;
+}
+
+.goal-card .goal-icon {
+  width: 48px;
+  height: 48px;
 }
 
 .activity-info,
@@ -2886,6 +2994,10 @@ body.theme-porcelain #app-layout,
 
 .workout-item-title {
   font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--color-text, #202B28);
+}
+
 .activity-title,
 .goal-title {
   font-size: 0.95rem;
@@ -2955,6 +3067,11 @@ body.theme-porcelain #app-layout,
   border-radius: var(--radius-sm, 8px);
   padding: 5px 9px;
   font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #63756B);
+  cursor: pointer;
+}
+
 .activity-desc,
 .goal-desc {
   font-size: 0.8rem;
@@ -3082,6 +3199,10 @@ body.theme-porcelain #app-layout,
     padding: var(--spacing-md, 16px);
   }
 
+  .goal-options {
+    grid-template-columns: 1fr;
+  }
+
   .step-label {
     font-size: 0.7rem;
   }
@@ -3139,6 +3260,13 @@ body.theme-porcelain #app-layout,
   padding: 6px 16px;
   font-family: inherit;
   font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #63756B);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+/* ==========================================================================
    HEALTH DASHBOARD FEATURE STYLES (Jade & Porcelain Palette)
    ========================================================================== */
 
@@ -3157,6 +3285,14 @@ body.theme-porcelain #app-layout,
   border: none;
   border-radius: var(--radius-full, 9999px);
   padding: 6px 14px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #63756B);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
 .time-pill-btn {
   background: transparent;
   border: none;
@@ -3214,6 +3350,10 @@ body.theme-porcelain #app-layout,
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #63756B);
+}
+
 .btn-workout-action:hover {
   background: var(--color-surface-raised, #F0F1E9);
   color: var(--color-primary, #173F35);
@@ -3285,6 +3425,8 @@ body.theme-porcelain #app-layout,
 
 .form-control.is-invalid ~ .form-invalid-feedback {
   display: block;
+}
+
 .metric-switch-btn:hover {
   color: var(--color-primary, #173F35);
 }
@@ -3499,6 +3641,8 @@ body.theme-porcelain #app-layout,
 
 .print-only-header {
   display: none;
+}
+
 .page-btn-group {
   display: inline-flex;
   gap: 4px;
@@ -3523,6 +3667,8 @@ body.theme-porcelain #app-layout,
 .page-btn:not(:disabled):hover {
   background: var(--color-primary-soft, #E5EDE7);
   color: var(--color-primary, #173F35);
+}
+
 .time-pill-btn:hover {
   color: var(--color-primary, #173F35);
 }

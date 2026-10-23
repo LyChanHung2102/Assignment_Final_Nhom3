@@ -81,6 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('food-search-input') || document.getElementById('food-cards-grid')) {
     if (window.FoodSearchModule) window.FoodSearchModule.init();
   }
+
+  // Initialize OnboardingModule
+  if (window.OnboardingModule) {
+    window.OnboardingModule.init();
+  }
 });
 
 
