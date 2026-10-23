@@ -37,7 +37,7 @@ d:\Assignment_Final_Nhom3\
 ├── index.html                   # Trang Chủ (Dashboard): Vòng tròn Calo SVG, Macro, Hydration, 7DMA
 ├── Page/
 │   ├── food-log.html            # Nhật Ký Thực Phẩm: 4 bữa ăn, Modal tìm kiếm món Việt & Quét Barcode
-│   ├── weight.html              # Theo Dõi Cân Nặng: Biểu đồ Canvas 7DMA, Số đo cơ bắp, Modal ghi cân
+│   ├── weight.html              # Theo Dõi Cân Nặng: Ghi cân, biểu đồ 7DMA, dao động 7 ngày, số đo cơ bắp
 │   └── settings.html            # Cài Đặt Cá Nhân: Hồ sơ gymer, Chiều cao, Cân nặng mục tiêu, TDEE
 ├── css/
 │   ├── variables.css            # Hệ màu Dark Obsidian & Neon Accents, spacing scale, blur tokens

@@ -157,13 +157,13 @@
             </div>
 
             <div style="display: flex; gap: 10px; align-items: center;">
-              <button type="button" class="glass-btn glass-btn-primary" id="btn-quick-log-weight">
+              <a href="weight.html#log-weight" class="glass-btn glass-btn-primary" id="btn-quick-log-weight">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
                 Ghi Cân Nặng Mới
-              </button>
+              </a>
             </div>
           </div>
 
@@ -429,41 +429,6 @@
 
         </section>
       </main>
-    </div>
-  </div>
-
-  
-  <div class="glass-modal-backdrop" id="hd-modal-weight" role="dialog" aria-modal="true" aria-labelledby="hd-modal-weight-title" style="display: none;">
-    <div class="glass-modal-container" style="max-width: 480px;">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <h3 class="modal-title" id="hd-modal-weight-title">Ghi Nhận Cân Nặng Mới</h3>
-          <p class="modal-subtitle">Ghi chép thể trọng để cập nhật biểu đồ và tính toán BMI tức thời</p>
-        </div>
-        <button type="button" class="modal-close-btn" id="hd-modal-weight-close" aria-label="Đóng">&times;</button>
-      </div>
-
-      <form id="hd-form-weight">
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label for="hd-input-date" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">Ngày ghi nhận</label>
-          <input type="date" id="hd-input-date" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label for="hd-input-weight" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">Cân nặng (kg)</label>
-          <input type="number" step="0.1" min="30" max="250" id="hd-input-weight" class="form-control" placeholder="Ví dụ: 72.5" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 16px;">
-          <label for="hd-input-note" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">Ghi chú (tùy chọn)</label>
-          <input type="text" id="hd-input-note" class="form-control" placeholder="Ví dụ: Bụng đói sáng sớm, sau khi uống nước..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 8px;">
-          <button type="button" class="glass-btn" id="hd-modal-weight-cancel">Hủy</button>
-          <button type="submit" class="glass-btn glass-btn-primary">Lưu Bản Ghi</button>
-        </div>
-      </form>
     </div>
   </div>
 
