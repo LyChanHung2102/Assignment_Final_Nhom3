@@ -1,12 +1,6 @@
-/* ==========================================================================
-   FitVN Tracker - Unified Master Stylesheet
-   Theme: Jade & Porcelain — Premium Wellness (RULE.md Section 3 & 4)
-   Colors: Jade #173F35, Porcelain #F7F6F0, Surface #FFFEFA, Sage #397866, Citron #D2F36B
-   ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   1. CSS Reset & Base Setup
-   -------------------------------------------------------------------------- */
+
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -33,9 +27,7 @@ body {
   font-family: var(--font-family, "Be Vietnam Pro", sans-serif);
 }
 
-/* --------------------------------------------------------------------------
-   2. App Layout Container
-   -------------------------------------------------------------------------- */
+
 #app-layout {
   display: flex;
   flex-direction: column;
@@ -45,9 +37,7 @@ body {
   background-color: var(--color-bg, #F7F6F0);
 }
 
-/* --------------------------------------------------------------------------
-   3. Header Styles
-   -------------------------------------------------------------------------- */
+
 .app-header {
   position: sticky;
   top: 0;
@@ -139,9 +129,7 @@ body {
   cursor: pointer;
 }
 
-/* --------------------------------------------------------------------------
-   4. Main Content Area
-   -------------------------------------------------------------------------- */
+
 .main-viewport {
   flex: 1;
   padding: var(--spacing-md, 16px);
@@ -176,9 +164,7 @@ body {
   }
 }
 
-/* --------------------------------------------------------------------------
-   5. Navigation Bar - Mobile First
-   -------------------------------------------------------------------------- */
+
 .app-navigation {
   position: fixed;
   bottom: 0;
@@ -289,9 +275,7 @@ body {
   display: none;
 }
 
-/* --------------------------------------------------------------------------
-   6. UI Card Grids & Generic Components
-   -------------------------------------------------------------------------- */
+
 .section-header {
   display: flex;
   align-items: center;
@@ -348,7 +332,7 @@ body {
   margin-left: 4px;
 }
 
-/* Macro progress bar */
+
 .macro-bars {
   display: flex;
   flex-direction: column;
@@ -388,9 +372,7 @@ body {
 .fill-fat { background: var(--color-fat, #C47D60); }
 .fill-water { background: var(--color-water, #528BA0); }
 
-/* --------------------------------------------------------------------------
-   7. Responsive Design (Tablet & Desktop Sidebar Rail)
-   -------------------------------------------------------------------------- */
+
 @media (min-width: 768px) {
   #app-layout {
     flex-direction: row;
@@ -543,9 +525,7 @@ body {
   }
 }
 
-/* --------------------------------------------------------------------------
-   8. Modal UI - Quick Add Food & Barcode Scanner
-   -------------------------------------------------------------------------- */
+
 .modal-header {
   padding: var(--spacing-md, 16px) var(--spacing-lg, 24px);
   display: flex;
@@ -638,7 +618,7 @@ body {
   gap: var(--spacing-md, 16px);
 }
 
-/* Search Box */
+
 .food-search-wrapper {
   position: relative;
   display: flex;
@@ -674,7 +654,7 @@ body {
   box-shadow: var(--shadow-focus, 0 0 0 3px rgba(57, 120, 102, 0.20));
 }
 
-/* Chips Filter */
+
 .chips-container {
   display: flex;
   gap: 8px;
@@ -723,7 +703,7 @@ body {
   box-shadow: 0 2px 8px rgba(23, 63, 53, 0.15);
 }
 
-/* Food List Items */
+
 .food-results-list {
   display: flex;
   flex-direction: column;
@@ -851,9 +831,7 @@ body {
   transform: scale(0.95);
 }
 
-/* --------------------------------------------------------------------------
-   9. Simulated Barcode Scanner UI
-   -------------------------------------------------------------------------- */
+
 .scanner-container {
   display: flex;
   flex-direction: column;
@@ -949,9 +927,7 @@ body {
   background: var(--color-danger-bg, #FBE9E7);
 }
 
-/* --------------------------------------------------------------------------
-   10. Toast Notification System
-   -------------------------------------------------------------------------- */
+
 #toast-container {
   position: fixed;
   bottom: calc(var(--bottom-nav-height, 68px) + 16px);
@@ -1016,9 +992,7 @@ body {
   }
 }
 
-/* --------------------------------------------------------------------------
-   11. Weight Chart, 7-Day Moving Average & Measurements Styles
-   -------------------------------------------------------------------------- */
+
 .chart-container-card {
   padding: var(--spacing-lg, 24px);
   display: flex;
@@ -1095,7 +1069,7 @@ body {
   transition: opacity 0.15s ease;
 }
 
-/* Body Composition Split */
+
 .composition-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1124,7 +1098,7 @@ body {
   color: var(--color-primary, #173F35);
 }
 
-/* Measurements Table / Cards */
+
 .measurements-container,
 .measurements-grid {
   display: grid;
@@ -1188,9 +1162,7 @@ body {
 .delta-neg { color: var(--color-danger, #B83E42); background: var(--color-danger-bg, #FBE9E7); }
 .delta-neutral { color: var(--color-text-muted, #829087); background: #E5EDE7; }
 
-/* --------------------------------------------------------------------------
-   12. Circular Calorie Gauge & Interactive Dashboard Widgets
-   -------------------------------------------------------------------------- */
+
 .calorie-gauge-container {
   display: flex;
   flex-direction: column;
@@ -1275,9 +1247,7 @@ body {
   border: 1px solid var(--color-border, #DDE3D9);
 }
 
-/* ==========================================================================
-   Interactive Water Hydration Tracker with Dynamic Cups
-   ========================================================================== */
+
 .water-tracker-card {
   display: flex;
   flex-direction: column;
@@ -1287,7 +1257,7 @@ body {
   overflow: visible !important;
 }
 
-/* Top Row: Title, Amount, Circular Progress */
+
 .water-card-top {
   display: flex;
   justify-content: space-between;
@@ -1334,7 +1304,7 @@ body {
   color: var(--color-text-muted, #829087);
 }
 
-/* Circular Gauge Button (Top Right) */
+
 .water-quick-add-wrap {
   flex-shrink: 0;
 }
@@ -1393,7 +1363,7 @@ body {
   pointer-events: none;
 }
 
-/* Middle Section: Dedicated Cup Holder Box */
+
 .water-cups-section {
   background: var(--color-surface-raised, #F0F1E9);
   border: 1px solid var(--color-border, #DDE3D9);
@@ -1422,7 +1392,7 @@ body {
   justify-content: flex-start;
 }
 
-/* Individual Cup Item */
+
 .water-cup-item {
   width: 24px;
   height: 36px;
@@ -1451,7 +1421,7 @@ body {
   overflow: visible;
 }
 
-/* Cup Interior SVGs */
+
 .cup-glass-bg {
   fill: #FFFFFF !important;
   transition: fill 0.2s ease;
@@ -1489,7 +1459,7 @@ body {
   opacity: 0.85;
 }
 
-/* Cup Status Classes */
+
 .water-cup-item.cup-empty .cup-glass-bg {
   fill: #FFFFFF !important;
 }
@@ -1512,7 +1482,7 @@ body {
   stroke-dasharray: 2 1;
 }
 
-/* Quick Stepper Bar right under cups */
+
 .water-quick-stepper {
   display: flex;
   align-items: center;
@@ -1548,7 +1518,7 @@ body {
   transform: translateY(1px);
 }
 
-/* Bottom Row */
+
 .water-card-bottom {
   display: flex;
   justify-content: space-between;
@@ -1640,7 +1610,7 @@ body {
   margin: 4px 0;
 }
 
-/* Fallback button compatibility */
+
 .btn-water-action {
   background: var(--color-surface-raised, #F0F1E9);
   border: 1px solid var(--color-border, #DDE3D9);
@@ -1678,9 +1648,7 @@ body {
   background: var(--color-danger-bg, #FBE9E7);
 }
 
-/* --------------------------------------------------------------------------
-   13. Settings & Backup / Restore Styles
-   -------------------------------------------------------------------------- */
+
 .backup-actions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1766,9 +1734,7 @@ body {
   text-align: center;
 }
 
-/* --------------------------------------------------------------------------
-   14. Authentication & Account Access Module
-   -------------------------------------------------------------------------- */
+
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -2058,9 +2024,7 @@ body {
   display: none;
 }
 
-/* --------------------------------------------------------------------------
-   15. Food Search & Nutrition Encyclopedia Module
-   -------------------------------------------------------------------------- */
+
 .food-search-hero {
   background: var(--color-surface, #FFFEFA);
   border: 1px solid var(--color-border, #DDE3D9);
@@ -2455,9 +2419,7 @@ body {
   }
 }
 
-/* --------------------------------------------------------------------------
-   16. Universal Theme-Porcelain Classes (Explicit Overrides)
-   -------------------------------------------------------------------------- */
+
 body.theme-porcelain,
 body {
   background-color: #F7F6F0 !important;
@@ -2470,7 +2432,7 @@ body.theme-porcelain #app-layout,
   color: #202B28 !important;
 }
 
-/* Form utilities */
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -2484,9 +2446,7 @@ body.theme-porcelain #app-layout,
   display: block;
 }
 
-/* --------------------------------------------------------------------------
-   Food Diary - Date Navigator Bar (Jade & Porcelain)
-   -------------------------------------------------------------------------- */
+
 .food-date-navigator {
   display: flex;
   align-items: center;
@@ -2604,11 +2564,9 @@ body.theme-porcelain #app-layout,
   font-size: 1.05rem;
 }
 
-/* ==========================================================================
-   Onboarding Wizard Styles - Glassmorphism Design
-   ========================================================================== */
+
 #onboarding-modal {
-  z-index: 9999 !important; /* Highest priority to show first */
+  z-index: 9999 !important; 
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -2633,7 +2591,7 @@ body.theme-porcelain #app-layout,
   box-shadow: 0 20px 60px rgba(23, 63, 53, 0.15);
 }
 
-/* Progress Steps */
+
 .onboarding-steps {
   display: flex;
   justify-content: space-between;
@@ -2690,7 +2648,7 @@ body.theme-porcelain #app-layout,
   color: var(--color-primary, #173F35);
 }
 
-/* Onboarding Steps */
+
 .onboarding-step {
   display: none;
   animation: fadeInStep 0.4s ease forwards;
@@ -2711,18 +2669,16 @@ body.theme-porcelain #app-layout,
   }
 }
 
-/* ==========================================================================
-   HEALTH REPORTS & STATISTICS FEATURE STYLES (Jade & Porcelain Theme)
-   ========================================================================== */
 
-/* Report Type Tabs */
+
+
 .report-type-pills {
   display: inline-flex;
   flex-wrap: wrap;
    WORKOUT JOURNAL FEATURE STYLES (Jade & Porcelain Theme)
    ========================================================================== */
 
-/* Workout Card Item */
+
 .workout-item-card {
   display: flex;
   flex-direction: column;
@@ -2788,7 +2744,7 @@ body.theme-porcelain #app-layout,
   line-height: 1.5;
 }
 
-/* Onboarding Form */
+
 .onboarding-form {
   display: flex;
   flex-direction: column;
@@ -2832,7 +2788,7 @@ body.theme-porcelain #app-layout,
   box-shadow: var(--shadow-focus, 0 0 0 3px rgba(57, 120, 102, 0.15));
 }
 
-/* Gender Selector */
+
 .gender-selector {
   display: flex;
   gap: var(--spacing-md, 16px);
@@ -2870,7 +2826,7 @@ body.theme-porcelain #app-layout,
   font-size: 1.5rem;
 }
 
-/* Activity Options */
+
 .activity-options,
 .goal-options {
   display: flex;
@@ -2967,7 +2923,7 @@ body.theme-porcelain #app-layout,
   color: var(--color-primary, #173F35);
 }
 
-/* Intensity Badges */
+
 .badge-intensity-low {
   background: #E5F0F4;
   color: #326B82;
@@ -2986,7 +2942,7 @@ body.theme-porcelain #app-layout,
   border: 1px solid rgba(184, 62, 66, 0.2);
 }
 
-/* Action Button Group */
+
 .workout-item-actions {
   display: flex;
   gap: 6px;
@@ -3005,7 +2961,7 @@ body.theme-porcelain #app-layout,
   color: var(--color-text-muted, #829087);
 }
 
-/* Onboarding Summary */
+
 .onboarding-summary {
   margin-bottom: var(--spacing-lg, 24px);
 }
@@ -3075,7 +3031,7 @@ body.theme-porcelain #app-layout,
   color: var(--color-primary, #173F35);
 }
 
-/* Onboarding Actions */
+
 .onboarding-actions {
   display: flex;
   justify-content: space-between;
@@ -3119,7 +3075,7 @@ body.theme-porcelain #app-layout,
   box-shadow: 0 4px 12px rgba(23, 63, 53, 0.2);
 }
 
-/* Responsive */
+
 @media (max-width: 680px) {
   .onboarding-container {
     width: 95%;
@@ -3164,11 +3120,9 @@ body.theme-porcelain #app-layout,
   }
 }
 
-/* ==========================================================================
-   HEALTH PROGRESS CHARTS FEATURE STYLES (Jade & Porcelain Theme)
-   ========================================================================== */
 
-/* Metric Switcher Segmented Control */
+
+
 .metric-switcher-group {
   display: inline-flex;
   background: var(--color-surface-raised, #F0F1E9);
@@ -3188,7 +3142,7 @@ body.theme-porcelain #app-layout,
    HEALTH DASHBOARD FEATURE STYLES (Jade & Porcelain Palette)
    ========================================================================== */
 
-/* Time range pills */
+
 .time-filter-pills {
   display: inline-flex;
   background: var(--color-surface-raised, #F0F1E9);
@@ -3226,7 +3180,7 @@ body.theme-porcelain #app-layout,
   box-shadow: 0 2px 6px rgba(23, 63, 53, 0.2);
 }
 
-/* Report Header Action Buttons */
+
 .report-header-actions {
   display: flex;
   gap: 8px;
@@ -3255,7 +3209,7 @@ body.theme-porcelain #app-layout,
   color: var(--color-primary, #173F35);
 }
 
-/* Custom Date Range Picker Dropdown / Box */
+
 .custom-range-row {
   display: flex;
   align-items: center;
@@ -3272,7 +3226,7 @@ body.theme-porcelain #app-layout,
   border-color: var(--color-danger, #B83E42);
 }
 
-/* Search and Filter Bar */
+
 .workout-filters-row {
   display: flex;
   gap: 10px;
@@ -3341,7 +3295,7 @@ body.theme-porcelain #app-layout,
   box-shadow: 0 2px 8px rgba(23, 63, 53, 0.25);
 }
 
-/* Time Filter Pills */
+
 .progress-time-pills {
   display: inline-flex;
   flex-wrap: wrap;
@@ -3375,7 +3329,7 @@ body.theme-porcelain #app-layout,
   box-shadow: 0 2px 6px rgba(23, 63, 53, 0.2);
 }
 
-/* Period Range Badge */
+
 .period-date-range-badge {
   display: inline-flex;
   align-items: center;
@@ -3388,7 +3342,7 @@ body.theme-porcelain #app-layout,
   font-weight: 600;
 }
 
-/* Comparison Cards Grid */
+
 .comparison-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -3420,7 +3374,7 @@ body.theme-porcelain #app-layout,
   color: var(--color-primary, #173F35);
 }
 
-/* Data Insights Callout Box */
+
 .insight-callout-card {
   background: rgba(210, 243, 107, 0.12);
   border: 1px solid rgba(210, 243, 107, 0.4);
@@ -3445,7 +3399,7 @@ body.theme-porcelain #app-layout,
   line-height: 1.5;
 }
 
-/* Data Table with Sorting and Pagination */
+
 .progress-table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -3491,9 +3445,9 @@ body.theme-porcelain #app-layout,
   color: var(--color-text, #202B28);
 }
 
-/* Print Friendly Styles */
+
 @media print {
-  /* Hide non-printable elements */
+  
   #app-nav,
   .app-navigation,
   .app-header,
@@ -3579,7 +3533,7 @@ body.theme-porcelain #app-layout,
   box-shadow: 0 2px 6px rgba(23, 63, 53, 0.2);
 }
 
-/* BMI Spectrum Visual Gauge */
+
 .bmi-spectrum-container {
   margin-top: 1rem;
 }
@@ -3675,7 +3629,7 @@ body.theme-porcelain #app-layout,
   display: inline-block;
 }
 
-/* Goal Progress Bar & Badges */
+
 .goal-progress-card-inner {
   display: flex;
   flex-direction: column;
@@ -3722,7 +3676,7 @@ body.theme-porcelain #app-layout,
   transition: width 0.5s ease-out;
 }
 
-/* Incomplete profile warning banner */
+
 .incomplete-profile-banner {
   background: rgba(148, 100, 20, 0.08);
   border: 1px solid rgba(148, 100, 20, 0.25);
@@ -3750,7 +3704,7 @@ body.theme-porcelain #app-layout,
   font-size: 0.82rem;
 }
 
-/* Health Records Table styling */
+
 .health-table-wrap {
   width: 100%;
   overflow-x: auto;

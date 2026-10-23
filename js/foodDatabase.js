@@ -1,11 +1,7 @@
-/**
- * FitVN Tracker - Vietnamese Food Database & Nutritional Reference
- * Includes calibrated Fiber, Category Mappings (vegetables, fruits, meat_fish, grains, dairy),
- * and Extensible API Service Interface for future Backend integration.
- */
+
 
 const VIETNAMESE_FOOD_DATABASE = [
-  // --- THỊT CÁ & ĐẠM (meat_fish) ---
+  
   {
     id: 'mf-01',
     name: 'Ức gà phi lê luộc / áp chảo',
@@ -103,7 +99,7 @@ const VIETNAMESE_FOOD_DATABASE = [
     description: 'Cá thịt trắng dễ hấp thu, vị thanh ngọt tự nhiên, rất tốt cho bữa trưa và bữa tối.'
   },
 
-  // --- RAU CỦ (vegetables) ---
+  
   {
     id: 'veg-01',
     name: 'Bông cải xanh (Súp lơ xanh) luộc',
@@ -185,7 +181,7 @@ const VIETNAMESE_FOOD_DATABASE = [
     description: 'Giàu folate và chất xơ, hỗ trợ cơ thể đào thải lượng nước thừa trước các buổi chụp hình hoặc thi đấu.'
   },
 
-  // --- TRÁI CÂY (fruits) ---
+  
   {
     id: 'fr-01',
     name: 'Chuối tiêu chín tự nhiên',
@@ -267,7 +263,7 @@ const VIETNAMESE_FOOD_DATABASE = [
     description: 'Chứa hợp chất L-Citrulline tự nhiên giúp giãn nở mạch máu, giảm đau nhức cơ bắp sau khi tập luyện.'
   },
 
-  // --- NGŨ CỐC & TINH BỘT (grains) ---
+  
   {
     id: 'gr-01',
     name: 'Khoai lang vàng luộc / hấp',
@@ -349,7 +345,7 @@ const VIETNAMESE_FOOD_DATABASE = [
     description: 'Chứa đủ 9 axit amin thiết yếu, không chứa gluten, là nguồn carb giàu đạm số 1 cho người ăn chay.'
   },
 
-  // --- SỮA & CHẾ PHẨM (dairy) ---
+  
   {
     id: 'dr-01',
     name: 'Sữa chua Hy Lạp nguyên chất (Greek Yogurt)',
@@ -432,9 +428,7 @@ const VIETNAMESE_FOOD_DATABASE = [
   }
 ];
 
-/**
- * Remove Vietnamese Accents for search helper
- */
+
 function removeVietnameseTones(str) {
   if (!str) return '';
   str = str.toLowerCase();
@@ -450,27 +444,20 @@ function removeVietnameseTones(str) {
   return str.trim();
 }
 
-/**
- * Food Service Provider
- * Ready to switch to fetch('/api/foods') when backend is available.
- */
+
 const FoodService = {
-  /**
-   * Search foods with filter and query
-   * @param {Object} options { query: '', category: 'all' }
-   * @returns {Promise<Array>}
-   */
+  
   async searchFoods({ query = '', category = 'all' } = {}) {
-    // Simulated async API response for architectural future-proofing
+    
     return new Promise((resolve) => {
       setTimeout(() => {
         const cleanQuery = removeVietnameseTones(query.trim());
         const results = VIETNAMESE_FOOD_DATABASE.filter(food => {
-          // Category check
+          
           const matchCategory = (category === 'all') || (food.category === category);
           if (!matchCategory) return false;
 
-          // Query check
+          
           if (!cleanQuery) return true;
           const cleanName = removeVietnameseTones(food.name);
           const cleanTag = removeVietnameseTones(food.tag || '');
@@ -478,24 +465,16 @@ const FoodService = {
         });
 
         resolve(results);
-      }, 50); // fast local delay
+      }, 50); 
     });
   },
 
-  /**
-   * Get single food detail by ID
-   * @param {string} foodId
-   * @returns {Object|null}
-   */
+  
   getFoodById(foodId) {
     return VIETNAMESE_FOOD_DATABASE.find(f => f.id === foodId) || null;
   },
 
-  /**
-   * Calculate adjusted nutrition based on custom serving factor
-   * @param {Object} food
-   * @param {number} factor (e.g. 0.5, 1, 1.5, 2)
-   */
+  
   calculateServingNutrition(food, factor = 1) {
     const multiplier = Math.max(0.1, Number(factor) || 1);
     return {
@@ -509,7 +488,7 @@ const FoodService = {
   }
 };
 
-// Expose globally
+
 window.VIETNAMESE_FOOD_DATABASE = VIETNAMESE_FOOD_DATABASE;
 window.removeVietnameseTones = removeVietnameseTones;
 window.FoodService = FoodService;

@@ -1,9 +1,4 @@
-/**
- * FitVN Tracker - HTML5 Canvas Pure Vanilla Chart Engine
- * Renders 7-Day Moving Average, Raw Weight Fluctuations and Tooltips
- * Theme: Jade & Porcelain (rule.md Section 3)
- * Strictly NO external libraries.
- */
+
 
 const CanvasChartEngine = {
   canvas: null,
@@ -26,7 +21,7 @@ const CanvasChartEngine = {
   bindEvents() {
     if (!this.canvas) return;
 
-    // Mouse & Touch Move for Tooltip
+    
     const handlePointerMove = (e) => {
       if (this.renderedPoints.length === 0) return;
       const rect = this.canvas.getBoundingClientRect();
@@ -36,7 +31,7 @@ const CanvasChartEngine = {
       const mouseX = clientX - rect.left;
       const mouseY = clientY - rect.top;
 
-      // Find closest point along X axis
+      
       let closestPoint = null;
       let minDistance = Infinity;
 
@@ -61,7 +56,7 @@ const CanvasChartEngine = {
     this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
     this.canvas.addEventListener('touchend', () => this.hideTooltip());
 
-    // Window Resize redraw
+    
     window.addEventListener('resize', () => {
       if (this.chartData.length > 0) {
         this.render(this.chartData);
@@ -88,7 +83,7 @@ const CanvasChartEngine = {
 
     this.tooltipEl.style.display = 'block';
 
-    // Tooltip position
+    
     const tooltipWidth = this.tooltipEl.offsetWidth || 180;
     let posX = point.x - tooltipWidth / 2;
     if (posX < 10) posX = 10;
@@ -114,10 +109,7 @@ const CanvasChartEngine = {
     return dateStr;
   },
 
-  /**
-   * Main Render Method
-   * @param {Array} data Calculated Moving Average data
-   */
+  
   render(data) {
     if (!this.canvas) return;
     this.chartData = data || [];
@@ -127,7 +119,7 @@ const CanvasChartEngine = {
     const canvas = this.canvas;
     const dpr = window.devicePixelRatio || 1;
 
-    // Get actual container dimensions
+    
     const displayWidth = canvas.parentElement.clientWidth || 600;
     const displayHeight = 280;
 
@@ -143,7 +135,7 @@ const CanvasChartEngine = {
     const plotWidth = displayWidth - pad.left - pad.right;
     const plotHeight = displayHeight - pad.top - pad.bottom;
 
-    // Calculate Y min & max with buffer
+    
     const allWeights = [];
     this.chartData.forEach(d => {
       allWeights.push(d.rawWeight);
@@ -154,7 +146,7 @@ const CanvasChartEngine = {
     const maxVal = Math.ceil(Math.max(...allWeights) + 0.8);
     const range = (maxVal - minVal) || 1;
 
-    // Calculate Coordinates
+    
     const count = this.chartData.length;
     const stepX = count > 1 ? plotWidth / (count - 1) : plotWidth / 2;
 
@@ -165,19 +157,19 @@ const CanvasChartEngine = {
       return { x, y: yMA, yRaw, data: d };
     });
 
-    // 1. Draw Grid Lines & Y Axis Labels
+    
     this.drawGridAndAxes(ctx, displayWidth, displayHeight, pad, minVal, maxVal, range);
 
-    // 2. Draw Area Fill Under 7DMA Curve (Glass Glow)
+    
     this.drawAreaGradient(ctx, this.renderedPoints, pad, plotHeight);
 
-    // 3. Draw Line 1: Raw Weight (Dashed Subtle Gray with Dot Markers)
+    
     this.drawRawWeightLine(ctx, this.renderedPoints);
 
-    // 4. Draw Line 2: 7-Day Moving Average Curve (Smooth Spline)
+    
     this.drawMovingAverageCurve(ctx, this.renderedPoints);
 
-    // 5. Draw Highlight Points
+    
     this.drawDataPoints(ctx, this.renderedPoints);
   },
 
@@ -191,7 +183,7 @@ const CanvasChartEngine = {
       const val = minVal + (range / steps) * i;
       const y = pad.top + (height - pad.top - pad.bottom) - (i / steps) * (height - pad.top - pad.bottom);
 
-      // Grid line
+      
       ctx.beginPath();
       ctx.strokeStyle = '#DDE3D9';
       ctx.lineWidth = 1;
@@ -199,12 +191,12 @@ const CanvasChartEngine = {
       ctx.lineTo(width - pad.right, y);
       ctx.stroke();
 
-      // Y Label
+      
       ctx.fillStyle = '#63756B';
       ctx.fillText(`${val.toFixed(1)}kg`, pad.left - 10, y);
     }
 
-    // X Axis Date Labels (Show spaced labels)
+    
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     const totalPoints = this.renderedPoints.length;
@@ -231,7 +223,7 @@ const CanvasChartEngine = {
     ctx.moveTo(points[0].x, pad.top + plotHeight);
     ctx.lineTo(points[0].x, points[0].y);
 
-    // Smooth Bézier curve interpolation
+    
     for (let i = 0; i < points.length - 1; i++) {
       const p0 = points[i === 0 ? i : i - 1];
       const p1 = points[i];
@@ -268,7 +260,7 @@ const CanvasChartEngine = {
     });
     ctx.stroke();
 
-    // Small dots for raw daily weights
+    
     ctx.setLineDash([]);
     points.forEach((p) => {
       ctx.beginPath();
@@ -286,7 +278,7 @@ const CanvasChartEngine = {
     ctx.save();
     ctx.beginPath();
 
-    // Create Jade to Sage Gradient Stroke
+    
     const strokeGrad = ctx.createLinearGradient(points[0].x, 0, points[points.length - 1].x, 0);
     strokeGrad.addColorStop(0, '#173F35');
     strokeGrad.addColorStop(1, '#397866');
@@ -315,7 +307,7 @@ const CanvasChartEngine = {
   },
 
   drawDataPoints(ctx, points) {
-    // Highlight the latest point with clean jade dot
+    
     if (points.length === 0) return;
     const latest = points[points.length - 1];
 
@@ -334,11 +326,7 @@ const CanvasChartEngine = {
   }
 };
 
-/**
- * HealthDashboardChart - Dedicated Canvas Chart for Health Dashboard
- * Renders actual Weight entries, Target Reference Line, Time Range filtering (7d, 30d, all),
- * and interactive floating tooltips.
- */
+
 const HealthDashboardChart = {
   canvas: null,
   ctx: null,
@@ -346,7 +334,7 @@ const HealthDashboardChart = {
   renderedPoints: [],
   targetWeight: null,
   allEntries: [],
-  currentRange: 'all', // '7d', '30d', 'all'
+  currentRange: 'all', 
   padding: { top: 35, right: 30, bottom: 45, left: 55 },
 
   init(canvasId, tooltipId, targetWeight = null) {
@@ -475,7 +463,7 @@ const HealthDashboardChart = {
 
     const entries = this.filterByRange(this.allEntries, range);
 
-    // Setup High-DPI canvas
+    
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.parentElement.clientWidth || 600;
     const height = Math.max(260, Math.min(320, width * 0.42));
@@ -499,7 +487,7 @@ const HealthDashboardChart = {
       return;
     }
 
-    // Min / Max computation
+    
     let weights = entries.map(e => Number(e.weight)).filter(w => !isNaN(w));
     if (this.targetWeight) {
       weights.push(this.targetWeight);
@@ -513,14 +501,14 @@ const HealthDashboardChart = {
     const chartW = width - pad.left - pad.right;
     const chartH = height - pad.top - pad.bottom;
 
-    // Helper functions
+    
     const getX = (index) => {
       if (entries.length === 1) return pad.left + chartW / 2;
       return pad.left + (index / (entries.length - 1)) * chartW;
     };
     const getY = (val) => pad.top + (1 - (val - minWeight) / weightSpan) * chartH;
 
-    // 1. Draw Grid Lines and Y-Axis Labels
+    
     ctx.strokeStyle = '#DDE3D9';
     ctx.lineWidth = 1;
     ctx.fillStyle = '#63756B';
@@ -537,7 +525,7 @@ const HealthDashboardChart = {
       ctx.fillText(`${w} kg`, pad.left - 8, yPos + 4);
     }
 
-    // 2. Draw Target Reference Line (if specified)
+    
     if (this.targetWeight && this.targetWeight >= minWeight && this.targetWeight <= maxWeight) {
       const targetY = getY(this.targetWeight);
       ctx.save();
@@ -556,14 +544,14 @@ const HealthDashboardChart = {
       ctx.restore();
     }
 
-    // 3. Map Points
+    
     this.renderedPoints = entries.map((entry, idx) => ({
       x: getX(idx),
       y: getY(Number(entry.weight)),
       data: entry
     }));
 
-    // 4. Fill Area Gradient below weight line
+    
     if (this.renderedPoints.length > 1) {
       ctx.save();
       const areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
@@ -583,7 +571,7 @@ const HealthDashboardChart = {
       ctx.restore();
     }
 
-    // 5. Draw Actual Weight Curve
+    
     ctx.save();
     ctx.strokeStyle = '#173F35';
     ctx.lineWidth = 2.8;
@@ -595,7 +583,7 @@ const HealthDashboardChart = {
     ctx.stroke();
     ctx.restore();
 
-    // 6. Draw Data Points and X-Axis Date Labels
+    
     ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#63756B';
@@ -603,7 +591,7 @@ const HealthDashboardChart = {
     const stepLabel = Math.max(1, Math.ceil(this.renderedPoints.length / 7));
 
     this.renderedPoints.forEach((p, idx) => {
-      // Point circle
+      
       ctx.save();
       ctx.beginPath();
       ctx.fillStyle = '#FFFFFF';
@@ -617,7 +605,7 @@ const HealthDashboardChart = {
       ctx.stroke();
       ctx.restore();
 
-      // Date label (spaced out)
+      
       if (idx % stepLabel === 0 || idx === this.renderedPoints.length - 1) {
         const parts = p.data.date.split('-');
         const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : p.data.date;
@@ -628,41 +616,15 @@ const HealthDashboardChart = {
 };
 
 window.CanvasChartEngine = CanvasChartEngine;
+window.HealthDashboardChart = HealthDashboardChart;
 
-/**
- * HealthReportsChartEngine - Pure Canvas Chart for Health Reports
- * Supports:
- * 1. Weight & BMI trend line chart with Target line
- * 2. Workout distribution bar / horizontal breakdown
- */
-const HealthReportsChartEngine = {
-  canvas: null,
-  ctx: null,
-  tooltipEl: null,
-  renderedElements: [],
-  padding: { top: 35, right: 30, bottom: 45, left: 55 },
- * WorkoutChartEngine - HTML5 Canvas Pure Vanilla Chart
- * Visualizes workout duration (minutes) per active day with hover tooltips
- * Theme: Jade & Porcelain (Rule 3)
- */
-const WorkoutChartEngine = {
-  canvas: null,
-  ctx: null,
-  tooltipEl: null,
-  renderedBars: [],
-  data: [],
-  padding: { top: 30, right: 25, bottom: 40, left: 50 },
- * ProgressChartEngine - Multi-Metric Progress Chart
- * Supports Weight & BMI curves, BMI threshold reference zones (18.5, 25, 30),
- * Target reference line, Start/End milestone indicators, and interactive floating tooltips.
- * Strictly 100% Vanilla HTML5 Canvas.
- */
+
 const ProgressChartEngine = {
   canvas: null,
   ctx: null,
   tooltipEl: null,
   renderedPoints: [],
-  currentMetric: 'weight', // 'weight' | 'bmi'
+  currentMetric: 'weight', 
   targetWeight: null,
   filteredEntries: [],
   padding: { top: 40, right: 35, bottom: 45, left: 55 },
@@ -684,8 +646,6 @@ const ProgressChartEngine = {
     if (!this.canvas) return;
 
     const handlePointer = (e) => {
-      if (this.renderedElements.length === 0) return;
-      if (this.renderedBars.length === 0) return;
       if (this.renderedPoints.length === 0) return;
       const rect = this.canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -694,23 +654,6 @@ const ProgressChartEngine = {
       const mouseX = clientX - rect.left;
       const mouseY = clientY - rect.top;
 
-      let closest = null;
-      let minDist = Infinity;
-
-      this.renderedElements.forEach((el) => {
-        const dist = Math.abs(el.x - mouseX);
-        if (dist < minDist && dist < 45) {
-          minDist = dist;
-          closest = el;
-      let hoveredBar = null;
-      this.renderedBars.forEach(b => {
-        if (mouseX >= b.x && mouseX <= b.x + b.w && mouseY >= b.y && mouseY <= b.y + b.h) {
-          hoveredBar = b;
-        }
-      });
-
-      if (hoveredBar) {
-        this.showTooltip(hoveredBar, rect);
       let closest = null;
       let minDist = Infinity;
 
@@ -735,29 +678,6 @@ const ProgressChartEngine = {
     this.canvas.addEventListener('touchend', () => this.hideTooltip());
 
     window.addEventListener('resize', () => {
-      if (this.data.length > 0) {
-        this.render(this.data);
-      }
-    });
-  },
-
-  showTooltip(bar, rect) {
-    if (!this.tooltipEl) return;
-
-    const item = bar.data;
-    const parts = item.date.split('-');
-    const dateFormatted = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : item.date;
-
-    this.tooltipEl.innerHTML = `
-      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
-        📅 ${dateFormatted}
-      </div>
-      <div style="font-size: 0.85rem; color: #202B28;">
-        Thời lượng: <strong style="color: #173F35; font-size: 0.95rem;">${item.totalMinutes} phút</strong>
-      </div>
-      <div style="font-size: 0.74rem; color: #63756B; margin-top: 2px;">
-        Số buổi tập: ${item.sessionCount} buổi
-      </div>
       if (this.filteredEntries.length > 0) {
         this.render(this.filteredEntries, this.currentMetric);
       }
@@ -766,26 +686,6 @@ const ProgressChartEngine = {
 
   showTooltip(point, rect) {
     if (!this.tooltipEl) return;
-    const item = point.data;
-
-    let targetDiffHtml = '';
-    if (point.targetWeight) {
-      const diff = (item.weight - point.targetWeight).toFixed(1);
-      const text = diff > 0 ? `+${diff} kg so với mục tiêu` : diff < 0 ? `${diff} kg so với mục tiêu` : 'Đạt mục tiêu!';
-      targetDiffHtml = `<div style="font-size: 0.73rem; color: #287653; margin-top: 2px;">🎯 ${text}</div>`;
-    }
-
-    const bmiHtml = item.bmi ? `<div style="font-size: 0.8rem; color: #63756B;">Chỉ số BMI: <strong style="color: #287653;">${Number(item.bmi).toFixed(1)}</strong></div>` : '';
-
-    this.tooltipEl.innerHTML = `
-      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
-        📅 ${item.date}
-      </div>
-      <div style="font-size: 0.86rem; color: #202B28;">
-        Cân nặng: <strong style="color: #173F35; font-size: 0.95rem;">${Number(item.weight).toFixed(1)} kg</strong>
-      </div>
-      ${bmiHtml}
-      ${targetDiffHtml}
 
     const item = point.data;
     const isWeight = this.currentMetric === 'weight';
@@ -824,18 +724,490 @@ const ProgressChartEngine = {
 
     const canvasWidth = this.canvas.clientWidth;
     let leftPos = point.x + 12;
-    if (leftPos + 180 > canvasWidth) leftPos = point.x - 185;
+    if (leftPos + 180 > canvasWidth) {
+      leftPos = point.x - 185;
+    }
+
+    this.tooltipEl.style.left = `${Math.max(10, leftPos)}px`;
+    this.tooltipEl.style.top = `${Math.max(10, point.y - 45)}px`;
+  },
+
+  hideTooltip() {
+    if (this.tooltipEl) {
+      this.tooltipEl.style.display = 'none';
+    }
+  },
+
+  formatDisplayDate(dateStr) {
+    if (!dateStr) return '';
+    const p = dateStr.split('-');
+    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dateStr;
+  },
+
+  render(entries, metric = 'weight') {
+    if (!this.canvas || !this.ctx) return;
+    this.filteredEntries = entries || [];
+    this.currentMetric = metric;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = this.canvas.parentElement.clientWidth || 700;
+    const height = Math.max(280, Math.min(360, width * 0.45));
+
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
+    const ctx = this.ctx;
+    ctx.resetTransform();
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, width, height);
+
+    if (this.filteredEntries.length === 0) {
+      ctx.fillStyle = '#829087';
+      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Không có bản ghi nào trong khoảng thời gian được chọn.', width / 2, height / 2);
+      this.renderedPoints = [];
+      return;
+    }
+
+    const isWeight = metric === 'weight';
+    let values = this.filteredEntries.map(e => Number(e[metric])).filter(v => !isNaN(v) && v > 0);
+
+    if (values.length === 0) {
+      ctx.fillStyle = '#829087';
+      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Không đủ dữ liệu số để vẽ biểu đồ.', width / 2, height / 2);
+      this.renderedPoints = [];
+      return;
+    }
+
+    if (isWeight && this.targetWeight) {
+      values.push(this.targetWeight);
+    } else if (!isWeight) {
+      
+      values.push(18.5, 25.0);
+    }
+
+    const minVal = Math.floor(Math.min(...values) - (isWeight ? 1.5 : 1));
+    const maxVal = Math.ceil(Math.max(...values) + (isWeight ? 1.5 : 1));
+    const valSpan = Math.max(isWeight ? 2 : 1, maxVal - minVal);
+
+    const pad = this.padding;
+    const chartW = width - pad.left - pad.right;
+    const chartH = height - pad.top - pad.bottom;
+
+    const getX = (idx) => {
+      if (this.filteredEntries.length === 1) return pad.left + chartW / 2;
+      return pad.left + (idx / (this.filteredEntries.length - 1)) * chartW;
+    };
+    const getY = (v) => pad.top + (1 - (v - minVal) / valSpan) * chartH;
+
+    
+    ctx.strokeStyle = '#DDE3D9';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#63756B';
+    ctx.font = '500 11px "Be Vietnam Pro", sans-serif';
+    ctx.textAlign = 'right';
+
+    const yStep = Math.max(isWeight ? 1 : 0.5, Math.round((valSpan / 4) * 10) / 10);
+    for (let v = minVal; v <= maxVal; v += yStep) {
+      const yPos = getY(v);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, yPos);
+      ctx.lineTo(width - pad.right, yPos);
+      ctx.stroke();
+      ctx.fillText(`${v.toFixed(isWeight ? 0 : 1)} ${isWeight ? 'kg' : ''}`, pad.left - 8, yPos + 4);
+    }
+
+    
+    if (isWeight && this.targetWeight && this.targetWeight >= minVal && this.targetWeight <= maxVal) {
+      const targetY = getY(this.targetWeight);
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#287653';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, targetY);
+      ctx.lineTo(width - pad.right, targetY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#287653';
+      ctx.font = '600 10.5px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Mục tiêu: ${this.targetWeight} kg`, pad.left + 8, targetY - 6);
+      ctx.restore();
+    } else if (!isWeight) {
+      
+      const drawRef = (thresholdVal, label, color) => {
+        if (thresholdVal >= minVal && thresholdVal <= maxVal) {
+          const refY = getY(thresholdVal);
+          ctx.save();
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(pad.left, refY);
+          ctx.lineTo(width - pad.right, refY);
+          ctx.stroke();
+
+          ctx.fillStyle = color;
+          ctx.font = '600 10px "Be Vietnam Pro", sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(label, pad.left + 8, refY - 4);
+          ctx.restore();
+        }
+      };
+
+      drawRef(18.5, 'Ngưỡng Thiếu cân (18.5)', '#326B82');
+      drawRef(25.0, 'Ngưỡng Thừa cân (25.0)', '#946414');
+    }
+
+    
+    this.renderedPoints = this.filteredEntries.map((item, idx) => ({
+      x: getX(idx),
+      y: getY(Number(item[metric])),
+      data: item
+    }));
+
+    
+    if (this.renderedPoints.length > 1) {
+      ctx.save();
+      const areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
+      areaGrad.addColorStop(0, isWeight ? 'rgba(23, 63, 53, 0.16)' : 'rgba(57, 120, 102, 0.18)');
+      areaGrad.addColorStop(1, 'rgba(23, 63, 53, 0.01)');
+      ctx.fillStyle = areaGrad;
+
+      ctx.beginPath();
+      ctx.moveTo(this.renderedPoints[0].x, pad.top + chartH);
+      ctx.lineTo(this.renderedPoints[0].x, this.renderedPoints[0].y);
+      for (let i = 1; i < this.renderedPoints.length; i++) {
+        ctx.lineTo(this.renderedPoints[i].x, this.renderedPoints[i].y);
+      }
+      ctx.lineTo(this.renderedPoints[this.renderedPoints.length - 1].x, pad.top + chartH);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    
+    ctx.save();
+    ctx.strokeStyle = isWeight ? '#173F35' : '#397866';
+    ctx.lineWidth = 2.8;
+    ctx.beginPath();
+    ctx.moveTo(this.renderedPoints[0].x, this.renderedPoints[0].y);
+    for (let i = 1; i < this.renderedPoints.length; i++) {
+      ctx.lineTo(this.renderedPoints[i].x, this.renderedPoints[i].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    
+    ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#63756B';
+
+    const stepLabel = Math.max(1, Math.ceil(this.renderedPoints.length / 8));
+
+    this.renderedPoints.forEach((p, idx) => {
+      const isStart = idx === 0;
+      const isEnd = idx === this.renderedPoints.length - 1;
+
+      
+      ctx.save();
+      ctx.beginPath();
+      ctx.fillStyle = isEnd ? '#D2F36B' : (isStart ? '#173F35' : '#FFFFFF');
+      ctx.arc(p.x, p.y, isEnd || isStart ? 5.5 : 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#173F35';
+      ctx.lineWidth = 2;
+      ctx.arc(p.x, p.y, isEnd || isStart ? 5.5 : 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      
+      if (idx % stepLabel === 0 || isEnd) {
+        const parts = p.data.date.split('-');
+        const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : p.data.date;
+        ctx.fillText(label, p.x, height - 12);
+      }
+    });
+  }
+};
+
+window.ProgressChartEngine = ProgressChartEngine;
+
+const WorkoutChartEngine = {
+  canvas: null,
+  ctx: null,
+  tooltipEl: null,
+  renderedBars: [],
+  data: [],
+  padding: { top: 30, right: 25, bottom: 40, left: 50 },
+
+  init(canvasId, tooltipId) {
+    this.canvas = document.getElementById(canvasId);
+    this.tooltipEl = document.getElementById(tooltipId);
+
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.bindEvents();
+  },
+
+  bindEvents() {
+    if (!this.canvas) return;
+
+    const handlePointer = (e) => {
+      if (this.renderedBars.length === 0) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const mouseX = clientX - rect.left;
+      const mouseY = clientY - rect.top;
+
+      let hoveredBar = null;
+      this.renderedBars.forEach(b => {
+        if (mouseX >= b.x && mouseX <= b.x + b.w && mouseY >= b.y && mouseY <= b.y + b.h) {
+          hoveredBar = b;
+        }
+      });
+
+      if (hoveredBar) {
+        this.showTooltip(hoveredBar, rect);
+      } else {
+        this.hideTooltip();
+      }
+    };
+
+    this.canvas.addEventListener('mousemove', handlePointer);
+    this.canvas.addEventListener('touchmove', handlePointer, { passive: true });
+    this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
+    this.canvas.addEventListener('touchend', () => this.hideTooltip());
+
+    window.addEventListener('resize', () => {
+      if (this.data.length > 0) {
+        this.render(this.data);
+      }
+    });
+  },
+
+  showTooltip(bar, rect) {
+    if (!this.tooltipEl) return;
+
+    const item = bar.data;
+    const parts = item.date.split('-');
+    const dateFormatted = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : item.date;
+
+    this.tooltipEl.innerHTML = `
+      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
+        📅 ${dateFormatted}
+      </div>
+      <div style="font-size: 0.85rem; color: #202B28;">
+        Thời lượng: <strong style="color: #173F35; font-size: 0.95rem;">${item.totalMinutes} phút</strong>
+      </div>
+      <div style="font-size: 0.74rem; color: #63756B; margin-top: 2px;">
+        Số buổi tập: ${item.sessionCount} buổi
+      </div>
+    `;
+
+    this.tooltipEl.style.display = 'block';
+
+    const canvasWidth = this.canvas.clientWidth;
     let leftPos = bar.x + bar.w / 2 - 60;
     if (leftPos + 140 > canvasWidth) leftPos = canvasWidth - 145;
     if (leftPos < 10) leftPos = 10;
 
     this.tooltipEl.style.left = `${leftPos}px`;
     this.tooltipEl.style.top = `${Math.max(10, bar.y - 45)}px`;
-    let leftPos = point.x + 12;
-    if (leftPos + 180 > canvasWidth) {
-      leftPos = point.x - 185;
+  },
+
+  hideTooltip() {
+    if (this.tooltipEl) {
+      this.tooltipEl.style.display = 'none';
+    }
+  },
+
+  render(groupedData) {
+    if (!this.canvas || !this.ctx) return;
+    this.data = groupedData || [];
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = this.canvas.parentElement.clientWidth || 600;
+    const height = Math.max(220, Math.min(280, width * 0.4));
+
+    this.canvas.width = width * dpr;
+    this.canvas.height = height * dpr;
+    this.canvas.style.width = `${width}px`;
+    this.canvas.style.height = `${height}px`;
+
+    const ctx = this.ctx;
+    ctx.resetTransform();
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, width, height);
+
+    if (this.data.length === 0) {
+      ctx.fillStyle = '#829087';
+      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Chưa có dữ liệu tập luyện để hiển thị biểu đồ.', width / 2, height / 2);
+      this.renderedBars = [];
+      return;
     }
 
+    const maxMinutes = Math.max(60, Math.ceil(Math.max(...this.data.map(d => d.totalMinutes)) / 15) * 15);
+    const pad = this.padding;
+    const chartW = width - pad.left - pad.right;
+    const chartH = height - pad.top - pad.bottom;
+
+    
+    ctx.strokeStyle = '#DDE3D9';
+    ctx.lineWidth = 1;
+    ctx.fillStyle = '#63756B';
+    ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
+    ctx.textAlign = 'right';
+
+    const ySteps = 4;
+    for (let i = 0; i <= ySteps; i++) {
+      const val = Math.round((maxMinutes / ySteps) * i);
+      const y = pad.top + chartH - (val / maxMinutes) * chartH;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, y);
+      ctx.lineTo(width - pad.right, y);
+      ctx.stroke();
+      ctx.fillText(`${val}p`, pad.left - 6, y + 4);
+    }
+
+    
+    const totalBars = this.data.length;
+    const slotW = chartW / totalBars;
+    const barW = Math.min(36, Math.max(12, slotW * 0.55));
+    this.renderedBars = [];
+
+    this.data.forEach((item, idx) => {
+      const x = pad.left + idx * slotW + (slotW - barW) / 2;
+      const barH = (item.totalMinutes / maxMinutes) * chartH;
+      const y = pad.top + chartH - barH;
+
+      
+      ctx.save();
+      const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+      grad.addColorStop(0, '#173F35');
+      grad.addColorStop(1, '#397866');
+      ctx.fillStyle = grad;
+
+      
+      const r = Math.min(4, barW / 2);
+      ctx.beginPath();
+      ctx.moveTo(x, y + barH);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.lineTo(x + barW - r, y);
+      ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
+      ctx.lineTo(x + barW, y + barH);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      this.renderedBars.push({ x, y, w: barW, h: barH, data: item });
+
+      
+      ctx.fillStyle = '#63756B';
+      ctx.font = '500 10px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      const parts = item.date.split('-');
+      const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : item.date;
+      ctx.fillText(label, x + barW / 2, height - 12);
+    });
+  }
+};
+
+window.WorkoutChartEngine = WorkoutChartEngine;
+
+const HealthReportsChartEngine = {
+  canvas: null,
+  ctx: null,
+  tooltipEl: null,
+  renderedElements: [],
+  padding: { top: 35, right: 30, bottom: 45, left: 55 },
+
+  init(canvasId, tooltipId) {
+    this.canvas = document.getElementById(canvasId);
+    this.tooltipEl = document.getElementById(tooltipId);
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    this.bindEvents();
+  },
+
+  bindEvents() {
+    if (!this.canvas) return;
+
+    const handlePointer = (e) => {
+      if (this.renderedElements.length === 0) return;
+      const rect = this.canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const mouseX = clientX - rect.left;
+      const mouseY = clientY - rect.top;
+
+      let closest = null;
+      let minDist = Infinity;
+
+      this.renderedElements.forEach((el) => {
+        const dist = Math.abs(el.x - mouseX);
+        if (dist < minDist && dist < 45) {
+          minDist = dist;
+          closest = el;
+        }
+      });
+
+      if (closest) {
+        this.showTooltip(closest, rect);
+      } else {
+        this.hideTooltip();
+      }
+    };
+
+    this.canvas.addEventListener('mousemove', handlePointer);
+    this.canvas.addEventListener('touchmove', handlePointer, { passive: true });
+    this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
+    this.canvas.addEventListener('touchend', () => this.hideTooltip());
+  },
+
+  showTooltip(point, rect) {
+    if (!this.tooltipEl) return;
+    const item = point.data;
+
+    let targetDiffHtml = '';
+    if (point.targetWeight) {
+      const diff = (item.weight - point.targetWeight).toFixed(1);
+      const text = diff > 0 ? `+${diff} kg so với mục tiêu` : diff < 0 ? `${diff} kg so với mục tiêu` : 'Đạt mục tiêu!';
+      targetDiffHtml = `<div style="font-size: 0.73rem; color: #287653; margin-top: 2px;">🎯 ${text}</div>`;
+    }
+
+    const bmiHtml = item.bmi ? `<div style="font-size: 0.8rem; color: #63756B;">Chỉ số BMI: <strong style="color: #287653;">${Number(item.bmi).toFixed(1)}</strong></div>` : '';
+
+    this.tooltipEl.innerHTML = `
+      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
+        📅 ${item.date}
+      </div>
+      <div style="font-size: 0.86rem; color: #202B28;">
+        Cân nặng: <strong style="color: #173F35; font-size: 0.95rem;">${Number(item.weight).toFixed(1)} kg</strong>
+      </div>
+      ${bmiHtml}
+      ${targetDiffHtml}
+    `;
+
+    this.tooltipEl.style.display = 'block';
+
+    const canvasWidth = this.canvas.clientWidth;
+    let leftPos = point.x + 12;
+    if (leftPos + 180 > canvasWidth) leftPos = point.x - 185;
     this.tooltipEl.style.left = `${Math.max(10, leftPos)}px`;
     this.tooltipEl.style.top = `${Math.max(10, point.y - 45)}px`;
   },
@@ -852,27 +1224,6 @@ const ProgressChartEngine = {
     const dpr = window.devicePixelRatio || 1;
     const width = this.canvas.parentElement.clientWidth || 600;
     const height = Math.max(240, Math.min(320, width * 0.42));
-  render(groupedData) {
-    if (!this.canvas || !this.ctx) return;
-    this.data = groupedData || [];
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = this.canvas.parentElement.clientWidth || 600;
-    const height = Math.max(220, Math.min(280, width * 0.4));
-  formatDisplayDate(dateStr) {
-    if (!dateStr) return '';
-    const p = dateStr.split('-');
-    return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dateStr;
-  },
-
-  render(entries, metric = 'weight') {
-    if (!this.canvas || !this.ctx) return;
-    this.filteredEntries = entries || [];
-    this.currentMetric = metric;
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = this.canvas.parentElement.clientWidth || 700;
-    const height = Math.max(280, Math.min(360, width * 0.45));
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
@@ -899,47 +1250,6 @@ const ProgressChartEngine = {
     const minWeight = Math.floor(Math.min(...weights) - 1.5);
     const maxWeight = Math.ceil(Math.max(...weights) + 1.5);
     const weightSpan = Math.max(2, maxWeight - minWeight);
-    if (this.data.length === 0) {
-      ctx.fillStyle = '#829087';
-      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Chưa có dữ liệu tập luyện để hiển thị biểu đồ.', width / 2, height / 2);
-      this.renderedBars = [];
-      return;
-    }
-
-    const maxMinutes = Math.max(60, Math.ceil(Math.max(...this.data.map(d => d.totalMinutes)) / 15) * 15);
-    if (this.filteredEntries.length === 0) {
-      ctx.fillStyle = '#829087';
-      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Không có bản ghi nào trong khoảng thời gian được chọn.', width / 2, height / 2);
-      this.renderedPoints = [];
-      return;
-    }
-
-    const isWeight = metric === 'weight';
-    let values = this.filteredEntries.map(e => Number(e[metric])).filter(v => !isNaN(v) && v > 0);
-
-    if (values.length === 0) {
-      ctx.fillStyle = '#829087';
-      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Không đủ dữ liệu số để vẽ biểu đồ.', width / 2, height / 2);
-      this.renderedPoints = [];
-      return;
-    }
-
-    if (isWeight && this.targetWeight) {
-      values.push(this.targetWeight);
-    } else if (!isWeight) {
-      // Include standard reference lines for BMI
-      values.push(18.5, 25.0);
-    }
-
-    const minVal = Math.floor(Math.min(...values) - (isWeight ? 1.5 : 1));
-    const maxVal = Math.ceil(Math.max(...values) + (isWeight ? 1.5 : 1));
-    const valSpan = Math.max(isWeight ? 2 : 1, maxVal - minVal);
 
     const pad = this.padding;
     const chartW = width - pad.left - pad.right;
@@ -951,77 +1261,7 @@ const ProgressChartEngine = {
     };
     const getY = (w) => pad.top + (1 - (w - minWeight) / weightSpan) * chartH;
 
-    // 1. Grid & Y Axis
-    // 1. Grid & Y Axis
-    ctx.strokeStyle = '#DDE3D9';
-    ctx.lineWidth = 1;
-    ctx.fillStyle = '#63756B';
-    ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
-    ctx.textAlign = 'right';
-
-    const ySteps = 4;
-    for (let i = 0; i <= ySteps; i++) {
-      const val = Math.round((maxMinutes / ySteps) * i);
-      const y = pad.top + chartH - (val / maxMinutes) * chartH;
-      ctx.beginPath();
-      ctx.moveTo(pad.left, y);
-      ctx.lineTo(width - pad.right, y);
-      ctx.stroke();
-      ctx.fillText(`${val}p`, pad.left - 6, y + 4);
-    }
-
-    // 2. Bars
-    const totalBars = this.data.length;
-    const slotW = chartW / totalBars;
-    const barW = Math.min(36, Math.max(12, slotW * 0.55));
-    this.renderedBars = [];
-
-    this.data.forEach((item, idx) => {
-      const x = pad.left + idx * slotW + (slotW - barW) / 2;
-      const barH = (item.totalMinutes / maxMinutes) * chartH;
-      const y = pad.top + chartH - barH;
-
-      // Draw Bar with Jade Gradient
-      ctx.save();
-      const grad = ctx.createLinearGradient(0, y, 0, y + barH);
-      grad.addColorStop(0, '#173F35');
-      grad.addColorStop(1, '#397866');
-      ctx.fillStyle = grad;
-
-      // Rounded top
-      const r = Math.min(4, barW / 2);
-      ctx.beginPath();
-      ctx.moveTo(x, y + barH);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.lineTo(x + barW - r, y);
-      ctx.quadraticCurveTo(x + barW, y, x + barW, y + r);
-      ctx.lineTo(x + barW, y + barH);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-
-      this.renderedBars.push({ x, y, w: barW, h: barH, data: item });
-
-      // Date Label below bar
-      ctx.fillStyle = '#63756B';
-      ctx.font = '500 10px "Be Vietnam Pro", sans-serif';
-      ctx.textAlign = 'center';
-      const parts = item.date.split('-');
-      const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : item.date;
-      ctx.fillText(label, x + barW / 2, height - 12);
-    });
-  }
-};
-
-window.WorkoutChartEngine = WorkoutChartEngine;
-    const getX = (idx) => {
-      if (this.filteredEntries.length === 1) return pad.left + chartW / 2;
-      return pad.left + (idx / (this.filteredEntries.length - 1)) * chartW;
-    };
-    const getY = (v) => pad.top + (1 - (v - minVal) / valSpan) * chartH;
-
-    // 1. Draw Grid Lines and Y-Axis Labels
+    
     ctx.strokeStyle = '#DDE3D9';
     ctx.lineWidth = 1;
     ctx.fillStyle = '#63756B';
@@ -1031,9 +1271,6 @@ window.WorkoutChartEngine = WorkoutChartEngine;
     const yStep = Math.max(1, Math.round(weightSpan / 4));
     for (let w = minWeight; w <= maxWeight; w += yStep) {
       const yPos = getY(w);
-    const yStep = Math.max(isWeight ? 1 : 0.5, Math.round((valSpan / 4) * 10) / 10);
-    for (let v = minVal; v <= maxVal; v += yStep) {
-      const yPos = getY(v);
       ctx.beginPath();
       ctx.moveTo(pad.left, yPos);
       ctx.lineTo(width - pad.right, yPos);
@@ -1041,15 +1278,9 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       ctx.fillText(`${w} kg`, pad.left - 8, yPos + 4);
     }
 
-    // 2. Target Line
+    
     if (targetWeight && targetWeight >= minWeight && targetWeight <= maxWeight) {
       const targetY = getY(targetWeight);
-      ctx.fillText(`${v.toFixed(isWeight ? 0 : 1)} ${isWeight ? 'kg' : ''}`, pad.left - 8, yPos + 4);
-    }
-
-    // 2. Draw Target / BMI Reference lines
-    if (isWeight && this.targetWeight && this.targetWeight >= minVal && this.targetWeight <= maxVal) {
-      const targetY = getY(this.targetWeight);
       ctx.save();
       ctx.setLineDash([5, 4]);
       ctx.strokeStyle = '#287653';
@@ -1066,7 +1297,7 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       ctx.restore();
     }
 
-    // 3. Map Points
+    
     this.renderedElements = entries.map((e, idx) => ({
       x: getX(idx),
       y: getY(Number(e.weight)),
@@ -1074,51 +1305,11 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       targetWeight
     }));
 
-    // 4. Fill Area Gradient
+    
     if (this.renderedElements.length > 1) {
       ctx.save();
       const areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
       areaGrad.addColorStop(0, 'rgba(23, 63, 53, 0.16)');
-      ctx.fillText(`Mục tiêu: ${this.targetWeight} kg`, pad.left + 8, targetY - 6);
-      ctx.restore();
-    } else if (!isWeight) {
-      // Draw BMI thresholds: 18.5 and 25.0
-      const drawRef = (thresholdVal, label, color) => {
-        if (thresholdVal >= minVal && thresholdVal <= maxVal) {
-          const refY = getY(thresholdVal);
-          ctx.save();
-          ctx.setLineDash([4, 4]);
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 1.4;
-          ctx.beginPath();
-          ctx.moveTo(pad.left, refY);
-          ctx.lineTo(width - pad.right, refY);
-          ctx.stroke();
-
-          ctx.fillStyle = color;
-          ctx.font = '600 10px "Be Vietnam Pro", sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText(label, pad.left + 8, refY - 4);
-          ctx.restore();
-        }
-      };
-
-      drawRef(18.5, 'Ngưỡng Thiếu cân (18.5)', '#326B82');
-      drawRef(25.0, 'Ngưỡng Thừa cân (25.0)', '#946414');
-    }
-
-    // 3. Map Data Points
-    this.renderedPoints = this.filteredEntries.map((item, idx) => ({
-      x: getX(idx),
-      y: getY(Number(item[metric])),
-      data: item
-    }));
-
-    // 4. Fill Gradient Area
-    if (this.renderedPoints.length > 1) {
-      ctx.save();
-      const areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
-      areaGrad.addColorStop(0, isWeight ? 'rgba(23, 63, 53, 0.16)' : 'rgba(57, 120, 102, 0.18)');
       areaGrad.addColorStop(1, 'rgba(23, 63, 53, 0.01)');
       ctx.fillStyle = areaGrad;
 
@@ -1129,18 +1320,12 @@ window.WorkoutChartEngine = WorkoutChartEngine;
         ctx.lineTo(this.renderedElements[i].x, this.renderedElements[i].y);
       }
       ctx.lineTo(this.renderedElements[this.renderedElements.length - 1].x, pad.top + chartH);
-      ctx.moveTo(this.renderedPoints[0].x, pad.top + chartH);
-      ctx.lineTo(this.renderedPoints[0].x, this.renderedPoints[0].y);
-      for (let i = 1; i < this.renderedPoints.length; i++) {
-        ctx.lineTo(this.renderedPoints[i].x, this.renderedPoints[i].y);
-      }
-      ctx.lineTo(this.renderedPoints[this.renderedPoints.length - 1].x, pad.top + chartH);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
     }
 
-    // 5. Draw Curve Stroke
+    
     ctx.save();
     ctx.strokeStyle = '#173F35';
     ctx.lineWidth = 2.6;
@@ -1148,18 +1333,11 @@ window.WorkoutChartEngine = WorkoutChartEngine;
     ctx.moveTo(this.renderedElements[0].x, this.renderedElements[0].y);
     for (let i = 1; i < this.renderedElements.length; i++) {
       ctx.lineTo(this.renderedElements[i].x, this.renderedElements[i].y);
-    ctx.strokeStyle = isWeight ? '#173F35' : '#397866';
-    ctx.lineWidth = 2.8;
-    ctx.beginPath();
-    ctx.moveTo(this.renderedPoints[0].x, this.renderedPoints[0].y);
-    for (let i = 1; i < this.renderedPoints.length; i++) {
-      ctx.lineTo(this.renderedPoints[i].x, this.renderedPoints[i].y);
     }
     ctx.stroke();
     ctx.restore();
 
-    // 6. Draw Points & Date Labels
-    // 6. Draw Points and Labels
+    
     ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#63756B';
@@ -1170,17 +1348,6 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       ctx.beginPath();
       ctx.fillStyle = '#FFFFFF';
       ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
-    const stepLabel = Math.max(1, Math.ceil(this.renderedPoints.length / 8));
-
-    this.renderedPoints.forEach((p, idx) => {
-      const isStart = idx === 0;
-      const isEnd = idx === this.renderedPoints.length - 1;
-
-      // Draw point
-      ctx.save();
-      ctx.beginPath();
-      ctx.fillStyle = isEnd ? '#D2F36B' : (isStart ? '#173F35' : '#FFFFFF');
-      ctx.arc(p.x, p.y, isEnd || isStart ? 5.5 : 4, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.beginPath();
@@ -1191,13 +1358,6 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       ctx.restore();
 
       if (idx % stepLabel === 0 || idx === this.renderedElements.length - 1) {
-      ctx.lineWidth = 2;
-      ctx.arc(p.x, p.y, isEnd || isStart ? 5.5 : 4, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-
-      // Date label
-      if (idx % stepLabel === 0 || isEnd) {
         const parts = p.data.date.split('-');
         const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : p.data.date;
         ctx.fillText(label, p.x, height - 12);
@@ -1207,5 +1367,3 @@ window.WorkoutChartEngine = WorkoutChartEngine;
 };
 
 window.HealthReportsChartEngine = HealthReportsChartEngine;
-window.ProgressChartEngine = ProgressChartEngine;
-window.HealthDashboardChart = HealthDashboardChart;

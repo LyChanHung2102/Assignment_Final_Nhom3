@@ -7,12 +7,12 @@
   <meta name="description" content="Nhật Ký Tập Luyện Thể Chất - FitVN Tracker">
   <title>Nhật Ký Tập Luyện - FitVN Tracker</title>
 
-  <!-- Google Font Be Vietnam Pro -->
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Core CSS -->
+  
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/glass.css">
   <link rel="stylesheet" href="../css/style.css">
@@ -20,7 +20,7 @@
 <body class="theme-porcelain">
 
   <div id="app-layout">
-    <!-- NAVIGATION BAR -->
+    
     <nav class="app-navigation glass-nav" id="app-nav" aria-label="Main Navigation">
       <div class="nav-brand-desktop">
         <div class="brand-icon">
@@ -34,67 +34,64 @@
         </div>
       </div>
 
-      <ul class="nav-list" role="tablist">
+            <ul class="nav-list" role="tablist">
         <li class="nav-item">
-          <a href="../index.html" class="nav-link" data-page="home">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="9" rx="1.5"/>
-              <rect x="14" y="3" width="7" height="5" rx="1.5"/>
-              <rect x="14" y="12" width="7" height="9" rx="1.5"/>
-              <rect x="3" y="16" width="7" height="5" rx="1.5"/>
-            </svg>
+          <a href="../index.html" class="nav-link" data-page="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
             <span class="nav-label">Trang Chủ</span>
           </a>
         </li>
         <li class="nav-item">
+          <a href="health-dashboard.html" class="nav-link" data-page="health-dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span class="nav-label">Sức Khỏe</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="progress-charts.html" class="nav-link" data-page="progress-charts">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span class="nav-label">Tiến Trình</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="workout.html" class="nav-link active" data-page="workout">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6.5 6.5h11M6.5 17.5h11M6.5 12h11M4 3v18M20 3v18"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M6.5 12h11M4 3v18M20 3v18"/></svg>
             <span class="nav-label">Tập Luyện</span>
           </a>
         </li>
         <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span class="nav-label">Báo Cáo</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="weight.html" class="nav-link" data-page="weight">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/></svg>
+            <span class="nav-label">Cân Nặng</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="food-log.html" class="nav-link" data-page="food">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-              <line x1="6" y1="1" x2="6" y2="4"/>
-              <line x1="10" y1="1" x2="10" y2="4"/>
-              <line x1="14" y1="1" x2="14" y2="4"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
             <span class="nav-label">Nhật Ký</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="food-search.html" class="nav-link" data-page="food-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <span class="nav-label">Tra Cứu</span>
           </a>
         </li>
         <li class="nav-item">
-          <a href="weight.html" class="nav-link" data-page="weight">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
-            </svg>
-            <span class="nav-label">Cân Nặng</span>
-          </a>
-        </li>
-        <li class="nav-item">
           <a href="settings.html" class="nav-link" data-page="settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span class="nav-label">Cá Nhân</span>
           </a>
         </li>
       </ul>
 
-      <!-- Desktop Sidebar User Snippet -->
+      
       <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
         <div class="avatar-pill">VN</div>
         <div class="user-info-snippet">
@@ -104,7 +101,7 @@
       </a>
     </nav>
 
-    <!-- CONTENT WRAPPER -->
+    
     <div class="content-wrapper">
       <header class="app-header glass-header">
         <div class="header-left">
@@ -127,7 +124,7 @@
       <main class="main-viewport">
         <section class="tab-content active" id="tab-workout">
           
-          <!-- 3.1. Page Header Toolbar: Add Workout & Quick Time Range Filters -->
+          
           <div class="section-header" style="flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
             <div>
               <h2 class="section-title">
@@ -148,7 +145,7 @@
             </button>
           </div>
 
-          <!-- Quick Time Range Pills -->
+          
           <div class="glass-card stat-card" style="padding: 10px 16px; margin-bottom: var(--spacing-md); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
             <div class="progress-time-pills" role="group" aria-label="Khoảng thời gian thống kê">
               <button type="button" class="progress-pill-btn" data-workout-range="7d">7 Ngày</button>
@@ -163,9 +160,9 @@
             </div>
           </div>
 
-          <!-- 3.2. Workout Summary Cards (4 Core Cards) -->
+          
           <div class="grid-cards grid-cards-4">
-            <!-- Card 1: Total Sessions -->
+            
             <div class="glass-card stat-card glass-card-interactive">
               <div class="stat-header">
                 <span>TỔNG SỐ BUỔI TẬP</span>
@@ -177,7 +174,7 @@
               </div>
             </div>
 
-            <!-- Card 2: Total Duration -->
+            
             <div class="glass-card stat-card glass-card-interactive">
               <div class="stat-header">
                 <span>TỔNG THỜI GIAN</span>
@@ -189,7 +186,7 @@
               </div>
             </div>
 
-            <!-- Card 3: Avg Duration -->
+            
             <div class="glass-card stat-card glass-card-interactive">
               <div class="stat-header">
                 <span>THỜI LƯỢNG TRUNG BÌNH</span>
@@ -201,7 +198,7 @@
               </div>
             </div>
 
-            <!-- Card 4: Active Days -->
+            
             <div class="glass-card stat-card glass-card-interactive">
               <div class="stat-header">
                 <span>SỐ NGÀY TẬP THỰC TẾ</span>
@@ -214,7 +211,7 @@
             </div>
           </div>
 
-          <!-- 3.7. Workout Statistics Chart -->
+          
           <div class="glass-card chart-container-card" style="margin-top: var(--spacing-md);">
             <div class="chart-header-row" style="flex-wrap: wrap; gap: 8px;">
               <div>
@@ -234,10 +231,10 @@
             </div>
           </div>
 
-          <!-- 3.6. Workout Filters & Search Row -->
+          
           <div class="glass-card stat-card" style="margin-top: var(--spacing-md); padding: 14px 18px;">
             <div class="workout-filters-row">
-              <!-- Search box -->
+              
               <div class="workout-search-wrap">
                 <svg class="workout-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <circle cx="11" cy="11" r="8"></circle>
@@ -246,7 +243,7 @@
                 <input type="text" id="wo-search-input" class="workout-search-input" placeholder="Tìm theo tên buổi tập, bài tập hoặc ghi chú...">
               </div>
 
-              <!-- Activity Type Filter -->
+              
               <select id="wo-filter-type" class="workout-filter-select" aria-label="Lọc theo loại hình">
                 <option value="all">Tất cả loại hình</option>
                 <option value="gym">🏋️‍♂️ Tập Gym</option>
@@ -260,7 +257,7 @@
                 <option value="other">⚡ Khác</option>
               </select>
 
-              <!-- Intensity Filter -->
+              
               <select id="wo-filter-intensity" class="workout-filter-select" aria-label="Lọc theo cường độ">
                 <option value="all">Tất cả cường độ</option>
                 <option value="low">Nhẹ nhàng</option>
@@ -268,25 +265,25 @@
                 <option value="high">Cường độ cao</option>
               </select>
 
-              <!-- Reset Filters Button -->
+              
               <button type="button" class="btn-workout-action" id="btn-reset-filters" title="Xóa các bộ lọc">
                 ↺ Đặt lại
               </button>
             </div>
 
-            <!-- 3.3. Workout Journal List Container -->
+            
             <div style="display: flex; flex-direction: column; gap: 10px;" id="wo-list-container">
-              <!-- Dynamically populated via WorkoutJournalModule -->
+              
             </div>
 
-            <!-- Empty List State -->
+            
             <div id="wo-empty-state" style="display: none; padding: 2rem; text-align: center; color: var(--color-text-muted, #829087);">
               <div style="font-size: 2.2rem; margin-bottom: 8px;">🏋️‍♂️</div>
               <h4 style="margin: 0 0 4px 0; color: var(--color-text, #202B28); font-size: 1rem;">Chưa có nhật ký buổi tập nào</h4>
               <p style="margin: 0; font-size: 0.84rem;">Nhấn nút <strong>"Thêm Buổi Tập Mới"</strong> phía trên để ghi chép lại hoạt động đầu tiên của bạn.</p>
             </div>
 
-            <!-- Empty Filter State -->
+            
             <div id="wo-empty-filter-state" style="display: none; padding: 2rem; text-align: center; color: var(--color-text-muted, #829087);">
               <div style="font-size: 2rem; margin-bottom: 6px;">🔍</div>
               <p style="margin: 0; font-size: 0.88rem;">Không tìm thấy buổi tập nào khớp với tiêu chí tìm kiếm và bộ lọc hiện tại.</p>
@@ -295,7 +292,7 @@
               </button>
             </div>
 
-            <!-- Pagination bar -->
+            
             <div class="table-pagination-controls" id="wo-pagination-bar" style="margin-top: 1.25rem;">
               <span id="wo-page-info">Trang 1 / 1</span>
               <div class="page-btn-group">
@@ -310,7 +307,7 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD / EDIT WORKOUT FORM -->
+  
   <div class="glass-modal-backdrop" id="wo-modal-form" role="dialog" aria-modal="true" aria-labelledby="wo-modal-form-title" style="display: none;">
     <div class="glass-modal-container" style="max-width: 540px;">
       <div class="modal-header">
@@ -324,7 +321,7 @@
       <form id="form-workout-entry" novalidate>
         <input type="hidden" id="wo-input-id" value="">
 
-        <!-- Title -->
+        
         <div class="form-group" style="margin-bottom: 12px;">
           <label for="wo-input-title" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
             Tên buổi tập <span style="color: var(--color-danger, #B83E42);">*</span>
@@ -333,7 +330,7 @@
           <div class="form-invalid-feedback" id="feedback-wo-title">Vui lòng nhập tên buổi tập.</div>
         </div>
 
-        <!-- Activity Type & Intensity (2 cols) -->
+        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div class="form-group">
             <label for="wo-input-type" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
@@ -364,7 +361,7 @@
           </div>
         </div>
 
-        <!-- Date & Duration (2 cols) -->
+        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div class="form-group">
             <label for="wo-input-date" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
@@ -383,7 +380,7 @@
           </div>
         </div>
 
-        <!-- Start Time & End Time (Optional, 2 cols) -->
+        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div class="form-group">
             <label for="wo-input-start-time" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
@@ -401,7 +398,7 @@
           </div>
         </div>
 
-        <!-- Distance & Steps (Optional, 2 cols) -->
+        
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div class="form-group">
             <label for="wo-input-distance" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
@@ -420,7 +417,7 @@
           </div>
         </div>
 
-        <!-- Feeling -->
+        
         <div class="form-group" style="margin-bottom: 12px;">
           <label for="wo-input-feeling" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
             Cảm nhận sau buổi tập
@@ -433,7 +430,7 @@
           </select>
         </div>
 
-        <!-- Notes -->
+        
         <div class="form-group" style="margin-bottom: 16px;">
           <label for="wo-input-notes" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
             Ghi chú buổi tập (tối đa 500 ký tự)
@@ -449,7 +446,7 @@
     </div>
   </div>
 
-  <!-- MODAL: WORKOUT DETAIL -->
+  
   <div class="glass-modal-backdrop" id="wo-modal-detail" role="dialog" aria-modal="true" aria-labelledby="wo-detail-title" style="display: none;">
     <div class="glass-modal-container" style="max-width: 500px;">
       <div class="modal-header">
@@ -461,7 +458,7 @@
       </div>
 
       <div id="wo-detail-content" style="display: flex; flex-direction: column; gap: 12px; font-size: 0.88rem;">
-        <!-- Dynamically injected detail items -->
+        
       </div>
 
       <div style="display: flex; justify-content: space-between; margin-top: 1.25rem; border-top: 1px solid var(--color-border); padding-top: 12px;">
@@ -478,7 +475,7 @@
     </div>
   </div>
 
-  <!-- MODAL: CONFIRM DELETE -->
+  
   <div class="glass-modal-backdrop" id="wo-modal-confirm-delete" role="dialog" aria-modal="true" aria-labelledby="wo-confirm-delete-title" style="display: none;">
     <div class="glass-modal-container" style="max-width: 420px; text-align: center;">
       <div style="font-size: 2.2rem; margin-bottom: 8px;">⚠️</div>
@@ -496,10 +493,10 @@
     </div>
   </div>
 
-  <!-- Toast Container -->
+  
   <div id="toast-container" aria-live="polite"></div>
 
-  <!-- Pure Vanilla Scripts -->
+  
   <script src="../js/calculator.js"></script>
   <script src="../js/chart.js"></script>
   <script src="../js/storage.js"></script>

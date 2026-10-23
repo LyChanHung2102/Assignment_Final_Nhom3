@@ -1,7 +1,4 @@
-/**
- * FitVN Tracker - Food Search & Nutrition Browser Module
- * Handles Real-time search, Category filtering, Dynamic serving recalculations, and Detail Modal
- */
+
 
 const FoodSearchModule = {
   currentCategory: 'all',
@@ -16,7 +13,7 @@ const FoodSearchModule = {
   },
 
   bindEvents() {
-    // Search input event
+    
     const searchInput = document.getElementById('food-search-input');
     const clearBtn = document.getElementById('btn-clear-food-search');
 
@@ -40,7 +37,7 @@ const FoodSearchModule = {
       });
     }
 
-    // Category chips
+    
     document.querySelectorAll('.food-cat-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         document.querySelectorAll('.food-cat-chip').forEach(c => c.classList.remove('active'));
@@ -50,7 +47,7 @@ const FoodSearchModule = {
       });
     });
 
-    // Detail Modal events
+    
     const btnCloseModal = document.getElementById('btn-close-food-detail');
     const modalBackdrop = document.getElementById('modal-food-detail');
 
@@ -185,7 +182,7 @@ const FoodSearchModule = {
     const nutrition = window.FoodService.calculateServingNutrition(food, this.activeFactor);
     const cat = this.getCategoryLabel(food.category);
 
-    // Calculate energy ratio (Protein = 4kcal/g, Carbs = 4kcal/g, Fat = 9kcal/g)
+    
     const pKcal = nutrition.protein * 4;
     const cKcal = nutrition.carbs * 4;
     const fKcal = nutrition.fat * 9;
@@ -291,14 +288,14 @@ const FoodSearchModule = {
     if (!this.selectedFood || !window.storageService) return;
     const nutrition = window.FoodService.calculateServingNutrition(this.selectedFood, this.activeFactor);
 
-    // Save to food logs
+    
     window.storageService.addFoodLog({
       name: `${this.selectedFood.name} (${this.activeFactor}x)`,
       calories: nutrition.calories,
       protein: nutrition.protein,
       carbs: nutrition.carbs,
       fat: nutrition.fat,
-      mealType: 'lunch', // default
+      mealType: 'lunch', 
       date: window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0]
     });
 

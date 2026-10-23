@@ -1,14 +1,21 @@
-/**
- * Auth Module - Handles Login & Sign Up Forms, Validation, Password visibility and Redirects
- */
 const AuthModule = {
   activeTab: 'login',
 
   init() {
+    this.checkSessionAndRedirect();
     this.bindTabEvents();
     this.bindPasswordToggleEvents();
     this.bindFormEvents();
     this.checkAutoFill();
+  },
+
+  checkSessionAndRedirect() {
+    if (!window.storageService) return;
+    if (window.storageService.hasActiveSession && window.storageService.hasActiveSession()) {
+      const redirectUrl = sessionStorage.getItem(window.STORAGE_KEYS?.REDIRECT_AFTER_LOGIN || 'fitvn_redirect_url') || '../index.html';
+      sessionStorage.removeItem(window.STORAGE_KEYS?.REDIRECT_AFTER_LOGIN || 'fitvn_redirect_url');
+      window.location.replace(redirectUrl);
+    }
   },
 
   checkAutoFill() {
@@ -160,13 +167,14 @@ const AuthModule = {
     return re.test(String(email).toLowerCase());
   },
 
-  handleLoginSubmit(e) {
+  async handleLoginSubmit(e) {
     e.preventDefault();
     this.clearErrors();
     this.hideAlert();
 
     const email = document.getElementById('login-email')?.value.trim();
     const password = document.getElementById('login-password')?.value;
+    const submitBtn = document.getElementById('btn-submit-login');
 
     let hasError = false;
 
@@ -185,23 +193,43 @@ const AuthModule = {
 
     if (hasError) return;
 
-    const result = window.storageService.loginUser(email, password);
-    if (!result.success) {
-      this.showAlert(result.message || 'Email hoặc mật khẩu không chính xác', 'error');
-      return;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang đăng nhập...';
     }
 
-    this.showAlert('Đăng nhập thành công! Đang chuyển hướng...', 'success');
-    if (window.ToastModule) {
-      window.ToastModule.show(`Chào mừng bạn trở lại, ${result.user.name}!`, 'cyan');
-    }
+    try {
+      const result = await window.storageService.loginUser(email, password);
+      if (!result.success) {
+        this.showAlert(result.message || 'Email hoặc mật khẩu không chính xác', 'error');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Đăng Nhập';
+        }
+        return;
+      }
 
-    setTimeout(() => {
-      window.location.href = '../index.html';
-    }, 800);
+      this.showAlert('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+      if (window.ToastModule) {
+        window.ToastModule.show(`Chào mừng bạn trở lại, ${result.user.name}!`, 'cyan');
+      }
+
+      const redirectUrl = sessionStorage.getItem(window.STORAGE_KEYS?.REDIRECT_AFTER_LOGIN || 'fitvn_redirect_url') || '../index.html';
+      sessionStorage.removeItem(window.STORAGE_KEYS?.REDIRECT_AFTER_LOGIN || 'fitvn_redirect_url');
+
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 500);
+    } catch (err) {
+      this.showAlert('Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại.', 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Đăng Nhập';
+      }
+    }
   },
 
-  handleSignupSubmit(e) {
+  async handleSignupSubmit(e) {
     e.preventDefault();
     this.clearErrors();
     this.hideAlert();
@@ -216,6 +244,7 @@ const AuthModule = {
     const height = parseFloat(document.getElementById('signup-height')?.value);
     const weight = parseFloat(document.getElementById('signup-weight')?.value);
     const fitnessGoal = document.getElementById('signup-goal')?.value;
+    const submitBtn = document.getElementById('btn-submit-signup');
 
     let hasError = false;
 
@@ -268,30 +297,47 @@ const AuthModule = {
 
     if (hasError) return;
 
-    const result = window.storageService.registerUser({
-      name,
-      email,
-      password,
-      gender,
-      age,
-      height,
-      weight,
-      fitnessGoal
-    });
-
-    if (!result.success) {
-      this.showAlert(result.message || 'Không thể đăng ký tài khoản!', 'error');
-      return;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang đăng ký...';
     }
 
-    this.showAlert('Đăng ký tài khoản thành công! Đang đồng bộ dữ liệu...', 'success');
-    if (window.ToastModule) {
-      window.ToastModule.show(`Chào mừng ${result.user.name} đến với FitVN Tracker!`, 'cyan');
-    }
+    try {
+      const result = await window.storageService.registerUser({
+        name,
+        email,
+        password,
+        gender,
+        age,
+        height,
+        weight,
+        fitnessGoal
+      });
 
-    setTimeout(() => {
-      window.location.href = '../index.html';
-    }, 1000);
+      if (!result.success) {
+        this.showAlert(result.message || 'Không thể đăng ký tài khoản!', 'error');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Đăng Ký Tài Khoản';
+        }
+        return;
+      }
+
+      this.showAlert('Đăng ký tài khoản thành công! Đang chuyển hướng...', 'success');
+      if (window.ToastModule) {
+        window.ToastModule.show(`Chào mừng ${result.user.name} đến với FitVN Tracker!`, 'cyan');
+      }
+
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 700);
+    } catch (err) {
+      this.showAlert('Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.', 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Đăng Ký Tài Khoản';
+      }
+    }
   }
 };
 

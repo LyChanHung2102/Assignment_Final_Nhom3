@@ -1,24 +1,19 @@
-/* ==========================================================================
-   FitVN Tracker - Design Tokens & CSS Variables
-   Theme: Jade & Porcelain — Premium Wellness (RULE.md Section 3)
-   ========================================================================== */
+
 
 :root {
-  /* --------------------------------------------------------------------------
-     1. Brand Colors
-     -------------------------------------------------------------------------- */
-  --color-primary: #173F35;          /* Deep Jade */
-  --color-primary-hover: #245747;    /* Dark Jade */
-  --color-primary-soft: #E5EDE7;     /* Soft Jade Tint */
+  
+  --color-primary: #173F35;          
+  --color-primary-hover: #245747;    
+  --color-primary-soft: #E5EDE7;     
   --color-primary-contrast: #FFFFFF;
 
-  /* Accent — Signature Citron */
+  
   --color-accent: #D2F36B;
   --color-accent-hover: #C1E451;
   --color-accent-soft: #EEF8CD;
   --color-accent-text: #26351D;
 
-  /* Supporting Brand Colors */
+  
   --color-jade: #173F35;
   --color-sage: #397866;
   --color-citron: #D2F36B;
@@ -26,24 +21,20 @@
   --color-ink: #202B28;
   --color-clay: #C47D60;
 
-  /* --------------------------------------------------------------------------
-     2. Background & Surface Tokens
-     -------------------------------------------------------------------------- */
-  --color-bg: #F7F6F0;               /* Warm Porcelain Canvas */
-  --color-surface: #FFFEFA;          /* Crisp White Surface */
-  --color-surface-raised: #F0F1E9;   /* Muted Raised Panel */
+  
+  --color-bg: #F7F6F0;               
+  --color-surface: #FFFEFA;          
+  --color-surface-raised: #F0F1E9;   
   --color-glass: rgba(255, 254, 250, 0.85);
 
   --bg-primary: #F7F6F0;
   --bg-secondary: #FFFEFA;
   --bg-tertiary: #F0F1E9;
 
-  /* --------------------------------------------------------------------------
-     3. Text & Typography
-     -------------------------------------------------------------------------- */
-  --color-text: #202B28;             /* Rich Ink */
-  --color-text-secondary: #63756B;   /* Slate Sage */
-  --color-text-muted: #829087;       /* Muted Pebble */
+  
+  --color-text: #202B28;             
+  --color-text-secondary: #63756B;   
+  --color-text-muted: #829087;       
   --color-text-inverse: #FFFFFF;
 
   --text-primary: #202B28;
@@ -51,35 +42,29 @@
   --text-muted: #829087;
   --text-inverse: #FFFFFF;
 
-  /* --------------------------------------------------------------------------
-     4. Borders & Dividers
-     -------------------------------------------------------------------------- */
-  --color-border: #DDE3D9;           /* Soft Muted Border */
-  --color-border-strong: #BECBC0;    /* Distinct Card Outline */
-  --color-border-focus: #397866;     /* Active Focus Sage */
+  
+  --color-border: #DDE3D9;           
+  --color-border-strong: #BECBC0;    
+  --color-border-focus: #397866;     
 
   --glass-border: #DDE3D9;
   --glass-border-hover: #BECBC0;
   --glass-border-active: #397866;
   --glass-border-highlight: #BECBC0;
 
-  /* --------------------------------------------------------------------------
-     5. Component Semantic Accents (Compatibility with existing modules)
-     -------------------------------------------------------------------------- */
-  --accent-cyan: #173F35;            /* Mapped to Brand Jade */
+  
+  --accent-cyan: #173F35;            
   --accent-cyan-rgb: 23, 63, 53;
-  --accent-emerald: #287653;         /* Wellness Forest */
+  --accent-emerald: #287653;         
   --accent-emerald-rgb: 40, 118, 83;
-  --accent-flame: #B83E42;           /* Rose Clay Red */
+  --accent-flame: #B83E42;           
   --accent-flame-rgb: 184, 62, 66;
-  --accent-purple: #326B82;          /* Slate Mineral Blue */
+  --accent-purple: #326B82;          
   --accent-purple-rgb: 50, 107, 130;
-  --accent-amber: #946414;           /* Warm Honey Gold */
+  --accent-amber: #946414;           
   --accent-amber-rgb: 148, 100, 20;
 
-  /* --------------------------------------------------------------------------
-     6. Functional Status Tokens
-     -------------------------------------------------------------------------- */
+  
   --color-success: #287653;
   --color-success-bg: #E5F2E9;
   --color-warning: #946414;
@@ -89,20 +74,20 @@
   --color-info: #326B82;
   --color-info-bg: #E5F0F4;
 
-  /* BMI Classification Tokens */
+  
   --color-bmi-underweight: #326B82;
   --color-bmi-normal: #287653;
   --color-bmi-overweight: #946414;
   --color-bmi-obesity: #B83E42;
 
-  /* Nutrition Macros */
-  --color-protein: #397866;          /* Sage Protein */
-  --color-carbs: #D5A64B;            /* Honey Carbs */
-  --color-fat: #C47D60;              /* Warm Clay Fat */
-  --color-water: #528BA0;            /* Soft Blue Hydration */
-  --color-calories: #173F35;         /* Deep Jade Calorie */
+  
+  --color-protein: #397866;          
+  --color-carbs: #D5A64B;            
+  --color-fat: #C47D60;              
+  --color-water: #528BA0;            
+  --color-calories: #173F35;         
 
-  /* Pure Canvas / Chart Tokens */
+  
   --color-chart-1: #173F35;
   --color-chart-2: #397866;
   --color-chart-3: #C47D60;
@@ -111,9 +96,7 @@
   --color-chart-grid: #DDE3D9;
   --color-chart-label: #63756B;
 
-  /* --------------------------------------------------------------------------
-     7. Elevation, Shadows & Glass Surfaces
-     -------------------------------------------------------------------------- */
+  
   --glass-bg: #FFFEFA;
   --glass-bg-subtle: #F0F1E9;
   --glass-bg-hover: #E5EDE7;
@@ -134,9 +117,7 @@
   --glow-emerald: 0 4px 12px rgba(40, 118, 83, 0.15);
   --glow-flame: 0 4px 12px rgba(184, 62, 66, 0.15);
 
-  /* --------------------------------------------------------------------------
-     8. Typography — Vietnamese Support
-     -------------------------------------------------------------------------- */
+  
   --font-family: "Be Vietnam Pro", "Noto Sans", "Segoe UI", Arial, sans-serif;
   --font-sans: "Be Vietnam Pro", "Noto Sans", "Segoe UI", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -159,15 +140,13 @@
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
 
-  /* --------------------------------------------------------------------------
-     9. Spacing Scale & Radii
-     -------------------------------------------------------------------------- */
-  --spacing-xs: 0.25rem; /* 4px */
-  --spacing-sm: 0.5rem;  /* 8px */
-  --spacing-md: 1rem;    /* 16px */
-  --spacing-lg: 1.5rem;  /* 24px */
-  --spacing-xl: 2rem;    /* 32px */
-  --spacing-2xl: 3rem;   /* 48px */
+  
+  --spacing-xs: 0.25rem; 
+  --spacing-sm: 0.5rem;  
+  --spacing-md: 1rem;    
+  --spacing-lg: 1.5rem;  
+  --spacing-xl: 2rem;    
+  --spacing-2xl: 3rem;   
 
   --space-1: 4px;
   --space-2: 8px;
@@ -186,17 +165,13 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* --------------------------------------------------------------------------
-     10. Transitions & Motion
-     -------------------------------------------------------------------------- */
+  
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
   --transition-spring: 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-  /* --------------------------------------------------------------------------
-     11. Layout & Z-Index Constants
-     -------------------------------------------------------------------------- */
+  
   --bottom-nav-height: 68px;
   --sidebar-width: 260px;
   --header-height: 70px;

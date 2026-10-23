@@ -1,30 +1,59 @@
-/**
- * FitVN Tracker - Main Application Controller
- * Handles Navigation, Food Logging, Real-time Search, Barcode Scanner, and Dashboard Sync
- */
+const AuthGuard = {
+  checkAccess() {
+    const pathname = window.location.pathname.toLowerCase();
+    const isAuthPage = pathname.includes("auth.html");
+    const isSubdir = pathname.includes("/page/");
+    const authPath = isSubdir ? "auth.html" : "Page/auth.html";
+    const homePath = isSubdir ? "../index.html" : "index.html";
+    const hasSession = window.storageService && window.storageService.hasActiveSession();
+
+    if (!hasSession && !isAuthPage) {
+      try {
+        const currentRel = window.location.pathname + window.location.search;
+        sessionStorage.setItem("fitvn_redirect_url", currentRel);
+      } catch (e) {}
+      window.location.replace(authPath);
+      return false;
+    }
+
+    if (hasSession && isAuthPage) {
+      window.location.replace(homePath);
+      return false;
+    }
+    return true;
+  }
+};
+window.AuthGuard = AuthGuard;
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Initialize Local Storage
   if (window.storageService) {
     window.storageService.initStorage();
   }
+  if (window.AuthGuard && !window.AuthGuard.checkAccess()) {
+    return;
+  }
 
-  // 2. Initialize Core Modules
+  
   AppHeaderModule.init();
   NavigationModule.init();
   ToastModule.init();
 
-  // 3. Conditional Page Module Initialization
+  
   if (document.getElementById('dash-stat-calories')) {
     DashboardModule.init();
   }
 
   if (document.getElementById('report-weight-canvas')) {
     HealthReportsModule.init();
+  }
   if (document.getElementById('workout-chart-canvas')) {
     WorkoutJournalModule.init();
+  }
   if (document.getElementById('progress-chart-canvas')) {
     ProgressChartsModule.init();
+  }
   if (document.getElementById('health-weight-canvas')) {
     HealthDashboardModule.init();
   }
@@ -49,19 +78,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('food-search-input') || document.getElementById('food-cards-grid')) {
     if (window.FoodSearchModule) window.FoodSearchModule.init();
   }
-
-  // Initialize Onboarding Module
-  if (window.OnboardingModule) {
-    window.OnboardingModule.init();
-  }
 });
 
-/**
- * Toast Notification Module
- */
+
 const ToastModule = {
   containerEl: null,
 
+
+  bindLogoutEvents() {
+    document.querySelectorAll('.btn-logout-trigger, [data-action="logout"], #btn-logout-settings').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.confirm('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?')) {
+          window.storageService.logoutUser();
+          const isSubdir = window.location.pathname.toLowerCase().includes('/page/');
+          window.location.replace(isSubdir ? 'auth.html' : 'Page/auth.html');
+        }
+      });
+    });
+  },
   init() {
     this.containerEl = document.getElementById('toast-container');
     if (!this.containerEl) {
@@ -77,7 +112,7 @@ const ToastModule = {
     const toast = document.createElement('div');
     toast.className = 'toast-item';
     
-    // Choose icon
+    
     const iconSvg = `
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -95,14 +130,13 @@ const ToastModule = {
   }
 };
 
-/**
- * Header Module - Updates dynamic title, date badge, and user indicators
- */
+
 const AppHeaderModule = {
   headerTitleEl: null,
   headerDateEl: null,
 
   init() {
+    this.bindLogoutEvents();
     this.headerTitleEl = document.getElementById('header-title');
     this.headerDateEl = document.getElementById('header-date');
     this.updateCurrentDate();
@@ -111,23 +145,23 @@ const AppHeaderModule = {
 
   syncUserData() {
     if (!window.storageService) return;
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    const profile = (window.storageService && window.storageService.getUserProfile) ? window.storageService.getUserProfile() : {};
     const authUser = window.storageService.getCurrentUser ? window.storageService.getCurrentUser() : null;
     const activeName = (authUser && authUser.name) ? authUser.name : (profile.name || 'Người dùng FitVN');
     
-    // Update user name elements
+    
     document.querySelectorAll('.user-name').forEach(el => {
       el.textContent = activeName;
     });
 
-    // Generate avatar initials
+    
     const initials = activeName.trim().split(/\s+/).map(w => w[0]).slice(-2).join('').toUpperCase() || 'VN';
     document.querySelectorAll('.avatar-pill').forEach(el => {
       el.textContent = initials;
       el.setAttribute('title', activeName);
     });
 
-    // Update goal tag
+    
     const goalLabels = {
       'lean_bulk': 'Tăng Cơ (Lean Bulk)',
       'cut': 'Giảm Cân (Cutting)',
@@ -155,9 +189,7 @@ const AppHeaderModule = {
   }
 };
 
-/**
- * Navigation Module - Multi-page & Tab Navigation Support
- */
+
 const NavigationModule = {
   navLinks: [],
 
@@ -189,13 +221,10 @@ const NavigationModule = {
   }
 };
 
-/**
- * Dashboard Module - Synchronizes Calorie Ring, Deep Macros, Hydration & Quick Feeds
- * Optimized via Option A: Targeted DOM Element Cache & DocumentFragment Batching
- */
+
 const DashboardModule = {
   dom: {},
-  circumference: 2 * Math.PI * 75, // Radius = 75px, C ≈ 471.24px
+  circumference: 2 * Math.PI * 75, 
 
   init() {
     this.cacheDOM();
@@ -214,7 +243,7 @@ const DashboardModule = {
       calProgressFill: document.getElementById('dash-calories-progress'),
       calBadge: document.getElementById('dash-calories-badge'),
 
-      // Macros
+      
       proteinText: document.getElementById('dash-macro-protein-text'),
       proteinProgress: document.getElementById('dash-macro-protein-progress'),
       proteinKcal: document.getElementById('dash-macro-protein-kcal'),
@@ -227,7 +256,7 @@ const DashboardModule = {
       fatProgress: document.getElementById('dash-macro-fat-progress'),
       fatKcal: document.getElementById('dash-macro-fat-kcal'),
 
-      // Water Hydration (Dynamic Cups & Circular Gauge)
+      
       waterVal: document.getElementById('dash-water-val'),
       waterUnit: document.getElementById('dash-water-unit'),
       waterSubOz: document.getElementById('dash-water-sub-oz'),
@@ -238,39 +267,39 @@ const DashboardModule = {
       btnWaterDots: document.getElementById('btn-water-dots'),
       btnWaterQuickAdd: document.getElementById('btn-water-quick-add'),
 
-      // Weight
+      
       dashWeight: document.getElementById('dash-current-weight'),
       dashWeightBadge: document.getElementById('dash-weight-badge'),
 
-      // Recent foods container
+      
       recentFoodList: document.getElementById('dash-recent-food-list')
     };
   },
 
   bindEvents() {
-    // Water tracking & interactive actions
+    
     document.addEventListener('click', (e) => {
-      // 1. Quick add from circular gauge (+)
+      
       if (e.target.closest('#btn-water-quick-add')) {
         this.updateWater(250);
         return;
       }
 
-      // 2. Click on a specific water cup
+      
       const cupItem = e.target.closest('.water-cup-item');
       if (cupItem) {
         const fill = parseInt(cupItem.getAttribute('data-fill'), 10) || 0;
-        // If clicking next cup or unfull cup -> Drink 1 cup (+250ml)
+        
         if (fill < 100) {
           this.updateWater(250);
         } else {
-          // If clicking an already filled cup -> Undo/reduce 1 cup (-250ml)
+          
           this.updateWater(-250);
         }
         return;
       }
 
-      // 3. Quick action buttons (from dropdown or buttons with data-water-quick or data-water-add)
+      
       const quickBtn = e.target.closest('[data-water-quick]') || e.target.closest('[data-water-add]');
       if (quickBtn) {
         const amount = parseInt(quickBtn.getAttribute('data-water-quick') || quickBtn.getAttribute('data-water-add'), 10);
@@ -281,7 +310,7 @@ const DashboardModule = {
         return;
       }
 
-      // 4. Toggle dropdown menu dots
+      
       const dotsBtn = e.target.closest('#btn-water-dots');
       if (dotsBtn) {
         if (this.dom.waterDropdownPanel) {
@@ -291,7 +320,7 @@ const DashboardModule = {
         return;
       }
 
-      // 5. Reset water today
+      
       const resetBtn = e.target.closest('#btn-water-reset');
       if (resetBtn) {
         window.storageService.resetWater();
@@ -301,18 +330,18 @@ const DashboardModule = {
         return;
       }
 
-      // 6. Edit daily water target
+      
       const editTargetBtn = e.target.closest('#btn-water-edit-target');
       if (editTargetBtn) {
         if (this.dom.waterDropdownPanel) this.dom.waterDropdownPanel.style.display = 'none';
-        const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+        const profile = (window.storageService && window.storageService.getUserProfile) ? window.storageService.getUserProfile() : (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
         const currentTarget = profile.waterTarget || 3000;
         const input = prompt('Nhập mục tiêu nước uống mỗi ngày của bạn (ml):', currentTarget);
         if (input !== null) {
           const newTarget = parseInt(input, 10);
           if (!isNaN(newTarget) && newTarget >= 500 && newTarget <= 10000) {
             profile.waterTarget = newTarget;
-            window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
+            window.storageService.setUserProfile(profile);
             ToastModule.show(`Đã cập nhật mục tiêu nước: ${newTarget.toLocaleString()}ml!`);
             this.renderWater();
           } else if (input.trim() !== '') {
@@ -322,7 +351,7 @@ const DashboardModule = {
         return;
       }
 
-      // 7. Click outside dropdown to close
+      
       if (this.dom.waterDropdownPanel && this.dom.waterDropdownPanel.style.display !== 'none') {
         if (!e.target.closest('.water-menu-wrapper')) {
           this.dom.waterDropdownPanel.style.display = 'none';
@@ -330,7 +359,7 @@ const DashboardModule = {
       }
     });
 
-    // Keyboard accessibility for Circular Gauge (+)
+    
     if (this.dom.btnWaterQuickAdd) {
       this.dom.btnWaterQuickAdd.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -349,13 +378,13 @@ const DashboardModule = {
   },
 
   renderWater() {
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
     const target = Number(profile.waterTarget) > 0 ? Number(profile.waterTarget) : 3000;
     const current = window.storageService.getWater();
     const percent = Math.min(100, Math.round((current / target) * 100));
     const CUP_CAPACITY_ML = 250;
 
-    // 1. Text display (Amount & fl oz conversion)
+    
     if (this.dom.waterVal) {
       this.dom.waterVal.textContent = current.toLocaleString('vi-VN');
     }
@@ -363,7 +392,7 @@ const DashboardModule = {
       this.dom.waterUnit.textContent = 'ml';
     }
     if (this.dom.waterSubOz) {
-      // 1 ml = 0.033814 fl oz
+      
       const oz = (current * 0.033814).toFixed(1);
       this.dom.waterSubOz.textContent = `(${oz} fl oz)`;
     }
@@ -372,26 +401,26 @@ const DashboardModule = {
       this.dom.waterGoalVal.textContent = `${target.toLocaleString('vi-VN')} ml (${goalOz} fl oz)`;
     }
 
-    // 2. Circular Gauge Ring Progress
+    
     if (this.dom.waterCircleBar) {
-      const circumference = 113.1; // 2 * PI * 18
+      const circumference = 113.1; 
       const rawRatio = target > 0 ? (current / target) : 0;
       const progressRatio = Math.min(1, Math.max(0, rawRatio));
       const offset = circumference * (1 - progressRatio);
       this.dom.waterCircleBar.style.strokeDashoffset = `${offset.toFixed(2)}`;
 
       if (current >= target) {
-        this.dom.waterCircleBar.style.stroke = '#10b981'; // Emerald when completed
+        this.dom.waterCircleBar.style.stroke = '#10b981'; 
       } else {
-        this.dom.waterCircleBar.style.stroke = '#0ea5e9'; // Vibrant water blue
+        this.dom.waterCircleBar.style.stroke = '#0ea5e9'; 
       }
     }
 
-    // 3. Render Dynamic Water Cups (250ml per cup)
+    
     if (this.dom.waterCupsGrid) {
-      // Calculate base cups based on target
+      
       const baseCups = Math.max(1, Math.ceil(target / CUP_CAPACITY_ML));
-      // If user exceeded goal, add additional cups dynamically
+      
       const consumedCups = Math.ceil(current / CUP_CAPACITY_ML);
       const totalCupsToRender = Math.max(baseCups, consumedCups);
 
@@ -411,7 +440,7 @@ const DashboardModule = {
           fillPercent = 0;
         }
 
-        // The first unfull cup gets the "+" icon and pulse animation
+        
         let isNextCup = false;
         if (!foundNextActionCup && fillPercent < 100) {
           isNextCup = true;
@@ -468,7 +497,6 @@ const DashboardModule = {
             ${fillPercent > 0 && fillPercent < 100 ? `<line x1="2" y1="${fillY.toFixed(1)}" x2="30" y2="${fillY.toFixed(1)}" class="cup-water-surface" />` : ''}
           </g>
 
-          <!-- Glass outline and rim -->
           <path d="M 3.5,5 L 7,39 C 7.5,41 9.5,42.5 16,42.5 C 22.5,42.5 24.5,41 25,39 L 28.5,5 Z" class="cup-glass-stroke" fill="none" />
           <ellipse cx="16" cy="5" rx="12.5" ry="2" class="cup-glass-rim" fill="none" />
 
@@ -479,19 +507,19 @@ const DashboardModule = {
   },
 
   updateUI() {
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
     const targetCalories = profile.targetCalories || 2600;
     const targetMacros = profile.macros || { protein: 165, carbs: 325, fat: 72 };
 
     const todayDate = window.getTodayDateString();
     const dayTotals = window.storageService.calculateDayTotals(todayDate);
 
-    // 1. Calories & SVG Gauge Calculation
+    
     const consumed = Math.round(dayTotals.calories);
     const remaining = targetCalories - consumed;
     const calPercent = Math.min(100, Math.round((consumed / targetCalories) * 100));
 
-    // Update SVG Circular Ring Gauge
+    
     if (this.dom.circleProgress) {
       const ratio = Math.min(1, consumed / targetCalories);
       const offset = this.circumference * (1 - ratio);
@@ -516,7 +544,7 @@ const DashboardModule = {
       }
     }
 
-    // Secondary UI values
+    
     if (this.dom.statConsumed) {
       this.dom.statConsumed.innerHTML = `${consumed.toLocaleString()} <span class="stat-unit">/ ${targetCalories.toLocaleString()} kcal</span>`;
     }
@@ -533,18 +561,18 @@ const DashboardModule = {
       this.dom.calBadge.textContent = `Đạt ${calPercent}%`;
     }
 
-    // 2. Macro deep breakdown
+    
     this.renderMacroItem('protein', dayTotals.protein, targetMacros.protein, 4);
     this.renderMacroItem('carb', dayTotals.carbs, targetMacros.carbs, 4);
     this.renderMacroItem('fat', dayTotals.fat, targetMacros.fat, 9);
 
-    // 3. Hydration
+    
     this.renderWater();
 
-    // 4. Weight & 7DMA
+    
     this.renderWeightSnippet(profile);
 
-    // 5. Recent Meals via DocumentFragment Batching
+    
     this.renderRecentMeals(todayDate);
   },
 
@@ -564,11 +592,14 @@ const DashboardModule = {
 
   renderWeightSnippet(profile) {
     const latest = window.storageService.getLatestWeight();
-    if (!latest) return;
+    const targetWeight = profile.targetWeight || null;
 
     if (this.dom.dashWeight) {
-      const targetWeight = profile.targetWeight || 76;
-      this.dom.dashWeight.innerHTML = `${latest.weight} <span class="stat-unit">kg (Target: ${targetWeight} kg)</span>`;
+      if (latest && latest.weight) {
+        this.dom.dashWeight.innerHTML = `${latest.weight} <span class="stat-unit">kg ${targetWeight ? `(Mục tiêu: ${targetWeight} kg)` : ''}</span>`;
+      } else {
+        this.dom.dashWeight.innerHTML = `-- <span class="stat-unit">kg ${targetWeight ? `(Mục tiêu: ${targetWeight} kg)` : ''}</span>`;
+      }
     }
 
     if (this.dom.dashWeightBadge) {
@@ -577,13 +608,15 @@ const DashboardModule = {
         const maData = window.HealthCalculator.calculateMovingAverage(logs, 7);
         const trend = window.HealthCalculator.calculateWeeklyTrend(maData);
         this.dom.dashWeightBadge.textContent = trend.text;
+      } else if (logs.length === 1) {
+        this.dom.dashWeightBadge.textContent = 'Bản ghi đầu tiên';
+      } else {
+        this.dom.dashWeightBadge.textContent = 'Chưa có dữ liệu';
       }
     }
   },
 
-  /**
-   * Render Recent Meals Feed with DocumentFragment (Option A Optimization)
-   */
+  
   renderRecentMeals(dateString) {
     if (!this.dom.recentFoodList) return;
 
@@ -598,7 +631,7 @@ const DashboardModule = {
     }
 
     const fragment = document.createDocumentFragment();
-    const recent = dayLogs.slice(0, 3); // Top 3 recent
+    const recent = dayLogs.slice(0, 3); 
 
     recent.forEach(item => {
       const row = document.createElement('div');
@@ -622,9 +655,7 @@ const DashboardModule = {
   }
 };
 
-/**
- * Food Log Module - Rapid 1-Tap Entry & Categorized Meal Tracking
- */
+
 const FoodLogModule = {
   activeMealType: 'breakfast',
   activeCategory: 'all',
@@ -646,7 +677,7 @@ const FoodLogModule = {
     this.searchResultsEl = document.getElementById('modal-food-results');
     this.searchInputEl = document.getElementById('modal-food-search');
 
-    // Default to today (YYYY-MM-DD)
+    
     this.selectedDate = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
 
     this.bindEvents();
@@ -751,14 +782,14 @@ const FoodLogModule = {
       }
     }
 
-    // Synchronize header date badge
+    
     if (headerDateEl) {
       headerDateEl.textContent = this.formatDateVN(curDateStr);
     }
   },
 
   bindEvents() {
-    // Open modal buttons from Food Log section
+    
     document.addEventListener('click', (e) => {
       const triggerBtn = e.target.closest('[data-open-food-modal]');
       if (triggerBtn) {
@@ -767,7 +798,7 @@ const FoodLogModule = {
       }
     });
 
-    // Close modal
+    
     const closeBtn = document.getElementById('btn-close-food-modal');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this.closeModal());
@@ -781,7 +812,7 @@ const FoodLogModule = {
       });
     }
 
-    // Modal Tabs (Kho món vs Barcode)
+    
     const modalTabs = document.querySelectorAll('.modal-tab-btn');
     modalTabs.forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -794,7 +825,7 @@ const FoodLogModule = {
       });
     });
 
-    // Realtime Search Input (Fuzzy matching + removeVietnameseTones)
+    
     if (this.searchInputEl) {
       this.searchInputEl.addEventListener('input', (e) => {
         this.currentSearchQuery = e.target.value.trim();
@@ -802,7 +833,7 @@ const FoodLogModule = {
       });
     }
 
-    // Category chips
+    
     const chipBtns = document.querySelectorAll('.chip-btn');
     chipBtns.forEach((chip) => {
       chip.addEventListener('click', () => {
@@ -813,9 +844,9 @@ const FoodLogModule = {
       });
     });
 
-    // Delegate 1-Tap Quick Add and Delete clicks
+    
     document.addEventListener('click', (e) => {
-      // 1-Tap Add
+      
       const addBtn = e.target.closest('.btn-quick-add');
       if (addBtn) {
         const foodId = addBtn.getAttribute('data-food-id');
@@ -824,7 +855,7 @@ const FoodLogModule = {
         }
       }
 
-      // Delete log item
+      
       const deleteBtn = e.target.closest('.btn-delete-log');
       if (deleteBtn) {
         const logId = deleteBtn.getAttribute('data-log-id');
@@ -847,7 +878,7 @@ const FoodLogModule = {
       this.modalBackdropEl.classList.add('active');
     }
 
-    // Reset search
+    
     if (this.searchInputEl) {
       this.searchInputEl.value = '';
       this.currentSearchQuery = '';
@@ -863,20 +894,18 @@ const FoodLogModule = {
     }
   },
 
-  /**
-   * Filter Vietnamese Foods using Array.filter & accent normalization
-   */
+  
   filterAndRenderFoods() {
     const allFoods = window.storageService.getAllFoods();
     const queryNormalized = window.removeVietnameseTones ? window.removeVietnameseTones(this.currentSearchQuery) : this.currentSearchQuery.toLowerCase();
 
     const filtered = allFoods.filter((food) => {
-      // Category filter
+      
       if (this.activeCategory !== 'all' && food.category !== this.activeCategory) {
         return false;
       }
 
-      // Search keyword filter
+      
       if (!queryNormalized) return true;
 
       const nameNormalized = window.removeVietnameseTones ? window.removeVietnameseTones(food.name) : food.name.toLowerCase();
@@ -921,10 +950,7 @@ const FoodLogModule = {
     `).join('');
   },
 
-  /**
-   * 1-Tap Quick Add a food item into the active meal of the selected date
-   * @param {string} foodId 
-   */
+  
   quickAdd(foodId) {
     const allFoods = window.storageService.getAllFoods();
     const food = allFoods.find(item => item.id === foodId);
@@ -947,7 +973,7 @@ const FoodLogModule = {
     const dateFormatted = this.formatDateVN(targetDate);
     ToastModule.show(`Đã nạp ${food.name} (${food.calories} kcal) vào ${this.mealNames[this.activeMealType]} (${dateFormatted})!`);
     
-    // Close modal & re-render
+    
     this.closeModal();
     this.renderFoodLogs();
     if (window.DashboardModule && typeof window.DashboardModule.updateUI === 'function') {
@@ -955,10 +981,7 @@ const FoodLogModule = {
     }
   },
 
-  /**
-   * Delete an existing food log
-   * @param {string} logId 
-   */
+  
   deleteLogItem(logId) {
     const success = window.storageService.removeFoodLog(logId);
     if (success) {
@@ -970,9 +993,7 @@ const FoodLogModule = {
     }
   },
 
-  /**
-   * Render Food Logs across 4 meal boxes for the currently selected date
-   */
+  
   renderFoodLogs() {
     const targetDate = this.selectedDate || window.getTodayDateString();
     const dayLogs = window.storageService.getFoodLogs(targetDate);
@@ -1031,7 +1052,7 @@ const FoodLogModule = {
       `).join('');
     });
 
-    // Update Day Total Summary
+    
     const dayTotalEl = document.getElementById('food-log-day-total-cals');
     if (dayTotalEl) {
       dayTotalEl.textContent = `${dayTotalCalories.toLocaleString()} kcal`;
@@ -1039,9 +1060,7 @@ const FoodLogModule = {
   }
 };
 
-/**
- * Barcode Scanner Simulator Module
- */
+
 const BarcodeScannerModule = {
   barcodeInputEl: null,
   scanResultBoxEl: null,
@@ -1055,7 +1074,7 @@ const BarcodeScannerModule = {
   },
 
   bindEvents() {
-    // Manual Barcode Input Trigger
+    
     const btnScanManual = document.getElementById('btn-scan-barcode');
     if (btnScanManual && this.barcodeInputEl) {
       btnScanManual.addEventListener('click', () => {
@@ -1070,7 +1089,7 @@ const BarcodeScannerModule = {
       });
     }
 
-    // Barcode Presets Quick Click
+    
     document.addEventListener('click', (e) => {
       const presetCard = e.target.closest('[data-scan-barcode]');
       if (presetCard) {
@@ -1083,9 +1102,7 @@ const BarcodeScannerModule = {
     });
   },
 
-  /**
-   * Render Quick Barcode Cards for popular supermarket items
-   */
+  
   renderPresetPills() {
     const container = document.getElementById('barcode-preset-list');
     if (!container) return;
@@ -1106,10 +1123,7 @@ const BarcodeScannerModule = {
     `).join('');
   },
 
-  /**
-   * Process and simulate scanning barcode
-   * @param {string} barcode 
-   */
+  
   processBarcode(barcode) {
     if (!barcode || !barcode.trim()) {
       ToastModule.show('Vui lòng nhập hoặc chọn mã Barcode để quét!', 'flame');
@@ -1131,7 +1145,7 @@ const BarcodeScannerModule = {
       return;
     }
 
-    // Display found product preview with immediate 1-Tap Add
+    
     if (this.scanResultBoxEl) {
       this.scanResultBoxEl.innerHTML = `
         <div class="food-item-row" style="background: var(--color-primary-soft, #E5EDE7); border-color: var(--accent-cyan); margin-top: 8px;">
@@ -1164,10 +1178,7 @@ const BarcodeScannerModule = {
   }
 };
 
-/**
- * Weight & Body Metrics Module
- * Handles 7-Day Moving Average, Body Fat, BMI, and Muscle Group Measurements
- */
+
 const WeightModule = {
   modalBackdropEl: null,
   formEl: null,
@@ -1185,13 +1196,13 @@ const WeightModule = {
   },
 
   bindEvents() {
-    // Open Weight Modal
+    
     const btnOpenModal = document.getElementById('btn-add-weight');
     if (btnOpenModal) {
       btnOpenModal.addEventListener('click', () => this.openModal());
     }
 
-    // Close Modal
+    
     const btnClose = document.getElementById('btn-close-weight-modal');
     if (btnClose) {
       btnClose.addEventListener('click', () => this.closeModal());
@@ -1205,7 +1216,7 @@ const WeightModule = {
       });
     }
 
-    // Form Submit
+    
     if (this.formEl) {
       this.formEl.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -1213,7 +1224,7 @@ const WeightModule = {
       });
     }
 
-    // Delete weight entry delegation
+    
     document.addEventListener('click', (e) => {
       const delBtn = e.target.closest('.btn-delete-weight');
       if (delBtn) {
@@ -1228,13 +1239,13 @@ const WeightModule = {
   openModal() {
     if (!this.modalBackdropEl) return;
 
-    // Set today's date
+    
     const dateInput = document.getElementById('input-weight-date');
     if (dateInput) {
       dateInput.value = window.getTodayDateString();
     }
 
-    // Pre-fill latest weight as helper
+    
     const latest = window.storageService.getLatestWeight();
     const weightInput = document.getElementById('input-weight-val');
     const bfInput = document.getElementById('input-bodyfat-val');
@@ -1261,7 +1272,7 @@ const WeightModule = {
     const bfInput = document.getElementById('input-bodyfat-val');
     const noteInput = document.getElementById('input-weight-note');
 
-    // Muscle measurements
+    
     const chestInput = document.getElementById('input-measure-chest');
     const waistInput = document.getElementById('input-measure-waist');
     const armInput = document.getElementById('input-measure-arm');
@@ -1304,24 +1315,24 @@ const WeightModule = {
 
   render() {
     const logs = window.storageService.getWeightLogs();
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
 
     if (logs.length === 0) return;
 
-    // 1. Calculate 7-Day Moving Average
+    
     const maData = window.HealthCalculator.calculateMovingAverage(logs, 7);
 
-    // 2. Render HTML5 Canvas Chart
+    
     if (window.CanvasChartEngine) {
       window.CanvasChartEngine.render(maData);
     }
 
-    // 3. Render Top Cards (Current, 7DMA, BMI, Body Fat)
+    
     const latest = maData[maData.length - 1];
     const targetWeight = profile.targetWeight || 76.0;
     const height = profile.height || 175;
 
-    // Current Weight Card
+    
     const curWeightEl = document.getElementById('weight-current-val');
     const curTargetDiffEl = document.getElementById('weight-target-diff');
     if (curWeightEl) {
@@ -1333,7 +1344,7 @@ const WeightModule = {
       curTargetDiffEl.innerHTML = text;
     }
 
-    // 7-Day Moving Average Card
+    
     const maValEl = document.getElementById('weight-7dma-val');
     const maTrendBadgeEl = document.getElementById('weight-7dma-trend');
     if (maValEl) {
@@ -1344,7 +1355,7 @@ const WeightModule = {
       maTrendBadgeEl.textContent = trend.text;
     }
 
-    // BMI Card
+    
     const bmiResult = window.HealthCalculator.calculateBMI(latest.rawWeight, height);
     const bmiValEl = document.getElementById('weight-bmi-val');
     const bmiBadgeEl = document.getElementById('weight-bmi-badge');
@@ -1356,7 +1367,7 @@ const WeightModule = {
       bmiBadgeEl.className = `glass-badge ${bmiResult.colorClass}`;
     }
 
-    // Body Fat & Composition
+    
     const bfValEl = document.getElementById('weight-bodyfat-val');
     const fatMassEl = document.getElementById('weight-fatmass-val');
     const leanMassEl = document.getElementById('weight-leanmass-val');
@@ -1370,10 +1381,10 @@ const WeightModule = {
       if (bfValEl) bfValEl.innerHTML = `-- <span class="stat-unit">%</span>`;
     }
 
-    // 4. Render Muscle Group Measurements
+    
     this.renderMeasurements(logs);
 
-    // 5. Render History List
+    
     this.renderHistory(logs, maData);
   },
 
@@ -1381,7 +1392,7 @@ const WeightModule = {
     const container = document.getElementById('measurements-grid');
     if (!container) return;
 
-    // Find entries with measurements
+    
     const withMeasurements = logs.filter(l => l.measurements && Object.keys(l.measurements).length > 0);
     if (withMeasurements.length === 0) return;
 
@@ -1430,7 +1441,7 @@ const WeightModule = {
     const container = document.getElementById('weight-history-list');
     if (!container) return;
 
-    // Show reverse chronological order (latest first)
+    
     const reversed = [...maData].reverse().slice(0, 8);
 
     container.innerHTML = reversed.map((item) => {
@@ -1470,9 +1481,7 @@ window.BarcodeScannerModule = BarcodeScannerModule;
 window.DashboardModule = DashboardModule;
 window.WeightModule = WeightModule;
 
-/**
- * Settings Module - Manage Gym Profile & Nutrition Targets
- */
+
 const SettingsModule = {
   formEl: null,
   pendingImportData: null,
@@ -1490,7 +1499,7 @@ const SettingsModule = {
   },
 
   loadProfile() {
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
+    const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
 
     const nameInput = document.getElementById('setting-name');
     const genderSelect = document.getElementById('setting-gender');
@@ -1521,7 +1530,7 @@ const SettingsModule = {
     }
     if (waterInput && profile.waterTarget) waterInput.value = profile.waterTarget;
 
-    // Update avatar and labels in sidebar / header if present
+    
     this.updateUserLabels(profile);
   },
 
@@ -1558,85 +1567,49 @@ const SettingsModule = {
 
     this.formEl.addEventListener('submit', (e) => {
       e.preventDefault();
-      this.saveProfile();
+
+      const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
+
+      const nameVal = document.getElementById('setting-name')?.value.trim();
+      const genderVal = document.getElementById('setting-gender')?.value;
+      const ageVal = parseInt(document.getElementById('setting-age')?.value, 10);
+      const heightVal = parseFloat(document.getElementById('setting-height')?.value);
+      const currentWeightVal = parseFloat(document.getElementById('setting-current-weight')?.value);
+      const targetWeightVal = parseFloat(document.getElementById('setting-target-weight')?.value);
+      const caloriesVal = parseInt(document.getElementById('setting-calories')?.value, 10);
+      const goalVal = document.getElementById('setting-goal')?.value;
+
+      const proteinVal = parseInt(document.getElementById('setting-protein')?.value, 10);
+      const carbsVal = parseInt(document.getElementById('setting-carbs')?.value, 10);
+      const fatVal = parseInt(document.getElementById('setting-fat')?.value, 10);
+      const waterVal = parseInt(document.getElementById('setting-water')?.value, 10);
+
+      if (nameVal) profile.name = nameVal;
+      if (genderVal) profile.gender = genderVal;
+      if (!isNaN(ageVal) && ageVal > 0) profile.age = ageVal;
+      if (!isNaN(heightVal) && heightVal > 0) profile.height = heightVal;
+      if (!isNaN(currentWeightVal) && currentWeightVal > 0) profile.currentWeight = currentWeightVal;
+      if (!isNaN(targetWeightVal) && targetWeightVal > 0) profile.targetWeight = targetWeightVal;
+      if (!isNaN(caloriesVal) && caloriesVal > 0) profile.targetCalories = caloriesVal;
+      if (goalVal) profile.fitnessGoal = goalVal;
+
+      if (!profile.macros) profile.macros = {};
+      if (!isNaN(proteinVal) && proteinVal >= 0) profile.macros.protein = proteinVal;
+      if (!isNaN(carbsVal) && carbsVal >= 0) profile.macros.carbs = carbsVal;
+      if (!isNaN(fatVal) && fatVal >= 0) profile.macros.fat = fatVal;
+
+      if (!isNaN(waterVal) && waterVal >= 0) profile.waterTarget = waterVal;
+
+      
+      window.storageService.setUserProfile(profile);
+      this.updateUserLabels(profile);
+
+      ToastModule.show('Đã lưu thành công hồ sơ cá nhân và mục tiêu thể hình!');
     });
-
-    // Reopen onboarding wizard button
-    const reopenBtn = document.getElementById('btn-reopen-onboarding');
-    if (reopenBtn && window.OnboardingModule) {
-      reopenBtn.addEventListener('click', () => {
-        // Pre-fill form with current profile data
-        const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
-        
-        document.getElementById('onboarding-age').value = profile.age || 24;
-        document.getElementById('onboarding-height').value = profile.height || 175;
-        document.getElementById('onboarding-current-weight').value = profile.currentWeight || 70;
-        document.getElementById('onboarding-target-weight').value = profile.targetWeight || 75;
-        
-        const genderRadios = document.querySelectorAll('input[name="onboarding-gender"]');
-        genderRadios.forEach(radio => {
-          radio.checked = radio.value === (profile.gender || 'male');
-        });
-
-        const activityRadios = document.querySelectorAll('input[name="onboarding-activity"]');
-        const sessionsMap = { 'sedentary': '0', 'light': '1', 'moderate': '3', 'active': '6', 'very_active': '8' };
-        const currentActivity = sessionsMap[profile.activityLevel] || '3';
-        activityRadios.forEach(radio => {
-          radio.checked = radio.value === currentActivity;
-        });
-
-        const goalRadios = document.querySelectorAll('input[name="onboarding-goal"]');
-        goalRadios.forEach(radio => {
-          radio.checked = radio.value === (profile.fitnessGoal || 'maintain');
-        });
-
-        window.OnboardingModule.showModal();
-      });
-    }
-  },
-
-  saveProfile() {
-    const nameVal = document.getElementById('setting-name')?.value;
-    const genderVal = document.getElementById('setting-gender')?.value;
-    const ageVal = parseInt(document.getElementById('setting-age')?.value, 10);
-    const heightVal = parseFloat(document.getElementById('setting-height')?.value);
-    const currentWeightVal = parseFloat(document.getElementById('setting-current-weight')?.value);
-    const targetWeightVal = parseFloat(document.getElementById('setting-target-weight')?.value);
-    const caloriesVal = parseInt(document.getElementById('setting-calories')?.value, 10);
-    const goalVal = document.getElementById('setting-goal')?.value;
-
-    const proteinVal = parseInt(document.getElementById('setting-protein')?.value, 10);
-    const carbsVal = parseInt(document.getElementById('setting-carbs')?.value, 10);
-    const fatVal = parseInt(document.getElementById('setting-fat')?.value, 10);
-    const waterVal = parseInt(document.getElementById('setting-water')?.value, 10);
-
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
-
-    if (nameVal) profile.name = nameVal;
-    if (genderVal) profile.gender = genderVal;
-    if (!isNaN(ageVal) && ageVal > 0) profile.age = ageVal;
-    if (!isNaN(heightVal) && heightVal > 0) profile.height = heightVal;
-    if (!isNaN(currentWeightVal) && currentWeightVal > 0) profile.currentWeight = currentWeightVal;
-    if (!isNaN(targetWeightVal) && targetWeightVal > 0) profile.targetWeight = targetWeightVal;
-    if (!isNaN(caloriesVal) && caloriesVal > 0) profile.targetCalories = caloriesVal;
-    if (goalVal) profile.fitnessGoal = goalVal;
-
-    if (!profile.macros) profile.macros = {};
-    if (!isNaN(proteinVal) && proteinVal >= 0) profile.macros.protein = proteinVal;
-    if (!isNaN(carbsVal) && carbsVal >= 0) profile.macros.carbs = carbsVal;
-    if (!isNaN(fatVal) && fatVal >= 0) profile.macros.fat = fatVal;
-
-    if (!isNaN(waterVal) && waterVal >= 0) profile.waterTarget = waterVal;
-
-    // Persist to local storage
-    window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
-    this.updateUserLabels(profile);
-
-    ToastModule.show('Đã lưu thành công hồ sơ cá nhân và mục tiêu thể hình!');
   },
 
   bindBackupEvents() {
-    // 1. Export Backup JSON
+    
     const btnExport = document.getElementById('btn-export-backup');
     if (btnExport) {
       btnExport.addEventListener('click', () => {
@@ -1662,7 +1635,7 @@ const SettingsModule = {
       });
     }
 
-    // 2. Import Trigger & File Input
+    
     const btnTriggerImport = document.getElementById('btn-trigger-import');
     const inputBackupFile = document.getElementById('input-backup-file');
     const modalImport = document.getElementById('modal-confirm-import');
@@ -1714,7 +1687,7 @@ const SettingsModule = {
       });
     }
 
-    // Modal Import Actions
+    
     const closeImportModal = () => {
       if (modalImport) modalImport.classList.remove('active');
       this.pendingImportData = null;
@@ -1758,7 +1731,7 @@ const SettingsModule = {
       });
     }
 
-    // 3. Factory Reset Modal & Action
+    
     const btnResetData = document.getElementById('btn-reset-data');
     const modalReset = document.getElementById('modal-confirm-reset');
     const btnCancelReset = document.getElementById('btn-cancel-reset');
@@ -1786,11 +1759,11 @@ const SettingsModule = {
 
     if (btnConfirmReset) {
       btnConfirmReset.addEventListener('click', () => {
-        const result = window.storageService.resetToDefaultData();
+        const result = window.storageService.resetUserData();
         closeResetModal();
         if (result.success) {
           this.loadProfile();
-          ToastModule.show('Đã khôi phục toàn bộ dữ liệu mẫu ban đầu!', 'flame');
+          ToastModule.show('Đã xóa toàn bộ dữ liệu và đặt lại hồ sơ của bạn!', 'flame');
         } else {
           ToastModule.show(result.message || 'Lỗi khi khôi phục cài đặt gốc.', 'flame');
         }
@@ -1799,377 +1772,8 @@ const SettingsModule = {
   }
 };
 
-/**
- * Onboarding Module - First-time User Setup Wizard
- * Handles 3-step wizard for basic info, activity level, and fitness goals
- */
-const OnboardingModule = {
-  currentStep: 1,
-  modal: null,
-  userData: {},
-
-  init() {
-    this.modal = document.getElementById('onboarding-modal');
-    if (!this.modal) {
-      console.log('Onboarding modal not found');
-      return;
-    }
-
-    console.log('Onboarding modal found:', this.modal);
-
-    // Check if user has completed onboarding
-    const hasCompletedOnboarding = localStorage.getItem('fitvn_onboarding_completed');
-
-    console.log('Has completed onboarding:', hasCompletedOnboarding);
-
-    // Show onboarding immediately if not completed (before auth modal)
-    if (!hasCompletedOnboarding) {
-      // Small delay to ensure DOM is ready
-      setTimeout(() => {
-        console.log('Attempting to show onboarding modal...');
-        this.showModal();
-      }, 100);
-    } else {
-      console.log('Onboarding already completed. To reset, run: localStorage.removeItem("fitvn_onboarding_completed")');
-    }
-
-    this.bindEvents();
-  },
-
-  showModal() {
-    if (this.modal) {
-      console.log('Setting display to flex and adding active class');
-      this.modal.style.display = 'flex';
-      this.modal.classList.add('active');
-      this.currentStep = 1;
-      this.updateStepUI();
-      console.log('Modal display:', this.modal.style.display);
-      console.log('Modal has active class:', this.modal.classList.contains('active'));
-    } else {
-      console.error('Modal element is null');
-    }
-  },
-
-  hideModal() {
-    if (this.modal) {
-      this.modal.classList.remove('active');
-      setTimeout(() => {
-        this.modal.style.display = 'none';
-      }, 300); // Wait for transition
-    }
-  },
-
-  bindEvents() {
-    // Step 1: Next button
-    const nextBtn1 = document.getElementById('onboarding-next-1');
-    const skipBtn = document.getElementById('onboarding-skip-btn');
-    const cancelBtn = document.getElementById('onboarding-cancel-btn');
-
-    if (nextBtn1) {
-      nextBtn1.addEventListener('click', () => this.validateAndNextStep1());
-    }
-
-    if (skipBtn) {
-      skipBtn.addEventListener('click', () => this.skipOnboarding());
-    }
-
-    if (cancelBtn) {
-      cancelBtn.addEventListener('click', () => this.hideModal());
-    }
-
-    // Step 2: Back and Next buttons
-    const backBtn2 = document.getElementById('onboarding-back-2');
-    const nextBtn2 = document.getElementById('onboarding-next-2');
-
-    if (backBtn2) {
-      backBtn2.addEventListener('click', () => this.goToStep(1));
-    }
-
-    if (nextBtn2) {
-      nextBtn2.addEventListener('click', () => this.goToStep(3));
-    }
-
-    // Step 3: Back and Complete buttons
-    const backBtn3 = document.getElementById('onboarding-back-3');
-    const completeBtn = document.getElementById('onboarding-complete');
-
-    if (backBtn3) {
-      backBtn3.addEventListener('click', () => this.goToStep(2));
-    }
-
-    if (completeBtn) {
-      completeBtn.addEventListener('click', () => this.completeOnboarding());
-    }
-
-    // Goal selection triggers summary update
-    const goalRadios = document.querySelectorAll('input[name="onboarding-goal"]');
-    goalRadios.forEach(radio => {
-      radio.addEventListener('change', () => this.updateSummary());
-    });
-  },
-
-  validateAndNextStep1() {
-    const gender = document.querySelector('input[name="onboarding-gender"]:checked')?.value;
-    const age = document.getElementById('onboarding-age')?.value;
-    const height = document.getElementById('onboarding-height')?.value;
-    const currentWeight = document.getElementById('onboarding-current-weight')?.value;
-    const targetWeight = document.getElementById('onboarding-target-weight')?.value;
-
-    if (!age || !height || !currentWeight || !targetWeight) {
-      ToastModule.show('Vui lòng điền đầy đủ thông tin!', 'flame');
-      return;
-    }
-
-    if (Number(age) < 12 || Number(age) > 100) {
-      ToastModule.show('Tuổi phải từ 12 đến 100!', 'flame');
-      return;
-    }
-
-    if (Number(height) < 100 || Number(height) > 250) {
-      ToastModule.show('Chiều cao phải từ 100 đến 250 cm!', 'flame');
-      return;
-    }
-
-    if (Number(currentWeight) < 30 || Number(currentWeight) > 250) {
-      ToastModule.show('Cân nặng phải từ 30 đến 250 kg!', 'flame');
-      return;
-    }
-
-    // Store step 1 data
-    this.userData = {
-      ...this.userData,
-      gender,
-      age: Number(age),
-      height: Number(height),
-      currentWeight: Number(currentWeight),
-      targetWeight: Number(targetWeight)
-    };
-
-    this.goToStep(2);
-  },
-
-  goToStep(step) {
-    this.currentStep = step;
-    this.updateStepUI();
-
-    if (step === 3) {
-      this.updateSummary();
-    }
-  },
-
-  updateStepUI() {
-    // Update step indicators
-    const indicators = document.querySelectorAll('.step-indicator');
-    indicators.forEach((ind, index) => {
-      ind.classList.toggle('active', index + 1 === this.currentStep);
-    });
-
-    // Update step visibility
-    const steps = document.querySelectorAll('.onboarding-step');
-    steps.forEach((step, index) => {
-      step.classList.toggle('active', index + 1 === this.currentStep);
-    });
-  },
-
-  updateSummary() {
-    const activity = document.querySelector('input[name="onboarding-activity"]:checked')?.value || '3';
-    const goal = document.querySelector('input[name="onboarding-goal"]:checked')?.value || 'maintain';
-
-    this.userData = {
-      ...this.userData,
-      sessionsPerWeek: Number(activity),
-      goal
-    };
-
-    // Calculate using HealthCalculator
-    if (window.HealthCalculator) {
-      const result = window.HealthCalculator.calculateCompleteProfile(this.userData);
-
-      // Update summary UI
-      document.getElementById('summary-bmr').textContent = `${result.bmr.toLocaleString()} kcal`;
-      document.getElementById('summary-tdee').textContent = `${result.tdee.toLocaleString()} kcal`;
-      document.getElementById('summary-calories').textContent = `${result.targetCalories.toLocaleString()} kcal`;
-      document.getElementById('summary-protein').textContent = `${result.macros.protein} g`;
-      document.getElementById('summary-carbs').textContent = `${result.macros.carbs} g`;
-      document.getElementById('summary-fat').textContent = `${result.macros.fat} g`;
-
-      const timelineEl = document.querySelector('.timeline-value');
-      if (result.timeline.weeksNeeded > 0) {
-        timelineEl.textContent = `${result.timeline.weeksNeeded} tuần (ước tính ngày ${result.timeline.estimatedDate})`;
-      } else {
-        timelineEl.textContent = 'Duy trì vóc dáng hiện tại';
-      }
-
-      // Show summary
-      document.getElementById('onboarding-summary').style.display = 'block';
-    }
-  },
-
-  completeOnboarding() {
-    const activity = document.querySelector('input[name="onboarding-activity"]:checked')?.value || '3';
-    const goal = document.querySelector('input[name="onboarding-goal"]:checked')?.value || 'maintain';
-
-    this.userData = {
-      ...this.userData,
-      sessionsPerWeek: Number(activity),
-      goal
-    };
-
-    // Calculate final profile
-    if (window.HealthCalculator) {
-      const result = window.HealthCalculator.calculateCompleteProfile(this.userData);
-
-      // Update user profile in localStorage
-      const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
-      profile.gender = this.userData.gender;
-      profile.age = this.userData.age;
-      profile.height = this.userData.height;
-      profile.currentWeight = this.userData.currentWeight;
-      profile.targetWeight = this.userData.targetWeight;
-      profile.activityLevel = this.getActivityLevelKey(this.userData.sessionsPerWeek);
-      profile.fitnessGoal = this.userData.goal;
-      profile.targetCalories = result.targetCalories;
-      profile.macros = result.macros;
-
-      window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
-
-      // Mark onboarding as completed
-      localStorage.setItem('fitvn_onboarding_completed', 'true');
-
-      // Add initial weight log
-      window.storageService.addWeightLog({
-        date: window.getTodayDateString(),
-        weight: this.userData.currentWeight,
-        note: 'Khởi tạo hồ sơ'
-      });
-
-      // Hide modal and refresh dashboard
-      this.hideModal();
-      ToastModule.show('Đã thiết lập hồ sơ thành công! Chúc bạn đạt mục tiêu! 🎉');
-
-      // Refresh dashboard if on dashboard page
-      if (window.DashboardModule) {
-        DashboardModule.updateUI();
-      }
-    }
-  },
-
-  getActivityLevelKey(sessions) {
-    const s = Number(sessions);
-    if (s === 0) return 'sedentary';
-    if (s <= 2) return 'light';
-    if (s <= 5) return 'moderate';
-    if (s <= 7) return 'active';
-    return 'very_active';
-  },
-
-  skipOnboarding() {
-    localStorage.setItem('fitvn_onboarding_completed', 'true');
-    this.hideModal();
-    ToastModule.show('Bạn có thể cập nhật thông tin trong phần Cài đặt sau.');
-  },
-
-  // Allow reopening onboarding from settings
-  reopenOnboarding() {
-    localStorage.removeItem('fitvn_onboarding_completed');
-    this.userData = {};
-    this.showModal();
-  },
-
-  // Debug helper to reset onboarding (call from console: OnboardingModule.resetOnboarding())
-  resetOnboarding() {
-    localStorage.removeItem('fitvn_onboarding_completed');
-    console.log('Onboarding reset. Please reload the page.');
-    location.reload();
-  }
-};
-
-window.OnboardingModule = OnboardingModule;
 window.SettingsModule = SettingsModule;
 
-/**
- * HealthReportsModule - Controller for Health Reports & Statistics Page
- * Manages Multi-metric KPI aggregation, Time Range filtering (presets & custom dates),
- * Weight/BMI & Workout reporting, Period comparison, Table generation, CSV export and Printing.
- */
-const HealthReportsModule = {
-  dom: {},
-  currentRange: '30d',      // '7d' | '30d' | '90d' | '180d' | '365d' | 'custom'
-  currentReportType: 'all', // 'all' | 'weight' | 'workout'
-  customStartDate: null,
-  customEndDate: null,
-  currentPage: 1,
-  pageSize: 8,
-
-  cachedWeights: [],
-  cachedWorkouts: [],
-  cachedProfile: {},
-
-  filteredWeights: [],
-  filteredWorkouts: [],
-  prevWeights: [],
-  prevWorkouts: [],
-  dailyMergedRows: [],
- * WorkoutJournalModule - Controller for Workout Journal Feature
- * Handles Workout CRUD, Filtering by Range/Type/Intensity, Search,
- * Form Validations, Details Modal, Confirm Delete, Pagination and Duration Chart.
- */
-const WorkoutJournalModule = {
-  dom: {},
-  currentRange: '30d', // '7d' | '30d' | '90d' | '180d' | 'all'
-  currentType: 'all',
-  currentIntensity: 'all',
-  searchQuery: '',
-  currentPage: 1,
-  pageSize: 8,
-  cachedAllWorkouts: [],
-  cachedFilteredWorkouts: [],
-  selectedWorkout: null,
-  pendingDeleteId: null,
-
-  // Activity metadata definition for unified UI
-  ACTIVITY_TYPES: {
-    gym: { label: 'Tập Gym', icon: '🏋️‍♂️' },
-    running: { label: 'Chạy bộ', icon: '🏃‍♂️' },
-    walking: { label: 'Đi bộ', icon: '🚶‍♂️' },
-    cycling: { label: 'Đạp xe', icon: '🚴‍♂️' },
-    strength: { label: 'Tập sức mạnh', icon: '💪' },
-    yoga: { label: 'Yoga', icon: '🧘‍♀️' },
-    swimming: { label: 'Bơi lội', icon: '🏊‍♂️' },
-    sports: { label: 'Thể thao', icon: '⚽' },
-    other: { label: 'Khác', icon: '⚡' }
-  },
-
-  FEELING_LABELS: {
-    great: '🔥 Tuyệt vời, tràn đầy năng lượng',
-    good: '👍 Khỏe khoắn, đạt chỉ tiêu',
-    tired: '🥱 Hơi mệt, căng cơ tốt',
-    exhausted: '😵 Kiệt sức, cần nghỉ ngơi'
-  },
-
-  INTENSITY_LABELS: {
-    low: { label: 'Nhẹ nhàng', badgeClass: 'badge-intensity-low' },
-    medium: { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' },
-    high: { label: 'Cường độ cao', badgeClass: 'badge-intensity-high' }
-  },
- * ProgressChartsModule - Controller for Health Progress Charts Page
- * Manages metric switching (Weight/BMI), 6 time range filters, summary statistics,
- * period comparisons, goal tracking, table sorting, pagination, and insights generation.
- */
-const ProgressChartsModule = {
-  dom: {},
-  currentMetric: 'weight', // 'weight' | 'bmi'
-  currentRange: '90d',     // '7d' | '30d' | '90d' | '180d' | '365d' | 'all'
-  sortAscending: false,    // false = newest first, true = oldest first
-  currentPage: 1,
-  pageSize: 8,
-  cachedAllEntries: [],
-  cachedFilteredEntries: [],
-  previousPeriodEntries: [],
- * HealthDashboardModule - Controls Health Dashboard Feature
- * Handles BMI analysis, dynamic needle gauge, goal progress, Canvas weight chart,
- * time range filtering, health records table and quick weight logging modal.
- */
 const HealthDashboardModule = {
   dom: {},
   currentRange: 'all',
@@ -2177,145 +1781,468 @@ const HealthDashboardModule = {
   init() {
     this.cacheDOM();
     this.bindEvents();
-    this.loadDataAndRender();
     this.updateDashboard();
   },
 
   cacheDOM() {
     this.dom = {
-      // Action buttons
-      btnRefresh: document.getElementById('btn-refresh-report'),
-      btnExportCsv: document.getElementById('btn-export-csv'),
-      btnPrint: document.getElementById('btn-print-report'),
+      
+      greetingTitle: document.getElementById('health-greeting-title'),
+      greetingSubtitle: document.getElementById('health-greeting-subtitle'),
+      incompleteBanner: document.getElementById('health-incomplete-banner'),
+      btnQuickLogWeight: document.getElementById('btn-quick-log-weight'),
 
-      // Type & Range Pills
-      typePills: document.querySelectorAll('[data-report-type]'),
-      rangePills: document.querySelectorAll('[data-report-range]'),
-      customRangeRow: document.getElementById('rep-custom-range-row'),
-      inputStartDate: document.getElementById('rep-start-date'),
-      inputEndDate: document.getElementById('rep-end-date'),
-      btnApplyCustomDates: document.getElementById('btn-apply-custom-dates'),
-      rangeDatesText: document.getElementById('rep-range-dates-text'),
-      printMetaText: document.getElementById('print-meta-text'),
+      
+      bmiVal: document.getElementById('hd-bmi-val'),
+      bmiBadge: document.getElementById('hd-bmi-badge'),
+      bmiStatusText: document.getElementById('hd-bmi-status-text'),
 
-      // Section wrappers
-      secWeightReport: document.getElementById('sec-weight-report'),
-      secWorkoutReport: document.getElementById('sec-workout-report'),
+      weightVal: document.getElementById('hd-weight-val'),
+      weightChangeBadge: document.getElementById('hd-weight-change-badge'),
+      weightChangeText: document.getElementById('hd-weight-change-text'),
 
-      // 7 KPI cards
-      kpiStartWeight: document.getElementById('kpi-start-weight'),
-      kpiEndWeight: document.getElementById('kpi-end-weight'),
-      kpiWeightDiff: document.getElementById('kpi-weight-diff'),
-      kpiWeightDiffBadge: document.getElementById('kpi-weight-diff-badge'),
-      kpiWeightDiffPercent: document.getElementById('kpi-weight-diff-percent'),
-      kpiEndBmi: document.getElementById('kpi-end-bmi'),
-      kpiBmiBadge: document.getElementById('kpi-bmi-badge'),
-      kpiBmiCategory: document.getElementById('kpi-bmi-category'),
-      kpiWorkoutSessions: document.getElementById('kpi-workout-sessions'),
-      kpiWorkoutDuration: document.getElementById('kpi-workout-duration'),
-      kpiWorkoutAvg: document.getElementById('kpi-workout-avg'),
-      kpiWorkoutDays: document.getElementById('kpi-workout-days'),
+      heightVal: document.getElementById('hd-height-val'),
+      targetVal: document.getElementById('hd-target-val'),
+      targetBadge: document.getElementById('hd-target-badge'),
+      targetDiffText: document.getElementById('hd-target-diff-text'),
 
-      // Workout summary
-      repWorkoutPopularBadge: document.getElementById('rep-workout-popular-badge'),
-      repWoPopularType: document.getElementById('rep-wo-popular-type'),
-      repWoAvgDuration: document.getElementById('rep-wo-avg-duration'),
-      repWoTotalDist: document.getElementById('rep-wo-total-dist'),
+      
+      bmiCategoryBadge: document.getElementById('hd-bmi-category-badge'),
+      bmiExplanation: document.getElementById('hd-bmi-explanation'),
+      bmiNeedle: document.getElementById('hd-bmi-needle'),
 
-      // Period comparison
-      compCurrWeight: document.getElementById('comp-curr-weight'),
-      compPrevWeight: document.getElementById('comp-prev-weight'),
-      compWeightDiffText: document.getElementById('comp-weight-diff-text'),
-      compCurrSessions: document.getElementById('comp-curr-sessions'),
-      compPrevSessions: document.getElementById('comp-prev-sessions'),
-      compSessionsDiffText: document.getElementById('comp-sessions-diff-text'),
-      compBadge: document.getElementById('rep-comp-badge'),
+      
+      goalPercentBadge: document.getElementById('hd-goal-percent-badge'),
+      goalInitialVal: document.getElementById('hd-goal-initial-val'),
+      goalCurrentVal: document.getElementById('hd-goal-current-val'),
+      goalTargetVal: document.getElementById('hd-goal-target-val'),
+      goalBarFill: document.getElementById('hd-goal-bar-fill'),
+      goalStatusDesc: document.getElementById('hd-goal-status-desc'),
+      goalRemainingDiff: document.getElementById('hd-goal-remaining-diff'),
 
-      // Insights
-      insightsContent: document.getElementById('rep-insights-content'),
+      
+      waterVal: document.getElementById('hd-metric-water-val'),
+      waterProgress: document.getElementById('hd-metric-water-progress'),
+      caloriesVal: document.getElementById('hd-metric-calories-val'),
+      caloriesProgress: document.getElementById('hd-metric-calories-progress'),
 
-      // Table & Pagination
-      tableTbody: document.getElementById('rep-table-tbody'),
-      tableEmpty: document.getElementById('rep-table-empty'),
-      pageInfo: document.getElementById('rep-page-info'),
-      btnPagePrev: document.getElementById('rep-btn-page-prev'),
-      btnPageNext: document.getElementById('rep-btn-page-next')
-      // Summary cards
-      statSessions: document.getElementById('wo-stat-sessions'),
-      statDuration: document.getElementById('wo-stat-duration'),
-      statAvg: document.getElementById('wo-stat-avg'),
-      statDays: document.getElementById('wo-stat-days'),
-      statDistanceExtra: document.getElementById('wo-stat-distance-extra'),
-      rangeDatesText: document.getElementById('wo-range-dates-text'),
+      
+      recentTbody: document.getElementById('hd-recent-records-tbody'),
+      recentEmpty: document.getElementById('hd-recent-empty'),
 
-      // Time range pills
-      rangeButtons: document.querySelectorAll('[data-workout-range]'),
+      
+      modalWeight: document.getElementById('hd-modal-weight'),
+      modalCloseBtn: document.getElementById('hd-modal-weight-close'),
+      modalCancelBtn: document.getElementById('hd-modal-weight-cancel'),
+      formWeight: document.getElementById('hd-form-weight'),
+      inputDate: document.getElementById('hd-input-date'),
+      inputWeight: document.getElementById('hd-input-weight'),
+      inputNote: document.getElementById('hd-input-note'),
 
-      // Search and Filter controls
-      searchInput: document.getElementById('wo-search-input'),
-      filterType: document.getElementById('wo-filter-type'),
-      filterIntensity: document.getElementById('wo-filter-intensity'),
-      btnResetFilters: document.getElementById('btn-reset-filters'),
+      
+      timePills: document.querySelectorAll('.time-pill-btn')
+    };
+  },
 
-      // List & States
-      listContainer: document.getElementById('wo-list-container'),
-      emptyState: document.getElementById('wo-empty-state'),
-      emptyFilterState: document.getElementById('wo-empty-filter-state'),
-      btnClearEmptyFilter: document.getElementById('btn-clear-empty-filter'),
+  bindEvents() {
+    
+    if (this.dom.timePills && this.dom.timePills.length > 0) {
+      this.dom.timePills.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          this.dom.timePills.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentRange = btn.getAttribute('data-range') || 'all';
+          this.renderChart();
+        });
+      });
+    }
 
-      // Pagination
-      pageInfo: document.getElementById('wo-page-info'),
-      btnPagePrev: document.getElementById('wo-btn-page-prev'),
-      btnPageNext: document.getElementById('wo-btn-page-next'),
+    
+    if (this.dom.btnQuickLogWeight) {
+      this.dom.btnQuickLogWeight.addEventListener('click', () => {
+        this.openWeightModal();
+      });
+    }
 
-      // Create / Edit Modal
-      btnOpenCreate: document.getElementById('btn-open-create-workout'),
-      modalForm: document.getElementById('wo-modal-form'),
-      modalFormClose: document.getElementById('wo-modal-form-close'),
-      modalFormCancel: document.getElementById('wo-modal-form-cancel'),
-      modalFormTitle: document.getElementById('wo-modal-form-title'),
-      formEntry: document.getElementById('form-workout-entry'),
-      btnSubmitForm: document.getElementById('wo-btn-submit-form'),
+    
+    if (this.dom.modalCloseBtn) {
+      this.dom.modalCloseBtn.addEventListener('click', () => this.closeWeightModal());
+    }
+    if (this.dom.modalCancelBtn) {
+      this.dom.modalCancelBtn.addEventListener('click', () => this.closeWeightModal());
+    }
+    if (this.dom.modalWeight) {
+      this.dom.modalWeight.addEventListener('click', (e) => {
+        if (e.target === this.dom.modalWeight) this.closeWeightModal();
+      });
+    }
 
-      // Form inputs
-      inputId: document.getElementById('wo-input-id'),
-      inputTitle: document.getElementById('wo-input-title'),
-      inputType: document.getElementById('wo-input-type'),
-      inputIntensity: document.getElementById('wo-input-intensity'),
-      inputDate: document.getElementById('wo-input-date'),
-      inputDuration: document.getElementById('wo-input-duration'),
-      inputStartTime: document.getElementById('wo-input-start-time'),
-      inputEndTime: document.getElementById('wo-input-end-time'),
-      inputDistance: document.getElementById('wo-input-distance'),
-      inputSteps: document.getElementById('wo-input-steps'),
-      inputFeeling: document.getElementById('wo-input-feeling'),
-      inputNotes: document.getElementById('wo-input-notes'),
+    
+    if (this.dom.formWeight) {
+      this.dom.formWeight.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.handleSaveWeight();
+      });
+    }
+  },
 
-      // Detail Modal
-      modalDetail: document.getElementById('wo-modal-detail'),
-      modalDetailClose: document.getElementById('wo-modal-detail-close'),
-      detailBtnClose: document.getElementById('wo-detail-btn-close'),
-      detailBtnEdit: document.getElementById('wo-detail-btn-edit'),
-      detailBtnDelete: document.getElementById('wo-detail-btn-delete'),
-      detailTitle: document.getElementById('wo-detail-title'),
-      detailSubtitle: document.getElementById('wo-detail-subtitle'),
-      detailContent: document.getElementById('wo-detail-content'),
+  openWeightModal() {
+    if (!this.dom.modalWeight) return;
+    if (this.dom.inputDate) {
+      this.dom.inputDate.value = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    }
+    if (this.dom.inputWeight) {
+      const latest = window.storageService ? window.storageService.getLatestWeight() : null;
+      this.dom.inputWeight.value = latest ? latest.weight : '';
+    }
+    if (this.dom.inputNote) {
+      this.dom.inputNote.value = '';
+    }
+    this.dom.modalWeight.style.display = 'flex';
+  },
 
-      // Confirm Delete Modal
-      modalDelete: document.getElementById('wo-modal-confirm-delete'),
-      btnCancelDelete: document.getElementById('wo-btn-cancel-delete'),
-      btnConfirmDelete: document.getElementById('wo-btn-confirm-delete'),
-      deleteMsg: document.getElementById('wo-confirm-delete-msg')
-      // Metric buttons
+  closeWeightModal() {
+    if (this.dom.modalWeight) {
+      this.dom.modalWeight.style.display = 'none';
+    }
+  },
+
+  handleSaveWeight() {
+    const dateVal = this.dom.inputDate.value;
+    const weightVal = parseFloat(this.dom.inputWeight.value);
+    const noteVal = this.dom.inputNote.value.trim();
+
+    if (!dateVal || isNaN(weightVal) || weightVal <= 0) {
+      if (window.ToastModule) ToastModule.show('Vui lòng nhập cân nặng hợp lệ!', 'flame');
+      return;
+    }
+
+    const newEntry = {
+      id: 'wt-' + Date.now(),
+      date: dateVal,
+      weight: weightVal,
+      note: noteVal
+    };
+
+    if (window.storageService && window.storageService.saveWeightEntry) {
+      window.storageService.saveWeightEntry(newEntry);
+    } else {
+      const logs = window.storageService.getWeightLogs();
+      logs.push(newEntry);
+      window.storageService.set(window.STORAGE_KEYS.WEIGHT_LOGS, logs);
+    }
+
+    
+    const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
+    profile.currentWeight = weightVal;
+    window.storageService.setUserProfile(profile);
+
+    this.closeWeightModal();
+    if (window.ToastModule) ToastModule.show(`Đã lưu bản ghi ${weightVal} kg ngày ${dateVal}!`);
+    this.updateDashboard();
+  },
+
+  updateDashboard() {
+    const profile = window.storageService ? (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {})) : {};
+    const weightLogs = window.storageService ? window.storageService.getWeightLogs() : [];
+    const latestLog = window.storageService ? window.storageService.getLatestWeight() : null;
+
+    const currentWeight = latestLog ? Number(latestLog.weight) : (Number(profile.currentWeight) || null);
+    const height = Number(profile.height) || null;
+    const targetWeight = Number(profile.targetWeight) || 70;
+
+    
+    if (this.dom.greetingTitle) {
+      const userName = profile.name || 'Người dùng FitVN';
+      this.dom.greetingTitle.textContent = `Xin chào, ${userName}!`;
+    }
+
+    
+    const isIncomplete = !currentWeight || !height || height <= 0 || currentWeight <= 0;
+    if (this.dom.incompleteBanner) {
+      this.dom.incompleteBanner.style.display = isIncomplete ? 'flex' : 'none';
+    }
+
+    
+    this.renderBMIAnalysis(currentWeight, height);
+
+    
+    this.renderWeightOverview(weightLogs, currentWeight);
+
+    
+    if (this.dom.heightVal) {
+      this.dom.heightVal.innerHTML = height ? `${height} <span class="stat-unit">cm</span>` : `-- <span class="stat-unit">cm</span>`;
+    }
+    if (this.dom.targetVal) {
+      this.dom.targetVal.innerHTML = `${targetWeight} <span class="stat-unit">kg</span>`;
+    }
+    if (this.dom.targetDiffText && currentWeight) {
+      const diff = (currentWeight - targetWeight).toFixed(1);
+      if (Math.abs(diff) <= 0.2) {
+        this.dom.targetDiffText.textContent = '🎉 Đã đạt mục tiêu cân nặng!';
+      } else if (diff > 0) {
+        this.dom.targetDiffText.textContent = `Cần giảm ${diff} kg để tới đích`;
+      } else {
+        this.dom.targetDiffText.textContent = `Cần tăng ${Math.abs(diff)} kg để tới đích`;
+      }
+    }
+
+    
+    this.renderGoalProgress(profile, weightLogs, currentWeight, targetWeight);
+
+    
+    this.renderHealthMetrics(profile);
+
+    
+    this.renderChart();
+
+    
+    this.renderRecentRecords(weightLogs, height);
+  },
+
+  renderBMIAnalysis(weight, height) {
+    if (!window.HealthCalculator) return;
+    const bmiResult = window.HealthCalculator.calculateBMI(weight, height);
+
+    if (!bmiResult || bmiResult.bmi === null) {
+      if (this.dom.bmiVal) this.dom.bmiVal.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
+      if (this.dom.bmiBadge) {
+        this.dom.bmiBadge.className = 'glass-badge glass-badge-muted';
+        this.dom.bmiBadge.textContent = 'Chưa đủ dữ liệu';
+      }
+      if (this.dom.bmiStatusText) this.dom.bmiStatusText.textContent = 'Cần cập nhật chiều cao và cân nặng';
+      if (this.dom.bmiCategoryBadge) {
+        this.dom.bmiCategoryBadge.className = 'glass-badge glass-badge-muted';
+        this.dom.bmiCategoryBadge.textContent = 'Chưa xác định';
+      }
+      if (this.dom.bmiExplanation) this.dom.bmiExplanation.textContent = 'Vui lòng cập nhật đầy đủ chiều cao và cân nặng để hiển thị phân tích BMI.';
+      if (this.dom.bmiNeedle) this.dom.bmiNeedle.style.display = 'none';
+      return;
+    }
+
+    
+    if (this.dom.bmiVal) this.dom.bmiVal.innerHTML = `${bmiResult.bmi} <span class="stat-unit">kg/m²</span>`;
+    if (this.dom.bmiBadge) {
+      this.dom.bmiBadge.className = `glass-badge ${bmiResult.colorClass}`;
+      this.dom.bmiBadge.textContent = bmiResult.category;
+    }
+    if (this.dom.bmiStatusText) this.dom.bmiStatusText.textContent = bmiResult.category;
+    if (this.dom.bmiCategoryBadge) {
+      this.dom.bmiCategoryBadge.className = `glass-badge ${bmiResult.colorClass}`;
+      this.dom.bmiCategoryBadge.textContent = `${bmiResult.category} (${bmiResult.bmi})`;
+    }
+    if (this.dom.bmiExplanation) this.dom.bmiExplanation.textContent = bmiResult.description;
+
+    
+    if (this.dom.bmiNeedle) {
+      const minBmi = 15;
+      const maxBmi = 35;
+      const clampedBmi = Math.max(minBmi, Math.min(maxBmi, bmiResult.bmi));
+      const percentage = ((clampedBmi - minBmi) / (maxBmi - minBmi)) * 100;
+      this.dom.bmiNeedle.style.display = 'block';
+      this.dom.bmiNeedle.style.left = `${percentage.toFixed(1)}%`;
+      this.dom.bmiNeedle.title = `BMI: ${bmiResult.bmi} (${bmiResult.category})`;
+    }
+  },
+
+  renderWeightOverview(weightLogs, currentWeight) {
+    if (!currentWeight) {
+      if (this.dom.weightVal) this.dom.weightVal.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.weightChangeText) this.dom.weightChangeText.textContent = 'Chưa có dữ liệu';
+      return;
+    }
+
+    if (this.dom.weightVal) {
+      this.dom.weightVal.innerHTML = `${currentWeight} <span class="stat-unit">kg</span>`;
+    }
+
+    
+    if (weightLogs && weightLogs.length >= 2) {
+      const sorted = [...weightLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const latest = sorted[sorted.length - 1];
+      const previous = sorted[sorted.length - 2];
+      const diff = parseFloat((latest.weight - previous.weight).toFixed(1));
+
+      if (this.dom.weightChangeBadge) {
+        if (diff > 0) {
+          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-cyan';
+          this.dom.weightChangeBadge.textContent = `+${diff} kg`;
+        } else if (diff < 0) {
+          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-emerald';
+          this.dom.weightChangeBadge.textContent = `${diff} kg`;
+        } else {
+          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-muted';
+          this.dom.weightChangeBadge.textContent = 'Không đổi';
+        }
+      }
+
+      if (this.dom.weightChangeText) {
+        const signText = diff > 0 ? `Tăng +${diff} kg` : diff < 0 ? `Giảm ${Math.abs(diff)} kg` : 'Giữ nguyên';
+        this.dom.weightChangeText.textContent = `${signText} so với lần trước (${previous.date})`;
+      }
+    } else {
+      if (this.dom.weightChangeBadge) {
+        this.dom.weightChangeBadge.className = 'glass-badge glass-badge-emerald';
+        this.dom.weightChangeBadge.textContent = 'Bản ghi đầu';
+      }
+      if (this.dom.weightChangeText) {
+        this.dom.weightChangeText.textContent = 'Đây là bản ghi thể trọng đầu tiên';
+      }
+    }
+  },
+
+  renderGoalProgress(profile, weightLogs, currentWeight, targetWeight) {
+    
+    let initialWeight = currentWeight;
+    if (weightLogs && weightLogs.length > 0) {
+      const sorted = [...weightLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+      initialWeight = Number(sorted[0].weight);
+    }
+
+    if (this.dom.goalInitialVal) this.dom.goalInitialVal.textContent = initialWeight ? `${initialWeight} kg` : '-- kg';
+    if (this.dom.goalCurrentVal) this.dom.goalCurrentVal.textContent = currentWeight ? `${currentWeight} kg` : '-- kg';
+    if (this.dom.goalTargetVal) this.dom.goalTargetVal.textContent = targetWeight ? `${targetWeight} kg` : '-- kg';
+
+    if (!window.HealthCalculator || !currentWeight || !initialWeight || !targetWeight) {
+      if (this.dom.goalPercentBadge) this.dom.goalPercentBadge.textContent = '0%';
+      if (this.dom.goalBarFill) this.dom.goalBarFill.style.width = '0%';
+      if (this.dom.goalStatusDesc) this.dom.goalStatusDesc.textContent = 'Chưa đủ dữ liệu để tính tiến độ';
+      return;
+    }
+
+    const progress = window.HealthCalculator.calculateGoalProgress(initialWeight, currentWeight, targetWeight);
+
+    if (this.dom.goalPercentBadge) {
+      this.dom.goalPercentBadge.textContent = `${progress.percent}%`;
+      this.dom.goalPercentBadge.className = progress.isCompleted ? 'glass-badge glass-badge-emerald' : 'glass-badge glass-badge-cyan';
+    }
+    if (this.dom.goalBarFill) {
+      this.dom.goalBarFill.style.width = `${progress.percent}%`;
+    }
+    if (this.dom.goalStatusDesc) {
+      this.dom.goalStatusDesc.textContent = progress.statusText;
+    }
+    if (this.dom.goalRemainingDiff) {
+      this.dom.goalRemainingDiff.textContent = progress.isCompleted ? 'Hoàn thành!' : `Còn ${progress.remainingDiff} kg`;
+    }
+  },
+
+  renderHealthMetrics(profile) {
+    
+    const waterTarget = Number(profile.waterTarget) || 3000;
+    const currentWater = window.storageService ? window.storageService.getWater() : 0;
+    const waterPercent = Math.min(100, Math.round((currentWater / waterTarget) * 100));
+
+    if (this.dom.waterVal) {
+      this.dom.waterVal.textContent = `${currentWater.toLocaleString('vi-VN')} / ${waterTarget.toLocaleString('vi-VN')} ml (${waterPercent}%)`;
+    }
+    if (this.dom.waterProgress) {
+      this.dom.waterProgress.style.width = `${waterPercent}%`;
+    }
+
+    
+    const calorieTarget = Number(profile.targetCalories) || 2600;
+    const todayDate = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    const dayTotals = window.storageService ? window.storageService.calculateDayTotals(todayDate) : { calories: 0 };
+    const consumedCalories = Math.round(dayTotals.calories);
+    const caloriePercent = Math.min(100, Math.round((consumedCalories / calorieTarget) * 100));
+
+    if (this.dom.caloriesVal) {
+      this.dom.caloriesVal.textContent = `${consumedCalories.toLocaleString('vi-VN')} / ${calorieTarget.toLocaleString('vi-VN')} kcal (${caloriePercent}%)`;
+    }
+    if (this.dom.caloriesProgress) {
+      this.dom.caloriesProgress.style.width = `${caloriePercent}%`;
+    }
+  },
+
+  renderChart() {
+    if (!window.HealthDashboardChart) return;
+    const profile = window.storageService ? (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {})) : {};
+    const weightLogs = window.storageService ? window.storageService.getWeightLogs() : [];
+    const targetWeight = Number(profile.targetWeight) || null;
+
+    HealthDashboardChart.init('health-weight-canvas', 'health-weight-tooltip', targetWeight);
+    HealthDashboardChart.render(weightLogs, this.currentRange);
+  },
+
+  renderRecentRecords(weightLogs, height) {
+    if (!this.dom.recentTbody) return;
+
+    if (!weightLogs || weightLogs.length === 0) {
+      this.dom.recentTbody.innerHTML = '';
+      if (this.dom.recentEmpty) this.dom.recentEmpty.style.display = 'block';
+      return;
+    }
+
+    if (this.dom.recentEmpty) this.dom.recentEmpty.style.display = 'none';
+
+    
+    const sortedDesc = [...weightLogs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+
+    const rowsHtml = sortedDesc.map((entry) => {
+      let bmiBadgeHtml = '<span class="glass-badge glass-badge-muted">--</span>';
+      if (height && height > 0 && window.HealthCalculator) {
+        const bmiRes = window.HealthCalculator.calculateBMI(entry.weight, height);
+        if (bmiRes && bmiRes.bmi) {
+          bmiBadgeHtml = `<span class="glass-badge ${bmiRes.colorClass}">${bmiRes.bmi} (${bmiRes.category})</span>`;
+        }
+      }
+
+      const noteText = entry.note ? entry.note : '<span style="color: var(--color-text-muted); font-style: italic;">Không có ghi chú</span>';
+
+      return `
+        <tr>
+          <td style="font-weight: 600; color: var(--color-primary, #173F35); white-space: nowrap;">
+            📅 ${entry.date}
+          </td>
+          <td style="font-weight: 700;">
+            ${Number(entry.weight).toFixed(1)} kg
+          </td>
+          <td>
+            ${bmiBadgeHtml}
+          </td>
+          <td style="color: var(--color-text-secondary, #63756B); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${noteText}
+          </td>
+        </tr>
+      `;
+    });
+
+    this.dom.recentTbody.innerHTML = rowsHtml.join('');
+  }
+};
+
+window.HealthDashboardModule = HealthDashboardModule;
+
+const ProgressChartsModule = {
+  dom: {},
+  currentMetric: 'weight', 
+  currentRange: '90d',     
+  sortAscending: false,    
+  currentPage: 1,
+  pageSize: 8,
+  cachedAllEntries: [],
+  cachedFilteredEntries: [],
+  previousPeriodEntries: [],
+
+  init() {
+    this.cacheDOM();
+    this.bindEvents();
+    this.loadDataAndRender();
+  },
+
+  cacheDOM() {
+    this.dom = {
+      
       btnMetricWeight: document.getElementById('btn-metric-weight'),
       btnMetricBmi: document.getElementById('btn-metric-bmi'),
       metricButtons: document.querySelectorAll('.metric-switch-btn'),
 
-      // Time pills
+      
       rangeButtons: document.querySelectorAll('.progress-pill-btn'),
       rangeDatesText: document.getElementById('pc-range-dates-text'),
 
-      // 5 Summary Cards
+      
       startVal: document.getElementById('pc-start-val'),
       unitStart: document.getElementById('pc-unit-start'),
       startSub: document.getElementById('pc-start-sub'),
@@ -2339,18 +2266,18 @@ const HealthDashboardModule = {
       trendBadge: document.getElementById('pc-trend-badge'),
       trendSub: document.getElementById('pc-trend-sub'),
 
-      // Chart meta
+      
       chartTitle: document.getElementById('pc-chart-title'),
       chartDesc: document.getElementById('pc-chart-desc'),
       legendTargetItem: document.getElementById('pc-legend-target-item'),
 
-      // Period comparison
+      
       compCurrentVal: document.getElementById('pc-comp-current-val'),
       compPrevVal: document.getElementById('pc-comp-prev-val'),
       compResultText: document.getElementById('pc-comparison-result-text'),
       compBadge: document.getElementById('pc-comparison-badge'),
 
-      // Goal progress
+      
       goalBadge: document.getElementById('pc-goal-badge'),
       goalInitText: document.getElementById('pc-goal-init-text'),
       goalCurrText: document.getElementById('pc-goal-curr-text'),
@@ -2359,10 +2286,10 @@ const HealthDashboardModule = {
       goalStatusText: document.getElementById('pc-goal-status-text'),
       goalDiffText: document.getElementById('pc-goal-diff-text'),
 
-      // Insights
+      
       insightsText: document.getElementById('pc-insights-text'),
 
-      // Table & Pagination
+      
       tableTbody: document.getElementById('pc-table-tbody'),
       tableEmpty: document.getElementById('pc-table-empty'),
       btnToggleSort: document.getElementById('btn-toggle-sort'),
@@ -2371,266 +2298,11 @@ const HealthDashboardModule = {
       pageInfo: document.getElementById('pc-page-info'),
       btnPagePrev: document.getElementById('btn-page-prev'),
       btnPageNext: document.getElementById('btn-page-next')
-      // Header & Greeting
-      greetingTitle: document.getElementById('health-greeting-title'),
-      greetingSubtitle: document.getElementById('health-greeting-subtitle'),
-      incompleteBanner: document.getElementById('health-incomplete-banner'),
-      btnQuickLogWeight: document.getElementById('btn-quick-log-weight'),
-
-      // 4 Key Overview Cards
-      bmiVal: document.getElementById('hd-bmi-val'),
-      bmiBadge: document.getElementById('hd-bmi-badge'),
-      bmiStatusText: document.getElementById('hd-bmi-status-text'),
-
-      weightVal: document.getElementById('hd-weight-val'),
-      weightChangeBadge: document.getElementById('hd-weight-change-badge'),
-      weightChangeText: document.getElementById('hd-weight-change-text'),
-
-      heightVal: document.getElementById('hd-height-val'),
-      targetVal: document.getElementById('hd-target-val'),
-      targetBadge: document.getElementById('hd-target-badge'),
-      targetDiffText: document.getElementById('hd-target-diff-text'),
-
-      // BMI Analysis Section
-      bmiCategoryBadge: document.getElementById('hd-bmi-category-badge'),
-      bmiExplanation: document.getElementById('hd-bmi-explanation'),
-      bmiNeedle: document.getElementById('hd-bmi-needle'),
-
-      // Goal Progress Card
-      goalPercentBadge: document.getElementById('hd-goal-percent-badge'),
-      goalInitialVal: document.getElementById('hd-goal-initial-val'),
-      goalCurrentVal: document.getElementById('hd-goal-current-val'),
-      goalTargetVal: document.getElementById('hd-goal-target-val'),
-      goalBarFill: document.getElementById('hd-goal-bar-fill'),
-      goalStatusDesc: document.getElementById('hd-goal-status-desc'),
-      goalRemainingDiff: document.getElementById('hd-goal-remaining-diff'),
-
-      // Health Metrics
-      waterVal: document.getElementById('hd-metric-water-val'),
-      waterProgress: document.getElementById('hd-metric-water-progress'),
-      caloriesVal: document.getElementById('hd-metric-calories-val'),
-      caloriesProgress: document.getElementById('hd-metric-calories-progress'),
-
-      // Recent Records Table
-      recentTbody: document.getElementById('hd-recent-records-tbody'),
-      recentEmpty: document.getElementById('hd-recent-empty'),
-
-      // Modal Quick Add Weight
-      modalWeight: document.getElementById('hd-modal-weight'),
-      modalCloseBtn: document.getElementById('hd-modal-weight-close'),
-      modalCancelBtn: document.getElementById('hd-modal-weight-cancel'),
-      formWeight: document.getElementById('hd-form-weight'),
-      inputDate: document.getElementById('hd-input-date'),
-      inputWeight: document.getElementById('hd-input-weight'),
-      inputNote: document.getElementById('hd-input-note'),
-
-      // Time Range Buttons
-      timePills: document.querySelectorAll('.time-pill-btn')
     };
   },
 
   bindEvents() {
-    // 1. Report Type switcher
-    if (this.dom.typePills) {
-      this.dom.typePills.forEach(btn => {
-        btn.addEventListener('click', () => {
-          this.dom.typePills.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          this.currentReportType = btn.getAttribute('data-report-type') || 'all';
-          this.toggleSectionsByType();
-        });
-      });
-    }
-
-    // 2. Range preset pills
-    if (this.dom.rangePills) {
-      this.dom.rangePills.forEach(btn => {
-        btn.addEventListener('click', () => {
-          this.dom.rangePills.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const rangeKey = btn.getAttribute('data-report-range') || '30d';
-          this.currentRange = rangeKey;
-
-          if (rangeKey === 'custom') {
-            if (this.dom.customRangeRow) this.dom.customRangeRow.style.display = 'flex';
-          } else {
-            if (this.dom.customRangeRow) this.dom.customRangeRow.style.display = 'none';
-            this.currentPage = 1;
-            this.filterAndRender();
-          }
-        });
-      });
-    }
-
-    // 3. Apply custom dates
-    if (this.dom.btnApplyCustomDates) {
-      this.dom.btnApplyCustomDates.addEventListener('click', () => {
-        const start = this.dom.inputStartDate.value;
-        const end = this.dom.inputEndDate.value;
-        if (!start || !end) {
-          ToastModule.show('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.', 'flame');
-          return;
-        }
-        if (new Date(end) < new Date(start)) {
-          ToastModule.show('Ngày kết thúc không thể trước ngày bắt đầu.', 'flame');
-          return;
-        }
-        this.customStartDate = start;
-        this.customEndDate = end;
-        this.currentPage = 1;
-        this.filterAndRender();
-      });
-    }
-
-    // 4. Refresh button
-    if (this.dom.btnRefresh) {
-      this.dom.btnRefresh.addEventListener('click', () => {
-        ToastModule.show('Đang cập nhật lại báo cáo sức khỏe...', 'cyan');
-        this.loadDataAndRender();
-      });
-    }
-
-    // 5. Export CSV
-    if (this.dom.btnExportCsv) {
-      this.dom.btnExportCsv.addEventListener('click', () => {
-        this.exportToCsv();
-      });
-    }
-
-    // 6. Print Report
-    if (this.dom.btnPrint) {
-      this.dom.btnPrint.addEventListener('click', () => {
-        window.print();
-      });
-    }
-
-    // 7. Pagination
-    // 1. Time range pills
-    if (this.dom.rangeButtons) {
-      this.dom.rangeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          this.dom.rangeButtons.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          this.currentRange = btn.getAttribute('data-workout-range') || '30d';
-          this.currentPage = 1;
-          this.filterDataAndRender();
-        });
-      });
-    }
-
-    // 2. Search input
-    if (this.dom.searchInput) {
-      let debounceTimer = null;
-      this.dom.searchInput.addEventListener('input', (e) => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          this.searchQuery = e.target.value.trim().toLowerCase();
-          this.currentPage = 1;
-          this.filterDataAndRender();
-        }, 250);
-      });
-    }
-
-    // 3. Filters dropdowns
-    if (this.dom.filterType) {
-      this.dom.filterType.addEventListener('change', (e) => {
-        this.currentType = e.target.value;
-        this.currentPage = 1;
-        this.filterDataAndRender();
-      });
-    }
-
-    if (this.dom.filterIntensity) {
-      this.dom.filterIntensity.addEventListener('change', (e) => {
-        this.currentIntensity = e.target.value;
-        this.currentPage = 1;
-        this.filterDataAndRender();
-      });
-    }
-
-    // 4. Reset Filters
-    const resetFn = () => {
-      this.searchQuery = '';
-      this.currentType = 'all';
-      this.currentIntensity = 'all';
-      if (this.dom.searchInput) this.dom.searchInput.value = '';
-      if (this.dom.filterType) this.dom.filterType.value = 'all';
-      if (this.dom.filterIntensity) this.dom.filterIntensity.value = 'all';
-      this.currentPage = 1;
-      this.filterDataAndRender();
-    };
-
-    if (this.dom.btnResetFilters) this.dom.btnResetFilters.addEventListener('click', resetFn);
-    if (this.dom.btnClearEmptyFilter) this.dom.btnClearEmptyFilter.addEventListener('click', resetFn);
-
-    // 5. Open Create Modal
-    if (this.dom.btnOpenCreate) {
-      this.dom.btnOpenCreate.addEventListener('click', () => {
-        this.openCreateForm();
-      });
-    }
-
-    // 6. Close Modal Form
-    if (this.dom.modalFormClose) this.dom.modalFormClose.addEventListener('click', () => this.closeFormModal());
-    if (this.dom.modalFormCancel) this.dom.modalFormCancel.addEventListener('click', () => this.closeFormModal());
-    if (this.dom.modalForm) {
-      this.dom.modalForm.addEventListener('click', (e) => {
-        if (e.target === this.dom.modalForm) this.closeFormModal();
-      });
-    }
-
-    // 7. Form Submit (Create / Edit)
-    if (this.dom.formEntry) {
-      this.dom.formEntry.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.handleFormSubmit();
-      });
-    }
-
-    // 8. Detail Modal Handlers
-    if (this.dom.modalDetailClose) this.dom.modalDetailClose.addEventListener('click', () => this.closeDetailModal());
-    if (this.dom.detailBtnClose) this.dom.detailBtnClose.addEventListener('click', () => this.closeDetailModal());
-    if (this.dom.modalDetail) {
-      this.dom.modalDetail.addEventListener('click', (e) => {
-        if (e.target === this.dom.modalDetail) this.closeDetailModal();
-      });
-    }
-
-    if (this.dom.detailBtnEdit) {
-      this.dom.detailBtnEdit.addEventListener('click', () => {
-        const item = this.selectedWorkout;
-        this.closeDetailModal();
-        if (item) this.openEditForm(item);
-      });
-    }
-
-    if (this.dom.detailBtnDelete) {
-      this.dom.detailBtnDelete.addEventListener('click', () => {
-        const item = this.selectedWorkout;
-        this.closeDetailModal();
-        if (item) this.promptDelete(item.id, item.title);
-      });
-    }
-
-    // 9. Confirm Delete Modal
-    if (this.dom.btnCancelDelete) this.dom.btnCancelDelete.addEventListener('click', () => this.closeDeleteModal());
-    if (this.dom.btnConfirmDelete) {
-      this.dom.btnConfirmDelete.addEventListener('click', () => {
-        if (this.pendingDeleteId) {
-          const success = window.storageService.deleteWorkoutLog(this.pendingDeleteId);
-          if (success) {
-            ToastModule.show('Đã xóa buổi tập thành công.', 'emerald');
-            this.closeDeleteModal();
-            this.loadDataAndRender();
-          } else {
-            ToastModule.show('Không thể xóa buổi tập.', 'flame');
-          }
-        }
-      });
-    }
-
-    // 10. Pagination handlers
-    // 1. Metric switcher (Weight vs BMI)
+    
     if (this.dom.metricButtons) {
       this.dom.metricButtons.forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -2642,7 +2314,7 @@ const HealthDashboardModule = {
       });
     }
 
-    // 2. Time range selector
+    
     if (this.dom.rangeButtons) {
       this.dom.rangeButtons.forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -2655,7 +2327,7 @@ const HealthDashboardModule = {
       });
     }
 
-    // 3. Table sorting toggle
+    
     if (this.dom.btnToggleSort) {
       this.dom.btnToggleSort.addEventListener('click', () => {
         this.sortAscending = !this.sortAscending;
@@ -2670,27 +2342,18 @@ const HealthDashboardModule = {
       });
     }
 
-    // 4. Pagination controls
+    
     if (this.dom.btnPagePrev) {
       this.dom.btnPagePrev.addEventListener('click', () => {
         if (this.currentPage > 1) {
           this.currentPage--;
-          this.renderList();
           this.renderTable();
         }
       });
     }
-    if (this.dom.btnPageNext) {
-      this.dom.btnPageNext.addEventListener('click', () => {
-        const total = Math.ceil(this.dailyMergedRows.length / this.pageSize) || 1;
-        if (this.currentPage < total) {
 
     if (this.dom.btnPageNext) {
       this.dom.btnPageNext.addEventListener('click', () => {
-        const totalPages = Math.ceil(this.cachedFilteredWorkouts.length / this.pageSize) || 1;
-        if (this.currentPage < totalPages) {
-          this.currentPage++;
-          this.renderList();
         const totalPages = Math.ceil(this.cachedFilteredEntries.length / this.pageSize) || 1;
         if (this.currentPage < totalPages) {
           this.currentPage++;
@@ -2701,355 +2364,11 @@ const HealthDashboardModule = {
   },
 
   loadDataAndRender() {
-    this.cachedWeights = window.storageService ? window.storageService.getWeightLogs() : [];
-    this.cachedWorkouts = window.storageService ? window.storageService.getWorkoutLogs() : [];
-    this.cachedProfile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
-
-    // Initialize Chart
-    if (window.HealthReportsChartEngine) {
-      HealthReportsChartEngine.init('report-weight-canvas', 'report-weight-tooltip');
-    }
-
-    // Set default custom dates in inputs
-    const todayStr = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
-    const past30 = new Date();
-    past30.setDate(past30.getDate() - 30);
-    const past30Str = past30.toISOString().split('T')[0];
-
-    if (this.dom.inputStartDate && !this.dom.inputStartDate.value) this.dom.inputStartDate.value = past30Str;
-    if (this.dom.inputEndDate && !this.dom.inputEndDate.value) this.dom.inputEndDate.value = todayStr;
-
-    this.filterAndRender();
-  },
-
-  filterAndRender() {
-    let startD = null;
-    let endD = new Date();
-    let daysCount = 30;
-
-    if (this.currentRange === 'custom') {
-      if (this.customStartDate && this.customEndDate) {
-        startD = new Date(`${this.customStartDate}T00:00:00`);
-        endD = new Date(`${this.customEndDate}T23:59:59`);
-        daysCount = Math.max(1, Math.round((endD - startD) / (1000 * 60 * 60 * 24)));
-      } else {
-        startD = new Date();
-        startD.setDate(startD.getDate() - 30);
-      }
-    } else {
-      if (this.currentRange === '7d') daysCount = 7;
-      else if (this.currentRange === '30d') daysCount = 30;
-      else if (this.currentRange === '90d') daysCount = 90;
-      else if (this.currentRange === '180d') daysCount = 180;
-      else if (this.currentRange === '365d') daysCount = 365;
-
-      startD = new Date();
-      startD.setDate(startD.getDate() - daysCount);
-    }
-
-    // Calculate previous period of equal length for comparison
-    const prevEndD = new Date(startD);
-    const prevStartD = new Date(startD);
-    prevStartD.setDate(prevStartD.getDate() - daysCount);
-
-    // 1. Filter current period
-    this.filteredWeights = this.cachedWeights.filter(w => {
-      const d = new Date(w.date);
-      return d >= startD && d <= endD;
-    }).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    this.filteredWorkouts = this.cachedWorkouts.filter(w => {
-      const d = new Date(w.workoutDate);
-      return d >= startD && d <= endD;
-    }).sort((a, b) => new Date(a.workoutDate) - new Date(b.workoutDate));
-
-    // 2. Filter previous comparison period
-    this.prevWeights = this.cachedWeights.filter(w => {
-      const d = new Date(w.date);
-      return d >= prevStartD && d < startD;
-    });
-
-    this.prevWorkouts = this.cachedWorkouts.filter(w => {
-      const d = new Date(w.workoutDate);
-      return d >= prevStartD && d < startD;
-    });
-
-    this.renderRangeBadge(startD, endD, daysCount);
-    this.renderKPIs();
-    this.renderCharts();
-    this.renderWorkoutBreakdown();
-    this.renderPeriodComparison();
-    this.renderInsights();
-    this.buildDailyMergedRows();
-    this.renderTable();
-  },
-
-  renderRangeBadge(startD, endD, daysCount) {
-    const fmt = (d) => {
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
-    };
-
-    const text = `Từ ${fmt(startD)} đến ${fmt(endD)} (${daysCount} ngày)`;
-    if (this.dom.rangeDatesText) this.dom.rangeDatesText.textContent = text;
-    if (this.dom.printMetaText) {
-      const userName = this.cachedProfile.name || 'Gymer FitVN';
-      this.dom.printMetaText.textContent = `Khoảng thời gian: ${text} | Người dùng: ${userName} | FitVN Tracker`;
-    }
-  },
-
-  toggleSectionsByType() {
-    const type = this.currentReportType;
-    if (this.dom.secWeightReport) {
-      this.dom.secWeightReport.style.display = (type === 'all' || type === 'weight') ? 'block' : 'none';
-    }
-    if (this.dom.secWorkoutReport) {
-      this.dom.secWorkoutReport.style.display = (type === 'all' || type === 'workout') ? 'block' : 'none';
-    }
-  },
-
-  renderKPIs() {
-    const height = Number(this.cachedProfile.height) || null;
-    const report = window.HealthCalculator.generateComprehensiveReport(
-      this.filteredWeights,
-      height,
-      this.filteredWorkouts
-    );
-
-    // Weight & BMI KPIs
-    if (report.hasWeightData) {
-      if (this.dom.kpiStartWeight) this.dom.kpiStartWeight.innerHTML = `${report.weight.startWeight.toFixed(1)} <span class="stat-unit">kg</span>`;
-      if (this.dom.kpiEndWeight) this.dom.kpiEndWeight.innerHTML = `${report.weight.endWeight.toFixed(1)} <span class="stat-unit">kg</span>`;
-      
-      const sign = report.weight.weightDiff > 0 ? `+${report.weight.weightDiff}` : `${report.weight.weightDiff}`;
-      if (this.dom.kpiWeightDiff) this.dom.kpiWeightDiff.innerHTML = `${sign} <span class="stat-unit">kg</span>`;
-      if (this.dom.kpiWeightDiffPercent) {
-        const pSign = report.weight.weightPercentChange > 0 ? `+${report.weight.weightPercentChange}` : `${report.weight.weightPercentChange}`;
-        this.dom.kpiWeightDiffPercent.textContent = `${pSign}%`;
-      }
-      if (this.dom.kpiWeightDiffBadge) {
-        this.dom.kpiWeightDiffBadge.textContent = report.weight.weightDiff > 0 ? 'Tăng' : report.weight.weightDiff < 0 ? 'Giảm' : 'Ổn định';
-        this.dom.kpiWeightDiffBadge.className = `glass-badge ${report.weight.weightDiff > 0 ? 'glass-badge-cyan' : report.weight.weightDiff < 0 ? 'glass-badge-emerald' : 'glass-badge-muted'}`;
-      }
-
-      if (report.weight.endBMI) {
-        if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `${report.weight.endBMI.toFixed(1)} <span class="stat-unit">kg/m²</span>`;
-        if (this.dom.kpiBmiBadge) {
-          this.dom.kpiBmiBadge.className = `glass-badge ${report.weight.bmiColorClass}`;
-          this.dom.kpiBmiBadge.textContent = report.weight.bmiCategory;
-        }
-        if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = report.weight.bmiCategory;
-      } else {
-        if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
-        if (this.dom.kpiBmiBadge) this.dom.kpiBmiBadge.textContent = 'Chưa có chiều cao';
-        if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = 'Chưa thiết lập';
-      }
-    } else {
-      if (this.dom.kpiStartWeight) this.dom.kpiStartWeight.innerHTML = `-- <span class="stat-unit">kg</span>`;
-      if (this.dom.kpiEndWeight) this.dom.kpiEndWeight.innerHTML = `-- <span class="stat-unit">kg</span>`;
-      if (this.dom.kpiWeightDiff) this.dom.kpiWeightDiff.innerHTML = `-- <span class="stat-unit">kg</span>`;
-      if (this.dom.kpiWeightDiffPercent) this.dom.kpiWeightDiffPercent.textContent = 'Chưa có dữ liệu';
-      if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
-      if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = 'Chưa có dữ liệu';
-    }
-
-    // Workout KPIs
-    if (report.hasWorkoutData) {
-      if (this.dom.kpiWorkoutSessions) this.dom.kpiWorkoutSessions.innerHTML = `${report.workout.totalSessions} <span class="stat-unit">buổi</span>`;
-      if (this.dom.kpiWorkoutDuration) this.dom.kpiWorkoutDuration.innerHTML = `${report.workout.formattedDuration}`;
-      if (this.dom.kpiWorkoutAvg) this.dom.kpiWorkoutAvg.textContent = `TB: ${report.workout.avgDurationMinutes}p / buổi`;
-      if (this.dom.kpiWorkoutDays) this.dom.kpiWorkoutDays.innerHTML = `${report.workout.activeDaysCount} <span class="stat-unit">ngày</span>`;
-    } else {
-      if (this.dom.kpiWorkoutSessions) this.dom.kpiWorkoutSessions.innerHTML = `0 <span class="stat-unit">buổi</span>`;
-      if (this.dom.kpiWorkoutDuration) this.dom.kpiWorkoutDuration.innerHTML = `0 phút`;
-      if (this.dom.kpiWorkoutAvg) this.dom.kpiWorkoutAvg.textContent = 'Chưa tập buổi nào';
-      if (this.dom.kpiWorkoutDays) this.dom.kpiWorkoutDays.innerHTML = `0 <span class="stat-unit">ngày</span>`;
-    }
-  },
-
-  renderCharts() {
-    if (!window.HealthReportsChartEngine) return;
-
-    // Enhance weights with BMI for tooltip
-    const height = Number(this.cachedProfile.height) || null;
-    const targetWeight = Number(this.cachedProfile.targetWeight) || null;
-
-    const weightsWithBmi = this.filteredWeights.map(w => {
-      let bmi = null;
-      if (height && height > 0) {
-        const hM = height / 100;
-        bmi = parseFloat((w.weight / (hM * hM)).toFixed(1));
-      }
-      return { ...w, bmi };
-    });
-
-    HealthReportsChartEngine.renderWeightReportChart(weightsWithBmi, targetWeight);
-  },
-
-  renderWorkoutBreakdown() {
-    const workouts = this.filteredWorkouts;
-    if (workouts.length === 0) {
-      if (this.dom.repWorkoutPopularBadge) this.dom.repWorkoutPopularBadge.textContent = 'Chưa có';
-      if (this.dom.repWoPopularType) this.dom.repWoPopularType.textContent = 'Chưa có hoạt động';
-      if (this.dom.repWoAvgDuration) this.dom.repWoAvgDuration.textContent = '0 phút / buổi';
-      if (this.dom.repWoTotalDist) this.dom.repWoTotalDist.textContent = '0 km';
-      return;
-    }
-
-    const report = window.HealthCalculator.generateComprehensiveReport([], null, workouts);
-    const typeMap = {
-      gym: '🏋️‍♂️ Tập Gym',
-      running: '🏃‍♂️ Chạy bộ',
-      walking: '🚶‍♂️ Đi bộ',
-      cycling: '🚴‍♂️ Đạp xe',
-      strength: '💪 Tập sức mạnh',
-      yoga: '🧘‍♀️ Yoga',
-      swimming: '🏊‍♂️ Bơi lội',
-      sports: '⚽ Thể thao',
-      other: '⚡ Khác'
-    };
-
-    const popType = report.workout.popularType;
-    if (this.dom.repWorkoutPopularBadge) this.dom.repWorkoutPopularBadge.textContent = typeMap[popType] || 'Hoạt động';
-    if (this.dom.repWoPopularType) this.dom.repWoPopularType.textContent = typeMap[popType] || 'Khác';
-    if (this.dom.repWoAvgDuration) this.dom.repWoAvgDuration.textContent = `${report.workout.avgDurationMinutes} phút / buổi`;
-    if (this.dom.repWoTotalDist) this.dom.repWoTotalDist.textContent = `${report.workout.totalDistanceKm} km`;
-  },
-
-  renderPeriodComparison() {
-    const height = Number(this.cachedProfile.height) || null;
-    const currRep = window.HealthCalculator.generateComprehensiveReport(this.filteredWeights, height, this.filteredWorkouts);
-    const prevRep = window.HealthCalculator.generateComprehensiveReport(this.prevWeights, height, this.prevWorkouts);
-
-    const comp = window.HealthCalculator.compareHealthPeriods(currRep, prevRep);
-
-    if (!comp.hasComparison) {
-      if (this.dom.compCurrWeight) this.dom.compCurrWeight.textContent = currRep.weight.endWeight ? `${currRep.weight.endWeight.toFixed(1)} kg` : '-- kg';
-      if (this.dom.compPrevWeight) this.dom.compPrevWeight.textContent = '-- kg';
-      if (this.dom.compWeightDiffText) this.dom.compWeightDiffText.textContent = comp.reason;
-      if (this.dom.compCurrSessions) this.dom.compCurrSessions.textContent = `${currRep.workout.totalSessions} buổi`;
-      if (this.dom.compPrevSessions) this.dom.compPrevSessions.textContent = '-- buổi';
-      if (this.dom.compSessionsDiffText) this.dom.compSessionsDiffText.textContent = comp.reason;
-      if (this.dom.compBadge) this.dom.compBadge.textContent = 'Chưa đủ dữ liệu';
-      return;
-    }
-
-    // Weight comparison
-    if (this.dom.compCurrWeight) this.dom.compCurrWeight.textContent = `${currRep.weight.endWeight.toFixed(1)} kg`;
-    if (this.dom.compPrevWeight) this.dom.compPrevWeight.textContent = `${prevRep.weight.endWeight.toFixed(1)} kg`;
-    if (this.dom.compWeightDiffText) {
-      if (comp.weightDiff !== null) {
-        const sign = comp.weightDiff > 0 ? `+${comp.weightDiff}` : `${comp.weightDiff}`;
-        this.dom.compWeightDiffText.textContent = `Chênh lệch: ${sign} kg (${comp.weightDiffPercent > 0 ? '+' : ''}${comp.weightDiffPercent}%) so với chu kỳ trước`;
-      } else {
-        this.dom.compWeightDiffText.textContent = 'Không đủ dữ liệu cân nặng';
-      }
-    }
-
-    // Sessions comparison
-    if (this.dom.compCurrSessions) this.dom.compCurrSessions.textContent = `${currRep.workout.totalSessions} buổi`;
-    if (this.dom.compPrevSessions) this.dom.compPrevSessions.textContent = `${prevRep.workout.totalSessions} buổi`;
-    if (this.dom.compSessionsDiffText) {
-      const sSign = comp.sessionDiff > 0 ? `+${comp.sessionDiff}` : `${comp.sessionDiff}`;
-      this.dom.compSessionsDiffText.textContent = `Chênh lệch: ${sSign} buổi tập (${comp.sessionPercent > 0 ? '+' : ''}${comp.sessionPercent}%) so với chu kỳ trước`;
-    }
-
-    if (this.dom.compBadge) this.dom.compBadge.textContent = 'Đã đối chiếu';
-  },
-
-  renderInsights() {
-    if (!this.dom.insightsContent) return;
-
-    const wCount = this.filteredWeights.length;
-    const woCount = this.filteredWorkouts.length;
-
-    if (wCount === 0 && woCount === 0) {
-      this.dom.insightsContent.textContent = 'Chưa có dữ liệu thể trọng hoặc nhật ký tập luyện nào trong khoảng thời gian này. Hãy tích cực ghi nhận để có phân tích toàn diện.';
-      return;
-    }
-
-    const height = Number(this.cachedProfile.height) || null;
-    const rep = window.HealthCalculator.generateComprehensiveReport(this.filteredWeights, height, this.filteredWorkouts);
-
-    let parts = [];
-    if (wCount > 0) {
-      parts.push(`Trong kỳ này, bạn đã ghi nhận ${wCount} mốc cân nặng. Thể trọng biến thiên ${rep.weight.weightDiff > 0 ? 'tăng' : rep.weight.weightDiff < 0 ? 'giảm' : 'không đổi'} ${Math.abs(rep.weight.weightDiff)} kg.`);
-      if (rep.weight.endBMI) {
-        parts.push(`Chỉ số BMI cuối kỳ đạt ${rep.weight.endBMI} (${rep.weight.bmiCategory}).`);
-      }
-    }
-
-    if (woCount > 0) {
-      parts.push(`Bạn đã hoàn thành ${rep.workout.totalSessions} buổi rèn luyện thể chất với tổng cộng ${rep.workout.formattedDuration} (${rep.workout.activeDaysCount} ngày tập thực tế).`);
-    }
-
-    parts.push(`Lưu ý khoa học: Các biến động cân nặng ngắn hạn thường liên quan đến lượng nước tích trữ và glycogen. Hãy duy trì chế độ dinh dưỡng lành mạnh và tập luyện đều đặn.`);
-
-    this.dom.insightsContent.textContent = parts.join(' ');
-  },
-
-  buildDailyMergedRows() {
-    const map = new Map();
-    const height = Number(this.cachedProfile.height) || null;
-
-    // Add weights
-    this.filteredWeights.forEach(w => {
-      let bmi = '--';
-      if (height && height > 0) {
-        const hM = height / 100;
-        bmi = (w.weight / (hM * hM)).toFixed(1);
-      }
-      map.set(w.date, {
-        date: w.date,
-        weight: Number(w.weight).toFixed(1),
-        bmi,
-        workoutSessions: 0,
-        workoutMinutes: 0
-      });
-    });
-
-    // Add workouts
-    this.filteredWorkouts.forEach(wo => {
-      const d = wo.workoutDate;
-      const mins = Math.max(0, parseInt(wo.durationMinutes, 10) || 0);
-
-      if (!map.has(d)) {
-        map.set(d, {
-          date: d,
-          weight: '--',
-          bmi: '--',
-          workoutSessions: 0,
-          workoutMinutes: 0
-        });
-      }
-
-      const item = map.get(d);
-      item.workoutSessions += 1;
-      item.workoutMinutes += mins;
-    });
-
-    // Sort descending by date
-    this.dailyMergedRows = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
-  },
-
-  renderTable() {
-    const tbody = this.dom.tableTbody;
-    if (!tbody) return;
-
-    if (this.dailyMergedRows.length === 0) {
-      tbody.innerHTML = '';
-    this.cachedAllWorkouts = window.storageService ? window.storageService.getWorkoutLogs() : [];
-    
-    // Initialize Canvas Chart
-    if (window.WorkoutChartEngine) {
-      WorkoutChartEngine.init('workout-chart-canvas', 'workout-chart-tooltip');
     const rawLogs = window.storageService ? window.storageService.getWeightLogs() : [];
-    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
+    const profile = window.storageService ? (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {})) : {};
     const height = Number(profile.height) || 175;
 
-    // Enhance entries with accurate historical BMI
+    
     this.cachedAllEntries = rawLogs.map((entry) => {
       let bmiVal = null;
       if (height > 0 && window.HealthCalculator) {
@@ -3062,7 +2381,7 @@ const HealthDashboardModule = {
       };
     }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Initialize ProgressChartEngine
+    
     if (window.ProgressChartEngine) {
       ProgressChartEngine.init('progress-chart-canvas', 'progress-chart-tooltip');
       ProgressChartEngine.setTargetWeight(profile.targetWeight || null);
@@ -3072,17 +2391,6 @@ const HealthDashboardModule = {
   },
 
   filterDataAndRender() {
-    const all = this.cachedAllWorkouts;
-
-    if (all.length === 0) {
-      this.cachedFilteredWorkouts = [];
-      this.renderSummary();
-      this.renderChart();
-      this.renderList();
-      return;
-    }
-
-    // 1. Filter by Time Range
     const all = this.cachedAllEntries;
     if (all.length === 0) {
       this.cachedFilteredEntries = [];
@@ -3091,497 +2399,17 @@ const HealthDashboardModule = {
       return;
     }
 
-    // 1. Determine date filter boundary
+    
     const now = new Date();
     let daysCutoff = null;
     if (this.currentRange === '7d') daysCutoff = 7;
     else if (this.currentRange === '30d') daysCutoff = 30;
     else if (this.currentRange === '90d') daysCutoff = 90;
     else if (this.currentRange === '180d') daysCutoff = 180;
-
-    let filtered = [...all];
-    if (daysCutoff !== null) {
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - daysCutoff);
-      filtered = filtered.filter(item => new Date(item.workoutDate) >= cutoff);
-    }
-
-    // 2. Filter by Activity Type
-    if (this.currentType !== 'all') {
-      filtered = filtered.filter(item => item.activityType === this.currentType);
-    }
-
-    // 3. Filter by Intensity
-    if (this.currentIntensity !== 'all') {
-      filtered = filtered.filter(item => item.intensity === this.currentIntensity);
-    }
-
-    // 4. Search query
-    if (this.searchQuery) {
-      filtered = filtered.filter(item => {
-        const t = (item.title || '').toLowerCase();
-        const n = (item.notes || '').toLowerCase();
-        return t.includes(this.searchQuery) || n.includes(this.searchQuery);
-      });
-    }
-
-    // Sort newest first
-    filtered.sort((a, b) => {
-      const dateA = new Date(`${a.workoutDate}T${a.startTime || '00:00'}`);
-      const dateB = new Date(`${b.workoutDate}T${b.startTime || '00:00'}`);
-      return dateB - dateA;
-    });
-
-    this.cachedFilteredWorkouts = filtered;
-
-    this.renderRangeBadge();
-    this.renderSummary();
-    this.renderChart();
-    this.renderList();
-  },
-
-  renderRangeBadge() {
-    if (!this.dom.rangeDatesText) return;
-    const count = this.cachedFilteredWorkouts.length;
-    let label = 'Tất cả thời gian';
-    if (this.currentRange === '7d') label = '7 ngày qua';
-    else if (this.currentRange === '30d') label = '30 ngày qua';
-    else if (this.currentRange === '90d') label = '3 tháng qua';
-    else if (this.currentRange === '180d') label = '6 tháng qua';
-
-    this.dom.rangeDatesText.textContent = `${label} (${count} buổi tập)`;
-  },
-
-  renderSummary() {
-    if (!window.HealthCalculator) return;
-    const summary = window.HealthCalculator.calculateWorkoutSummary(this.cachedFilteredWorkouts);
-
-    if (this.dom.statSessions) {
-      this.dom.statSessions.innerHTML = `${summary.totalSessions} <span class="stat-unit">buổi</span>`;
-    }
-    if (this.dom.statDuration) {
-      this.dom.statDuration.innerHTML = `${summary.formattedDuration}`;
-    }
-    if (this.dom.statAvg) {
-      this.dom.statAvg.innerHTML = `${summary.avgDurationMinutes} <span class="stat-unit">phút/buổi</span>`;
-    }
-    if (this.dom.statDays) {
-      this.dom.statDays.innerHTML = `${summary.activeDaysCount} <span class="stat-unit">ngày</span>`;
-    }
-
-    if (this.dom.statDistanceExtra) {
-      if (summary.totalDistanceKm > 0) {
-        this.dom.statDistanceExtra.textContent = `Tổng quãng đường: ${summary.totalDistanceKm} km`;
-      } else {
-        this.dom.statDistanceExtra.textContent = 'Ngày có phát sinh bài tập';
-      }
-    }
-  },
-
-  renderChart() {
-    if (!window.WorkoutChartEngine || !window.HealthCalculator) return;
-    const grouped = window.HealthCalculator.groupWorkoutsByDate(this.cachedFilteredWorkouts);
-    WorkoutChartEngine.render(grouped);
-  },
-
-  renderList() {
-    const list = this.cachedFilteredWorkouts;
-    const container = this.dom.listContainer;
-    if (!container) return;
-
-    if (this.cachedAllWorkouts.length === 0) {
-      container.innerHTML = '';
-      if (this.dom.emptyState) this.dom.emptyState.style.display = 'block';
-      if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'none';
-      this.updatePaginationUI(0, 0);
-      return;
-    }
-
-    if (list.length === 0) {
-      container.innerHTML = '';
-      if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
-      if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'block';
-      this.updatePaginationUI(0, 0);
-      return;
-    }
-
-    if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
-    if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'none';
-
-    // Pagination slice
-    const totalPages = Math.ceil(list.length / this.pageSize) || 1;
-    this.currentPage = Math.min(this.currentPage, totalPages);
-    const startIdx = (this.currentPage - 1) * this.pageSize;
-    const pageItems = list.slice(startIdx, startIdx + this.pageSize);
-
-    const itemsHtml = pageItems.map(item => this.createWorkoutCardHtml(item));
-    container.innerHTML = itemsHtml.join('');
-
-    // Attach dynamic click events to buttons on each card
-    container.querySelectorAll('.btn-view-detail').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        this.openDetailModal(id);
-      });
-    });
-
-    container.querySelectorAll('.btn-edit-item').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        const item = this.cachedAllWorkouts.find(w => w.id === id);
-        if (item) this.openEditForm(item);
-      });
-    });
-
-    container.querySelectorAll('.btn-delete-item').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.getAttribute('data-id');
-        const item = this.cachedAllWorkouts.find(w => w.id === id);
-        this.promptDelete(id, item ? item.title : 'Buổi tập này');
-      });
-    });
-
-    this.updatePaginationUI(this.currentPage, totalPages);
-  },
-
-  createWorkoutCardHtml(item) {
-    const actMeta = this.ACTIVITY_TYPES[item.activityType] || { label: 'Khác', icon: '⚡' };
-    const intMeta = this.INTENSITY_LABELS[item.intensity] || { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' };
-
-    // Format date DD/MM/YYYY
-    const p = (item.workoutDate || '').split('-');
-    const dateFormatted = p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : item.workoutDate;
-
-    // Time string
-    let timeRangeStr = '';
-    if (item.startTime && item.endTime) {
-      timeRangeStr = ` • ⏰ ${item.startTime} - ${item.endTime}`;
-    } else if (item.startTime) {
-      timeRangeStr = ` • ⏰ ${item.startTime}`;
-    }
-
-    let extraStatsHtml = '';
-    if (item.distanceKm && item.distanceKm > 0) {
-      extraStatsHtml += `
-        <span class="workout-stat-pill">
-          <span>📍 Quãng đường:</span> <strong>${item.distanceKm} km</strong>
-        </span>
-      `;
-    }
-    if (item.steps && item.steps > 0) {
-      extraStatsHtml += `
-        <span class="workout-stat-pill">
-          <span>👟 Số bước:</span> <strong>${item.steps.toLocaleString()}</strong>
-        </span>
-      `;
-    }
-
-    const noteSnippet = item.notes 
-      ? `<div style="font-size: 0.78rem; color: var(--color-text-secondary); margin-top: 4px; font-style: italic; max-width: 580px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-           "${item.notes}"
-         </div>`
-      : '';
-
-    return `
-      <div class="workout-item-card" data-id="${item.id}">
-        <div class="workout-item-top">
-          <div class="workout-item-main">
-            <div class="workout-type-icon-pill" title="${actMeta.label}">
-              ${actMeta.icon}
-            </div>
-            <div class="workout-item-titles">
-              <div class="workout-item-title">${item.title}</div>
-              <div class="workout-item-meta">
-                <span style="font-weight: 600; color: var(--color-primary);">${actMeta.label}</span>
-                <span>• 📅 ${dateFormatted}${timeRangeStr}</span>
-                <span class="glass-badge ${intMeta.badgeClass}" style="padding: 2px 8px; font-size: 0.7rem;">${intMeta.label}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="workout-item-actions">
-            <button type="button" class="btn-workout-action btn-view-detail" data-id="${item.id}" title="Xem chi tiết">
-              Chi tiết
-            </button>
-            <button type="button" class="btn-workout-action btn-edit-item" data-id="${item.id}" title="Chỉnh sửa">
-              Sửa
-            </button>
-            <button type="button" class="btn-workout-action text-danger btn-delete-item" data-id="${item.id}" title="Xóa">
-              Xóa
-            </button>
-          </div>
-        </div>
-
-        <div class="workout-item-stats-strip">
-          <span class="workout-stat-pill">
-            <span>⏱️ Thời lượng:</span> <strong>${item.durationMinutes} phút</strong>
-          </span>
-          ${extraStatsHtml}
-          ${item.feeling ? `<span class="workout-stat-pill" style="margin-left: auto;">${this.FEELING_LABELS[item.feeling] || ''}</span>` : ''}
-        </div>
-
-        ${noteSnippet}
-      </div>
-    `;
-  },
-
-  updatePaginationUI(current, total) {
-    if (this.dom.pageInfo) {
-      this.dom.pageInfo.textContent = total > 0 ? `Trang ${current} / ${total} (${this.cachedFilteredWorkouts.length} bản ghi)` : 'Trang 0 / 0';
-    }
-    if (this.dom.btnPagePrev) this.dom.btnPagePrev.disabled = current <= 1;
-    if (this.dom.btnPageNext) this.dom.btnPageNext.disabled = current >= total;
-  },
-
-  // MODAL FORM (CREATE & EDIT)
-  openCreateForm() {
-    if (!this.dom.modalForm) return;
-    this.clearValidationErrors();
-
-    if (this.dom.modalFormTitle) this.dom.modalFormTitle.textContent = 'Ghi Nhận Buổi Tập Mới';
-    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.textContent = 'Lưu Buổi Tập';
-
-    this.dom.inputId.value = '';
-    this.dom.inputTitle.value = '';
-    this.dom.inputType.value = 'gym';
-    this.dom.inputIntensity.value = 'medium';
-    this.dom.inputDate.value = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
-    this.dom.inputDuration.value = '60';
-    this.dom.inputStartTime.value = '';
-    this.dom.inputEndTime.value = '';
-    this.dom.inputDistance.value = '';
-    this.dom.inputSteps.value = '';
-    this.dom.inputFeeling.value = 'good';
-    this.dom.inputNotes.value = '';
-
-    this.dom.modalForm.style.display = 'flex';
-  },
-
-  openEditForm(item) {
-    if (!this.dom.modalForm || !item) return;
-    this.clearValidationErrors();
-
-    if (this.dom.modalFormTitle) this.dom.modalFormTitle.textContent = 'Chỉnh Sửa Buổi Tập';
-    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.textContent = 'Cập Nhật Buổi Tập';
-
-    this.dom.inputId.value = item.id;
-    this.dom.inputTitle.value = item.title || '';
-    this.dom.inputType.value = item.activityType || 'gym';
-    this.dom.inputIntensity.value = item.intensity || 'medium';
-    this.dom.inputDate.value = item.workoutDate || (window.getTodayDateString ? window.getTodayDateString() : '');
-    this.dom.inputDuration.value = item.durationMinutes || 30;
-    this.dom.inputStartTime.value = item.startTime || '';
-    this.dom.inputEndTime.value = item.endTime || '';
-    this.dom.inputDistance.value = item.distanceKm !== null ? item.distanceKm : '';
-    this.dom.inputSteps.value = item.steps !== null ? item.steps : '';
-    this.dom.inputFeeling.value = item.feeling || 'good';
-    this.dom.inputNotes.value = item.notes || '';
-
-    this.dom.modalForm.style.display = 'flex';
-  },
-
-  closeFormModal() {
-    if (this.dom.modalForm) {
-      this.dom.modalForm.style.display = 'none';
-    }
-  },
-
-  clearValidationErrors() {
-    const inputs = [
-      this.dom.inputTitle, this.dom.inputDate, this.dom.inputDuration,
-      this.dom.inputEndTime, this.dom.inputDistance, this.dom.inputSteps
-    ];
-    inputs.forEach(input => {
-      if (input) input.classList.remove('is-invalid');
-    });
-  },
-
-  handleFormSubmit() {
-    this.clearValidationErrors();
-
-    const id = this.dom.inputId.value;
-    const title = this.dom.inputTitle.value.trim();
-    const activityType = this.dom.inputType.value;
-    const intensity = this.dom.inputIntensity.value;
-    const workoutDate = this.dom.inputDate.value;
-    const duration = parseInt(this.dom.inputDuration.value, 10);
-    const startTime = this.dom.inputStartTime.value;
-    const endTime = this.dom.inputEndTime.value;
-    const distanceVal = this.dom.inputDistance.value.trim();
-    const stepsVal = this.dom.inputSteps.value.trim();
-    const feeling = this.dom.inputFeeling.value;
-    const notes = this.dom.inputNotes.value.trim();
-
-    let isValid = true;
-
-    // Validate title
-    if (!title) {
-      this.dom.inputTitle.classList.add('is-invalid');
-      isValid = false;
-    }
-
-    // Validate date
-    if (!workoutDate) {
-      this.dom.inputDate.classList.add('is-invalid');
-      isValid = false;
-    }
-
-    // Validate duration
-    if (isNaN(duration) || duration <= 0 || duration > 720) {
-      this.dom.inputDuration.classList.add('is-invalid');
-      isValid = false;
-    }
-
-    // Validate times if both provided
-    if (startTime && endTime) {
-      if (endTime <= startTime) {
-        this.dom.inputEndTime.classList.add('is-invalid');
-        isValid = false;
-      }
-    }
-
-    // Validate distance
-    let distanceKm = null;
-    if (distanceVal !== '') {
-      distanceKm = parseFloat(distanceVal);
-      if (isNaN(distanceKm) || distanceKm < 0) {
-        this.dom.inputDistance.classList.add('is-invalid');
-        isValid = false;
-      }
-    }
-
-    // Validate steps
-    let steps = null;
-    if (stepsVal !== '') {
-      steps = parseInt(stepsVal, 10);
-      if (isNaN(steps) || steps < 0) {
-        this.dom.inputSteps.classList.add('is-invalid');
-        isValid = false;
-      }
-    }
-
-    if (!isValid) return;
-
-    const workoutData = {
-      title,
-      activityType,
-      intensity,
-      workoutDate,
-      durationMinutes: duration,
-      startTime,
-      endTime,
-      distanceKm,
-      steps,
-      feeling,
-      notes
-    };
-
-    // Submitting state
-    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.disabled = true;
-
-    try {
-      if (id) {
-        // Edit mode
-        window.storageService.updateWorkoutLog(id, workoutData);
-        ToastModule.show(`Đã cập nhật buổi tập "${title}"!`, 'emerald');
-      } else {
-        // Create mode
-        window.storageService.addWorkoutLog(workoutData);
-        ToastModule.show(`Đã thêm buổi tập mới "${title}"!`, 'emerald');
-      }
-
-      this.closeFormModal();
-      this.loadDataAndRender();
-    } catch (err) {
-      console.error(err);
-      ToastModule.show('Có lỗi xảy ra khi lưu trữ dữ liệu.', 'flame');
-    } finally {
-      if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.disabled = false;
-    }
-  },
-
-  // DETAILS MODAL
-  openDetailModal(id) {
-    const item = this.cachedAllWorkouts.find(w => w.id === id);
-    if (!item || !this.dom.modalDetail) return;
-    this.selectedWorkout = item;
-
-    const actMeta = this.ACTIVITY_TYPES[item.activityType] || { label: 'Khác', icon: '⚡' };
-    const intMeta = this.INTENSITY_LABELS[item.intensity] || { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' };
-
-    if (this.dom.detailTitle) this.dom.detailTitle.textContent = `${actMeta.icon} ${item.title}`;
-    if (this.dom.detailSubtitle) this.dom.detailSubtitle.textContent = `${actMeta.label} • Ngày ${item.workoutDate}`;
-
-    if (this.dom.detailContent) {
-      this.dom.detailContent.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--color-surface-raised); padding: 12px; border-radius: 8px;">
-          <div>
-            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Loại hình:</span>
-            <div style="font-weight: 600;">${actMeta.label}</div>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Cường độ:</span>
-            <div><span class="glass-badge ${intMeta.badgeClass}">${intMeta.label}</span></div>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Thời lượng:</span>
-            <div style="font-weight: 700; color: var(--color-primary);">${item.durationMinutes} phút</div>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Thời gian:</span>
-            <div style="font-weight: 500;">${item.startTime || '--'} ${item.endTime ? '→ ' + item.endTime : ''}</div>
-          </div>
-          ${item.distanceKm ? `<div><span style="font-size: 0.75rem; color: var(--color-text-muted);">Quãng đường:</span><div style="font-weight: 600;">${item.distanceKm} km</div></div>` : ''}
-          ${item.steps ? `<div><span style="font-size: 0.75rem; color: var(--color-text-muted);">Số bước:</span><div style="font-weight: 600;">${item.steps.toLocaleString()}</div></div>` : ''}
-        </div>
-
-        <div>
-          <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 2px;">Cảm nhận:</span>
-          <div style="font-weight: 500;">${this.FEELING_LABELS[item.feeling] || 'Bình thường'}</div>
-        </div>
-
-        <div>
-          <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 2px;">Ghi chú chi tiết:</span>
-          <div style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 10px; border-radius: 8px; line-height: 1.5; font-size: 0.84rem;">
-            ${item.notes ? item.notes : '<span style="color: var(--color-text-muted); font-style: italic;">Không có ghi chú.</span>'}
-          </div>
-        </div>
-      `;
-    }
-
-    this.dom.modalDetail.style.display = 'flex';
-  },
-
-  closeDetailModal() {
-    if (this.dom.modalDetail) {
-      this.dom.modalDetail.style.display = 'none';
-    }
-  },
-
-  // CONFIRM DELETE
-  promptDelete(id, title) {
-    this.pendingDeleteId = id;
-    if (this.dom.deleteMsg) {
-      this.dom.deleteMsg.innerHTML = `Bạn có chắc chắn muốn xóa buổi tập <strong>"${title}"</strong>? Thao tác này không thể hoàn tác.`;
-    }
-    if (this.dom.modalDelete) {
-      this.dom.modalDelete.style.display = 'flex';
-    }
-  },
-
-  closeDeleteModal() {
-    this.pendingDeleteId = null;
-    if (this.dom.modalDelete) {
-      this.dom.modalDelete.style.display = 'none';
-    }
-  }
-};
-
-window.WorkoutJournalModule = WorkoutJournalModule;
     else if (this.currentRange === '365d') daysCutoff = 365;
 
     if (daysCutoff === null) {
-      // 'all'
+      
       this.cachedFilteredEntries = [...all];
       this.previousPeriodEntries = [];
     } else {
@@ -3671,7 +2499,7 @@ window.WorkoutJournalModule = WorkoutJournalModule;
       return;
     }
 
-    // 1. Start Value
+    
     if (this.dom.startVal) {
       this.dom.startVal.innerHTML = `${Number(stats.startVal).toFixed(1)} <span class="stat-unit">${unit}</span>`;
     }
@@ -3679,7 +2507,7 @@ window.WorkoutJournalModule = WorkoutJournalModule;
       this.dom.startDateBadge.textContent = this.cachedFilteredEntries[0].date;
     }
 
-    // 2. End Value
+    
     if (this.dom.endVal) {
       this.dom.endVal.innerHTML = `${Number(stats.endVal).toFixed(1)} <span class="stat-unit">${unit}</span>`;
     }
@@ -3687,7 +2515,7 @@ window.WorkoutJournalModule = WorkoutJournalModule;
       this.dom.endDateBadge.textContent = this.cachedFilteredEntries[this.cachedFilteredEntries.length - 1].date;
     }
 
-    // 3. Absolute Difference
+    
     if (this.dom.diffVal) {
       const sign = stats.diff > 0 ? `+${stats.diff}` : `${stats.diff}`;
       this.dom.diffVal.innerHTML = `${sign} <span class="stat-unit">${unit}</span>`;
@@ -3697,7 +2525,7 @@ window.WorkoutJournalModule = WorkoutJournalModule;
       this.dom.diffBadge.textContent = stats.diff > 0 ? 'Tăng' : stats.diff < 0 ? 'Giảm' : 'Ổn định';
     }
 
-    // 4. Percent Change
+    
     if (this.dom.percentVal) {
       const sign = stats.percentChange > 0 ? `+${stats.percentChange}` : `${stats.percentChange}`;
       this.dom.percentVal.innerHTML = `${sign} <span class="stat-unit">%</span>`;
@@ -3707,7 +2535,7 @@ window.WorkoutJournalModule = WorkoutJournalModule;
       this.dom.percentBadge.textContent = `${Math.abs(stats.percentChange)}%`;
     }
 
-    // 5. Trend
+    
     if (this.dom.trendVal) {
       this.dom.trendVal.textContent = stats.trend === 'increasing' ? 'Đang Tăng' : stats.trend === 'decreasing' ? 'Đang Giảm' : 'Duy Trì';
       this.dom.trendVal.style.color = stats.trend === 'increasing' ? '#173F35' : stats.trend === 'decreasing' ? '#287653' : '#63756B';
@@ -3766,7 +2594,7 @@ window.WorkoutJournalModule = WorkoutJournalModule;
   },
 
   renderGoalProgress() {
-    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
+    const profile = window.storageService ? (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {})) : {};
     const targetWeight = Number(profile.targetWeight) || null;
     const all = this.cachedAllEntries;
 
@@ -3849,6 +2677,1390 @@ window.WorkoutJournalModule = WorkoutJournalModule;
 
     if (this.dom.tableEmpty) this.dom.tableEmpty.style.display = 'none';
 
+    
+    entries.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return this.sortAscending ? dateA - dateB : dateB - dateA;
+    });
+
+    
+    const totalPages = Math.ceil(entries.length / this.pageSize) || 1;
+    this.currentPage = Math.min(this.currentPage, totalPages);
+    const startIdx = (this.currentPage - 1) * this.pageSize;
+    const pageItems = entries.slice(startIdx, startIdx + this.pageSize);
+
+    
+    const rowsHtml = pageItems.map((item, idx) => {
+      
+      const allSortedAsc = [...this.cachedAllEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const masterIdx = allSortedAsc.findIndex(e => e.id === item.id || (e.date === item.date && e.weight === item.weight));
+
+      let diffHtml = '<span style="color: var(--color-text-muted);">--</span>';
+      if (masterIdx > 0) {
+        const prevItem = allSortedAsc[masterIdx - 1];
+        const d = parseFloat((item.weight - prevItem.weight).toFixed(1));
+        if (d > 0) {
+          diffHtml = `<span style="color: #326B82; font-weight: 600;">+${d} kg</span>`;
+        } else if (d < 0) {
+          diffHtml = `<span style="color: #287653; font-weight: 600;">${d} kg</span>`;
+        } else {
+          diffHtml = `<span style="color: var(--color-text-muted);">0.0 kg</span>`;
+        }
+      }
+
+      const bmiDisplay = item.bmi ? `${Number(item.bmi).toFixed(1)} kg/m²` : '--';
+      const noteDisplay = item.note ? item.note : '<span style="color: var(--color-text-muted); font-style: italic;">Không có</span>';
+
+      return `
+        <tr>
+          <td style="font-weight: 600; color: var(--color-primary, #173F35); white-space: nowrap;">
+            📅 ${item.date}
+          </td>
+          <td style="font-weight: 700;">
+            ${Number(item.weight).toFixed(1)} kg
+          </td>
+          <td style="font-weight: 600;">
+            ${bmiDisplay}
+          </td>
+          <td>
+            ${diffHtml}
+          </td>
+          <td style="color: var(--color-text-secondary, #63756B); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${noteDisplay}
+          </td>
+        </tr>
+      `;
+    });
+
+    this.dom.tableTbody.innerHTML = rowsHtml.join('');
+
+    
+    if (this.dom.pageInfo) {
+      this.dom.pageInfo.textContent = `Trang ${this.currentPage} / ${totalPages} (${entries.length} bản ghi)`;
+    }
+    if (this.dom.btnPagePrev) {
+      this.dom.btnPagePrev.disabled = this.currentPage <= 1;
+    }
+    if (this.dom.btnPageNext) {
+      this.dom.btnPageNext.disabled = this.currentPage >= totalPages;
+    }
+  },
+
+  renderEmptyState() {
+    this.renderSummaryCards();
+    this.renderChart();
+    this.renderPeriodComparison();
+    this.renderGoalProgress();
+    this.renderInsights();
+    this.renderTable();
+  }
+};
+
+window.ProgressChartsModule = ProgressChartsModule;
+
+const WorkoutJournalModule = {
+  dom: {},
+  currentRange: '30d', 
+  currentType: 'all',
+  currentIntensity: 'all',
+  searchQuery: '',
+  currentPage: 1,
+  pageSize: 8,
+  cachedAllWorkouts: [],
+  cachedFilteredWorkouts: [],
+  selectedWorkout: null,
+  pendingDeleteId: null,
+
+  
+  ACTIVITY_TYPES: {
+    gym: { label: 'Tập Gym', icon: '🏋️‍♂️' },
+    running: { label: 'Chạy bộ', icon: '🏃‍♂️' },
+    walking: { label: 'Đi bộ', icon: '🚶‍♂️' },
+    cycling: { label: 'Đạp xe', icon: '🚴‍♂️' },
+    strength: { label: 'Tập sức mạnh', icon: '💪' },
+    yoga: { label: 'Yoga', icon: '🧘‍♀️' },
+    swimming: { label: 'Bơi lội', icon: '🏊‍♂️' },
+    sports: { label: 'Thể thao', icon: '⚽' },
+    other: { label: 'Khác', icon: '⚡' }
+  },
+
+  FEELING_LABELS: {
+    great: '🔥 Tuyệt vời, tràn đầy năng lượng',
+    good: '👍 Khỏe khoắn, đạt chỉ tiêu',
+    tired: '🥱 Hơi mệt, căng cơ tốt',
+    exhausted: '😵 Kiệt sức, cần nghỉ ngơi'
+  },
+
+  INTENSITY_LABELS: {
+    low: { label: 'Nhẹ nhàng', badgeClass: 'badge-intensity-low' },
+    medium: { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' },
+    high: { label: 'Cường độ cao', badgeClass: 'badge-intensity-high' }
+  },
+
+  init() {
+    this.cacheDOM();
+    this.bindEvents();
+    this.loadDataAndRender();
+  },
+
+  cacheDOM() {
+    this.dom = {
+      
+      statSessions: document.getElementById('wo-stat-sessions'),
+      statDuration: document.getElementById('wo-stat-duration'),
+      statAvg: document.getElementById('wo-stat-avg'),
+      statDays: document.getElementById('wo-stat-days'),
+      statDistanceExtra: document.getElementById('wo-stat-distance-extra'),
+      rangeDatesText: document.getElementById('wo-range-dates-text'),
+
+      
+      rangeButtons: document.querySelectorAll('[data-workout-range]'),
+
+      
+      searchInput: document.getElementById('wo-search-input'),
+      filterType: document.getElementById('wo-filter-type'),
+      filterIntensity: document.getElementById('wo-filter-intensity'),
+      btnResetFilters: document.getElementById('btn-reset-filters'),
+
+      
+      listContainer: document.getElementById('wo-list-container'),
+      emptyState: document.getElementById('wo-empty-state'),
+      emptyFilterState: document.getElementById('wo-empty-filter-state'),
+      btnClearEmptyFilter: document.getElementById('btn-clear-empty-filter'),
+
+      
+      pageInfo: document.getElementById('wo-page-info'),
+      btnPagePrev: document.getElementById('wo-btn-page-prev'),
+      btnPageNext: document.getElementById('wo-btn-page-next'),
+
+      
+      btnOpenCreate: document.getElementById('btn-open-create-workout'),
+      modalForm: document.getElementById('wo-modal-form'),
+      modalFormClose: document.getElementById('wo-modal-form-close'),
+      modalFormCancel: document.getElementById('wo-modal-form-cancel'),
+      modalFormTitle: document.getElementById('wo-modal-form-title'),
+      formEntry: document.getElementById('form-workout-entry'),
+      btnSubmitForm: document.getElementById('wo-btn-submit-form'),
+
+      
+      inputId: document.getElementById('wo-input-id'),
+      inputTitle: document.getElementById('wo-input-title'),
+      inputType: document.getElementById('wo-input-type'),
+      inputIntensity: document.getElementById('wo-input-intensity'),
+      inputDate: document.getElementById('wo-input-date'),
+      inputDuration: document.getElementById('wo-input-duration'),
+      inputStartTime: document.getElementById('wo-input-start-time'),
+      inputEndTime: document.getElementById('wo-input-end-time'),
+      inputDistance: document.getElementById('wo-input-distance'),
+      inputSteps: document.getElementById('wo-input-steps'),
+      inputFeeling: document.getElementById('wo-input-feeling'),
+      inputNotes: document.getElementById('wo-input-notes'),
+
+      
+      modalDetail: document.getElementById('wo-modal-detail'),
+      modalDetailClose: document.getElementById('wo-modal-detail-close'),
+      detailBtnClose: document.getElementById('wo-detail-btn-close'),
+      detailBtnEdit: document.getElementById('wo-detail-btn-edit'),
+      detailBtnDelete: document.getElementById('wo-detail-btn-delete'),
+      detailTitle: document.getElementById('wo-detail-title'),
+      detailSubtitle: document.getElementById('wo-detail-subtitle'),
+      detailContent: document.getElementById('wo-detail-content'),
+
+      
+      modalDelete: document.getElementById('wo-modal-confirm-delete'),
+      btnCancelDelete: document.getElementById('wo-btn-cancel-delete'),
+      btnConfirmDelete: document.getElementById('wo-btn-confirm-delete'),
+      deleteMsg: document.getElementById('wo-confirm-delete-msg')
+    };
+  },
+
+  bindEvents() {
+    
+    if (this.dom.rangeButtons) {
+      this.dom.rangeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.dom.rangeButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentRange = btn.getAttribute('data-workout-range') || '30d';
+          this.currentPage = 1;
+          this.filterDataAndRender();
+        });
+      });
+    }
+
+    
+    if (this.dom.searchInput) {
+      let debounceTimer = null;
+      this.dom.searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          this.searchQuery = e.target.value.trim().toLowerCase();
+          this.currentPage = 1;
+          this.filterDataAndRender();
+        }, 250);
+      });
+    }
+
+    
+    if (this.dom.filterType) {
+      this.dom.filterType.addEventListener('change', (e) => {
+        this.currentType = e.target.value;
+        this.currentPage = 1;
+        this.filterDataAndRender();
+      });
+    }
+
+    if (this.dom.filterIntensity) {
+      this.dom.filterIntensity.addEventListener('change', (e) => {
+        this.currentIntensity = e.target.value;
+        this.currentPage = 1;
+        this.filterDataAndRender();
+      });
+    }
+
+    
+    const resetFn = () => {
+      this.searchQuery = '';
+      this.currentType = 'all';
+      this.currentIntensity = 'all';
+      if (this.dom.searchInput) this.dom.searchInput.value = '';
+      if (this.dom.filterType) this.dom.filterType.value = 'all';
+      if (this.dom.filterIntensity) this.dom.filterIntensity.value = 'all';
+      this.currentPage = 1;
+      this.filterDataAndRender();
+    };
+
+    if (this.dom.btnResetFilters) this.dom.btnResetFilters.addEventListener('click', resetFn);
+    if (this.dom.btnClearEmptyFilter) this.dom.btnClearEmptyFilter.addEventListener('click', resetFn);
+
+    
+    if (this.dom.btnOpenCreate) {
+      this.dom.btnOpenCreate.addEventListener('click', () => {
+        this.openCreateForm();
+      });
+    }
+
+    
+    if (this.dom.modalFormClose) this.dom.modalFormClose.addEventListener('click', () => this.closeFormModal());
+    if (this.dom.modalFormCancel) this.dom.modalFormCancel.addEventListener('click', () => this.closeFormModal());
+    if (this.dom.modalForm) {
+      this.dom.modalForm.addEventListener('click', (e) => {
+        if (e.target === this.dom.modalForm) this.closeFormModal();
+      });
+    }
+
+    
+    if (this.dom.formEntry) {
+      this.dom.formEntry.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.handleFormSubmit();
+      });
+    }
+
+    
+    if (this.dom.modalDetailClose) this.dom.modalDetailClose.addEventListener('click', () => this.closeDetailModal());
+    if (this.dom.detailBtnClose) this.dom.detailBtnClose.addEventListener('click', () => this.closeDetailModal());
+    if (this.dom.modalDetail) {
+      this.dom.modalDetail.addEventListener('click', (e) => {
+        if (e.target === this.dom.modalDetail) this.closeDetailModal();
+      });
+    }
+
+    if (this.dom.detailBtnEdit) {
+      this.dom.detailBtnEdit.addEventListener('click', () => {
+        const item = this.selectedWorkout;
+        this.closeDetailModal();
+        if (item) this.openEditForm(item);
+      });
+    }
+
+    if (this.dom.detailBtnDelete) {
+      this.dom.detailBtnDelete.addEventListener('click', () => {
+        const item = this.selectedWorkout;
+        this.closeDetailModal();
+        if (item) this.promptDelete(item.id, item.title);
+      });
+    }
+
+    
+    if (this.dom.btnCancelDelete) this.dom.btnCancelDelete.addEventListener('click', () => this.closeDeleteModal());
+    if (this.dom.btnConfirmDelete) {
+      this.dom.btnConfirmDelete.addEventListener('click', () => {
+        if (this.pendingDeleteId) {
+          const success = window.storageService.deleteWorkoutLog(this.pendingDeleteId);
+          if (success) {
+            ToastModule.show('Đã xóa buổi tập thành công.', 'emerald');
+            this.closeDeleteModal();
+            this.loadDataAndRender();
+          } else {
+            ToastModule.show('Không thể xóa buổi tập.', 'flame');
+          }
+        }
+      });
+    }
+
+    
+    if (this.dom.btnPagePrev) {
+      this.dom.btnPagePrev.addEventListener('click', () => {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          this.renderList();
+        }
+      });
+    }
+
+    if (this.dom.btnPageNext) {
+      this.dom.btnPageNext.addEventListener('click', () => {
+        const totalPages = Math.ceil(this.cachedFilteredWorkouts.length / this.pageSize) || 1;
+        if (this.currentPage < totalPages) {
+          this.currentPage++;
+          this.renderList();
+        }
+      });
+    }
+  },
+
+  loadDataAndRender() {
+    this.cachedAllWorkouts = window.storageService ? window.storageService.getWorkoutLogs() : [];
+    
+    
+    if (window.WorkoutChartEngine) {
+      WorkoutChartEngine.init('workout-chart-canvas', 'workout-chart-tooltip');
+    }
+
+    this.filterDataAndRender();
+  },
+
+  filterDataAndRender() {
+    const all = this.cachedAllWorkouts;
+
+    if (all.length === 0) {
+      this.cachedFilteredWorkouts = [];
+      this.renderSummary();
+      this.renderChart();
+      this.renderList();
+      return;
+    }
+
+    
+    let daysCutoff = null;
+    if (this.currentRange === '7d') daysCutoff = 7;
+    else if (this.currentRange === '30d') daysCutoff = 30;
+    else if (this.currentRange === '90d') daysCutoff = 90;
+    else if (this.currentRange === '180d') daysCutoff = 180;
+
+    let filtered = [...all];
+    if (daysCutoff !== null) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - daysCutoff);
+      filtered = filtered.filter(item => new Date(item.workoutDate) >= cutoff);
+    }
+
+    
+    if (this.currentType !== 'all') {
+      filtered = filtered.filter(item => item.activityType === this.currentType);
+    }
+
+    
+    if (this.currentIntensity !== 'all') {
+      filtered = filtered.filter(item => item.intensity === this.currentIntensity);
+    }
+
+    
+    if (this.searchQuery) {
+      filtered = filtered.filter(item => {
+        const t = (item.title || '').toLowerCase();
+        const n = (item.notes || '').toLowerCase();
+        return t.includes(this.searchQuery) || n.includes(this.searchQuery);
+      });
+    }
+
+    
+    filtered.sort((a, b) => {
+      const dateA = new Date(`${a.workoutDate}T${a.startTime || '00:00'}`);
+      const dateB = new Date(`${b.workoutDate}T${b.startTime || '00:00'}`);
+      return dateB - dateA;
+    });
+
+    this.cachedFilteredWorkouts = filtered;
+
+    this.renderRangeBadge();
+    this.renderSummary();
+    this.renderChart();
+    this.renderList();
+  },
+
+  renderRangeBadge() {
+    if (!this.dom.rangeDatesText) return;
+    const count = this.cachedFilteredWorkouts.length;
+    let label = 'Tất cả thời gian';
+    if (this.currentRange === '7d') label = '7 ngày qua';
+    else if (this.currentRange === '30d') label = '30 ngày qua';
+    else if (this.currentRange === '90d') label = '3 tháng qua';
+    else if (this.currentRange === '180d') label = '6 tháng qua';
+
+    this.dom.rangeDatesText.textContent = `${label} (${count} buổi tập)`;
+  },
+
+  renderSummary() {
+    if (!window.HealthCalculator) return;
+    const summary = window.HealthCalculator.calculateWorkoutSummary(this.cachedFilteredWorkouts);
+
+    if (this.dom.statSessions) {
+      this.dom.statSessions.innerHTML = `${summary.totalSessions} <span class="stat-unit">buổi</span>`;
+    }
+    if (this.dom.statDuration) {
+      this.dom.statDuration.innerHTML = `${summary.formattedDuration}`;
+    }
+    if (this.dom.statAvg) {
+      this.dom.statAvg.innerHTML = `${summary.avgDurationMinutes} <span class="stat-unit">phút/buổi</span>`;
+    }
+    if (this.dom.statDays) {
+      this.dom.statDays.innerHTML = `${summary.activeDaysCount} <span class="stat-unit">ngày</span>`;
+    }
+
+    if (this.dom.statDistanceExtra) {
+      if (summary.totalDistanceKm > 0) {
+        this.dom.statDistanceExtra.textContent = `Tổng quãng đường: ${summary.totalDistanceKm} km`;
+      } else {
+        this.dom.statDistanceExtra.textContent = 'Ngày có phát sinh bài tập';
+      }
+    }
+  },
+
+  renderChart() {
+    if (!window.WorkoutChartEngine || !window.HealthCalculator) return;
+    const grouped = window.HealthCalculator.groupWorkoutsByDate(this.cachedFilteredWorkouts);
+    WorkoutChartEngine.render(grouped);
+  },
+
+  renderList() {
+    const list = this.cachedFilteredWorkouts;
+    const container = this.dom.listContainer;
+    if (!container) return;
+
+    if (this.cachedAllWorkouts.length === 0) {
+      container.innerHTML = '';
+      if (this.dom.emptyState) this.dom.emptyState.style.display = 'block';
+      if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'none';
+      this.updatePaginationUI(0, 0);
+      return;
+    }
+
+    if (list.length === 0) {
+      container.innerHTML = '';
+      if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
+      if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'block';
+      this.updatePaginationUI(0, 0);
+      return;
+    }
+
+    if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
+    if (this.dom.emptyFilterState) this.dom.emptyFilterState.style.display = 'none';
+
+    
+    const totalPages = Math.ceil(list.length / this.pageSize) || 1;
+    this.currentPage = Math.min(this.currentPage, totalPages);
+    const startIdx = (this.currentPage - 1) * this.pageSize;
+    const pageItems = list.slice(startIdx, startIdx + this.pageSize);
+
+    const itemsHtml = pageItems.map(item => this.createWorkoutCardHtml(item));
+    container.innerHTML = itemsHtml.join('');
+
+    
+    container.querySelectorAll('.btn-view-detail').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        this.openDetailModal(id);
+      });
+    });
+
+    container.querySelectorAll('.btn-edit-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const item = this.cachedAllWorkouts.find(w => w.id === id);
+        if (item) this.openEditForm(item);
+      });
+    });
+
+    container.querySelectorAll('.btn-delete-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        const item = this.cachedAllWorkouts.find(w => w.id === id);
+        this.promptDelete(id, item ? item.title : 'Buổi tập này');
+      });
+    });
+
+    this.updatePaginationUI(this.currentPage, totalPages);
+  },
+
+  createWorkoutCardHtml(item) {
+    const actMeta = this.ACTIVITY_TYPES[item.activityType] || { label: 'Khác', icon: '⚡' };
+    const intMeta = this.INTENSITY_LABELS[item.intensity] || { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' };
+
+    
+    const p = (item.workoutDate || '').split('-');
+    const dateFormatted = p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : item.workoutDate;
+
+    
+    let timeRangeStr = '';
+    if (item.startTime && item.endTime) {
+      timeRangeStr = ` • ⏰ ${item.startTime} - ${item.endTime}`;
+    } else if (item.startTime) {
+      timeRangeStr = ` • ⏰ ${item.startTime}`;
+    }
+
+    let extraStatsHtml = '';
+    if (item.distanceKm && item.distanceKm > 0) {
+      extraStatsHtml += `
+        <span class="workout-stat-pill">
+          <span>📍 Quãng đường:</span> <strong>${item.distanceKm} km</strong>
+        </span>
+      `;
+    }
+    if (item.steps && item.steps > 0) {
+      extraStatsHtml += `
+        <span class="workout-stat-pill">
+          <span>👟 Số bước:</span> <strong>${item.steps.toLocaleString()}</strong>
+        </span>
+      `;
+    }
+
+    const noteSnippet = item.notes 
+      ? `<div style="font-size: 0.78rem; color: var(--color-text-secondary); margin-top: 4px; font-style: italic; max-width: 580px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+           "${item.notes}"
+         </div>`
+      : '';
+
+    return `
+      <div class="workout-item-card" data-id="${item.id}">
+        <div class="workout-item-top">
+          <div class="workout-item-main">
+            <div class="workout-type-icon-pill" title="${actMeta.label}">
+              ${actMeta.icon}
+            </div>
+            <div class="workout-item-titles">
+              <div class="workout-item-title">${item.title}</div>
+              <div class="workout-item-meta">
+                <span style="font-weight: 600; color: var(--color-primary);">${actMeta.label}</span>
+                <span>• 📅 ${dateFormatted}${timeRangeStr}</span>
+                <span class="glass-badge ${intMeta.badgeClass}" style="padding: 2px 8px; font-size: 0.7rem;">${intMeta.label}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="workout-item-actions">
+            <button type="button" class="btn-workout-action btn-view-detail" data-id="${item.id}" title="Xem chi tiết">
+              Chi tiết
+            </button>
+            <button type="button" class="btn-workout-action btn-edit-item" data-id="${item.id}" title="Chỉnh sửa">
+              Sửa
+            </button>
+            <button type="button" class="btn-workout-action text-danger btn-delete-item" data-id="${item.id}" title="Xóa">
+              Xóa
+            </button>
+          </div>
+        </div>
+
+        <div class="workout-item-stats-strip">
+          <span class="workout-stat-pill">
+            <span>⏱️ Thời lượng:</span> <strong>${item.durationMinutes} phút</strong>
+          </span>
+          ${extraStatsHtml}
+          ${item.feeling ? `<span class="workout-stat-pill" style="margin-left: auto;">${this.FEELING_LABELS[item.feeling] || ''}</span>` : ''}
+        </div>
+
+        ${noteSnippet}
+      </div>
+    `;
+  },
+
+  updatePaginationUI(current, total) {
+    if (this.dom.pageInfo) {
+      this.dom.pageInfo.textContent = total > 0 ? `Trang ${current} / ${total} (${this.cachedFilteredWorkouts.length} bản ghi)` : 'Trang 0 / 0';
+    }
+    if (this.dom.btnPagePrev) this.dom.btnPagePrev.disabled = current <= 1;
+    if (this.dom.btnPageNext) this.dom.btnPageNext.disabled = current >= total;
+  },
+
+  
+  openCreateForm() {
+    if (!this.dom.modalForm) return;
+    this.clearValidationErrors();
+
+    if (this.dom.modalFormTitle) this.dom.modalFormTitle.textContent = 'Ghi Nhận Buổi Tập Mới';
+    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.textContent = 'Lưu Buổi Tập';
+
+    this.dom.inputId.value = '';
+    this.dom.inputTitle.value = '';
+    this.dom.inputType.value = 'gym';
+    this.dom.inputIntensity.value = 'medium';
+    this.dom.inputDate.value = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    this.dom.inputDuration.value = '60';
+    this.dom.inputStartTime.value = '';
+    this.dom.inputEndTime.value = '';
+    this.dom.inputDistance.value = '';
+    this.dom.inputSteps.value = '';
+    this.dom.inputFeeling.value = 'good';
+    this.dom.inputNotes.value = '';
+
+    this.dom.modalForm.style.display = 'flex';
+  },
+
+  openEditForm(item) {
+    if (!this.dom.modalForm || !item) return;
+    this.clearValidationErrors();
+
+    if (this.dom.modalFormTitle) this.dom.modalFormTitle.textContent = 'Chỉnh Sửa Buổi Tập';
+    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.textContent = 'Cập Nhật Buổi Tập';
+
+    this.dom.inputId.value = item.id;
+    this.dom.inputTitle.value = item.title || '';
+    this.dom.inputType.value = item.activityType || 'gym';
+    this.dom.inputIntensity.value = item.intensity || 'medium';
+    this.dom.inputDate.value = item.workoutDate || (window.getTodayDateString ? window.getTodayDateString() : '');
+    this.dom.inputDuration.value = item.durationMinutes || 30;
+    this.dom.inputStartTime.value = item.startTime || '';
+    this.dom.inputEndTime.value = item.endTime || '';
+    this.dom.inputDistance.value = item.distanceKm !== null ? item.distanceKm : '';
+    this.dom.inputSteps.value = item.steps !== null ? item.steps : '';
+    this.dom.inputFeeling.value = item.feeling || 'good';
+    this.dom.inputNotes.value = item.notes || '';
+
+    this.dom.modalForm.style.display = 'flex';
+  },
+
+  closeFormModal() {
+    if (this.dom.modalForm) {
+      this.dom.modalForm.style.display = 'none';
+    }
+  },
+
+  clearValidationErrors() {
+    const inputs = [
+      this.dom.inputTitle, this.dom.inputDate, this.dom.inputDuration,
+      this.dom.inputEndTime, this.dom.inputDistance, this.dom.inputSteps
+    ];
+    inputs.forEach(input => {
+      if (input) input.classList.remove('is-invalid');
+    });
+  },
+
+  handleFormSubmit() {
+    this.clearValidationErrors();
+
+    const id = this.dom.inputId.value;
+    const title = this.dom.inputTitle.value.trim();
+    const activityType = this.dom.inputType.value;
+    const intensity = this.dom.inputIntensity.value;
+    const workoutDate = this.dom.inputDate.value;
+    const duration = parseInt(this.dom.inputDuration.value, 10);
+    const startTime = this.dom.inputStartTime.value;
+    const endTime = this.dom.inputEndTime.value;
+    const distanceVal = this.dom.inputDistance.value.trim();
+    const stepsVal = this.dom.inputSteps.value.trim();
+    const feeling = this.dom.inputFeeling.value;
+    const notes = this.dom.inputNotes.value.trim();
+
+    let isValid = true;
+
+    
+    if (!title) {
+      this.dom.inputTitle.classList.add('is-invalid');
+      isValid = false;
+    }
+
+    
+    if (!workoutDate) {
+      this.dom.inputDate.classList.add('is-invalid');
+      isValid = false;
+    }
+
+    
+    if (isNaN(duration) || duration <= 0 || duration > 720) {
+      this.dom.inputDuration.classList.add('is-invalid');
+      isValid = false;
+    }
+
+    
+    if (startTime && endTime) {
+      if (endTime <= startTime) {
+        this.dom.inputEndTime.classList.add('is-invalid');
+        isValid = false;
+      }
+    }
+
+    
+    let distanceKm = null;
+    if (distanceVal !== '') {
+      distanceKm = parseFloat(distanceVal);
+      if (isNaN(distanceKm) || distanceKm < 0) {
+        this.dom.inputDistance.classList.add('is-invalid');
+        isValid = false;
+      }
+    }
+
+    
+    let steps = null;
+    if (stepsVal !== '') {
+      steps = parseInt(stepsVal, 10);
+      if (isNaN(steps) || steps < 0) {
+        this.dom.inputSteps.classList.add('is-invalid');
+        isValid = false;
+      }
+    }
+
+    if (!isValid) return;
+
+    const workoutData = {
+      title,
+      activityType,
+      intensity,
+      workoutDate,
+      durationMinutes: duration,
+      startTime,
+      endTime,
+      distanceKm,
+      steps,
+      feeling,
+      notes
+    };
+
+    
+    if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.disabled = true;
+
+    try {
+      if (id) {
+        
+        window.storageService.updateWorkoutLog(id, workoutData);
+        ToastModule.show(`Đã cập nhật buổi tập "${title}"!`, 'emerald');
+      } else {
+        
+        window.storageService.addWorkoutLog(workoutData);
+        ToastModule.show(`Đã thêm buổi tập mới "${title}"!`, 'emerald');
+      }
+
+      this.closeFormModal();
+      this.loadDataAndRender();
+    } catch (err) {
+      console.error(err);
+      ToastModule.show('Có lỗi xảy ra khi lưu trữ dữ liệu.', 'flame');
+    } finally {
+      if (this.dom.btnSubmitForm) this.dom.btnSubmitForm.disabled = false;
+    }
+  },
+
+  
+  openDetailModal(id) {
+    const item = this.cachedAllWorkouts.find(w => w.id === id);
+    if (!item || !this.dom.modalDetail) return;
+    this.selectedWorkout = item;
+
+    const actMeta = this.ACTIVITY_TYPES[item.activityType] || { label: 'Khác', icon: '⚡' };
+    const intMeta = this.INTENSITY_LABELS[item.intensity] || { label: 'Vừa phải', badgeClass: 'badge-intensity-medium' };
+
+    if (this.dom.detailTitle) this.dom.detailTitle.textContent = `${actMeta.icon} ${item.title}`;
+    if (this.dom.detailSubtitle) this.dom.detailSubtitle.textContent = `${actMeta.label} • Ngày ${item.workoutDate}`;
+
+    if (this.dom.detailContent) {
+      this.dom.detailContent.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--color-surface-raised); padding: 12px; border-radius: 8px;">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Loại hình:</span>
+            <div style="font-weight: 600;">${actMeta.label}</div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Cường độ:</span>
+            <div><span class="glass-badge ${intMeta.badgeClass}">${intMeta.label}</span></div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Thời lượng:</span>
+            <div style="font-weight: 700; color: var(--color-primary);">${item.durationMinutes} phút</div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Thời gian:</span>
+            <div style="font-weight: 500;">${item.startTime || '--'} ${item.endTime ? '→ ' + item.endTime : ''}</div>
+          </div>
+          ${item.distanceKm ? `<div><span style="font-size: 0.75rem; color: var(--color-text-muted);">Quãng đường:</span><div style="font-weight: 600;">${item.distanceKm} km</div></div>` : ''}
+          ${item.steps ? `<div><span style="font-size: 0.75rem; color: var(--color-text-muted);">Số bước:</span><div style="font-weight: 600;">${item.steps.toLocaleString()}</div></div>` : ''}
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 2px;">Cảm nhận:</span>
+          <div style="font-weight: 500;">${this.FEELING_LABELS[item.feeling] || 'Bình thường'}</div>
+        </div>
+
+        <div>
+          <span style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 2px;">Ghi chú chi tiết:</span>
+          <div style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 10px; border-radius: 8px; line-height: 1.5; font-size: 0.84rem;">
+            ${item.notes ? item.notes : '<span style="color: var(--color-text-muted); font-style: italic;">Không có ghi chú.</span>'}
+          </div>
+        </div>
+      `;
+    }
+
+    this.dom.modalDetail.style.display = 'flex';
+  },
+
+  closeDetailModal() {
+    if (this.dom.modalDetail) {
+      this.dom.modalDetail.style.display = 'none';
+    }
+  },
+
+  
+  promptDelete(id, title) {
+    this.pendingDeleteId = id;
+    if (this.dom.deleteMsg) {
+      this.dom.deleteMsg.innerHTML = `Bạn có chắc chắn muốn xóa buổi tập <strong>"${title}"</strong>? Thao tác này không thể hoàn tác.`;
+    }
+    if (this.dom.modalDelete) {
+      this.dom.modalDelete.style.display = 'flex';
+    }
+  },
+
+  closeDeleteModal() {
+    this.pendingDeleteId = null;
+    if (this.dom.modalDelete) {
+      this.dom.modalDelete.style.display = 'none';
+    }
+  }
+};
+
+window.WorkoutJournalModule = WorkoutJournalModule;
+
+const HealthReportsModule = {
+  dom: {},
+  currentRange: '30d',      
+  currentReportType: 'all', 
+  customStartDate: null,
+  customEndDate: null,
+  currentPage: 1,
+  pageSize: 8,
+
+  cachedWeights: [],
+  cachedWorkouts: [],
+  cachedProfile: {},
+
+  filteredWeights: [],
+  filteredWorkouts: [],
+  prevWeights: [],
+  prevWorkouts: [],
+  dailyMergedRows: [],
+
+  init() {
+    this.cacheDOM();
+    this.bindEvents();
+    this.loadDataAndRender();
+  },
+
+  cacheDOM() {
+    this.dom = {
+      
+      btnRefresh: document.getElementById('btn-refresh-report'),
+      btnExportCsv: document.getElementById('btn-export-csv'),
+      btnPrint: document.getElementById('btn-print-report'),
+
+      
+      typePills: document.querySelectorAll('[data-report-type]'),
+      rangePills: document.querySelectorAll('[data-report-range]'),
+      customRangeRow: document.getElementById('rep-custom-range-row'),
+      inputStartDate: document.getElementById('rep-start-date'),
+      inputEndDate: document.getElementById('rep-end-date'),
+      btnApplyCustomDates: document.getElementById('btn-apply-custom-dates'),
+      rangeDatesText: document.getElementById('rep-range-dates-text'),
+      printMetaText: document.getElementById('print-meta-text'),
+
+      
+      secWeightReport: document.getElementById('sec-weight-report'),
+      secWorkoutReport: document.getElementById('sec-workout-report'),
+
+      
+      kpiStartWeight: document.getElementById('kpi-start-weight'),
+      kpiEndWeight: document.getElementById('kpi-end-weight'),
+      kpiWeightDiff: document.getElementById('kpi-weight-diff'),
+      kpiWeightDiffBadge: document.getElementById('kpi-weight-diff-badge'),
+      kpiWeightDiffPercent: document.getElementById('kpi-weight-diff-percent'),
+      kpiEndBmi: document.getElementById('kpi-end-bmi'),
+      kpiBmiBadge: document.getElementById('kpi-bmi-badge'),
+      kpiBmiCategory: document.getElementById('kpi-bmi-category'),
+      kpiWorkoutSessions: document.getElementById('kpi-workout-sessions'),
+      kpiWorkoutDuration: document.getElementById('kpi-workout-duration'),
+      kpiWorkoutAvg: document.getElementById('kpi-workout-avg'),
+      kpiWorkoutDays: document.getElementById('kpi-workout-days'),
+
+      
+      repWorkoutPopularBadge: document.getElementById('rep-workout-popular-badge'),
+      repWoPopularType: document.getElementById('rep-wo-popular-type'),
+      repWoAvgDuration: document.getElementById('rep-wo-avg-duration'),
+      repWoTotalDist: document.getElementById('rep-wo-total-dist'),
+
+      
+      compCurrWeight: document.getElementById('comp-curr-weight'),
+      compPrevWeight: document.getElementById('comp-prev-weight'),
+      compWeightDiffText: document.getElementById('comp-weight-diff-text'),
+      compCurrSessions: document.getElementById('comp-curr-sessions'),
+      compPrevSessions: document.getElementById('comp-prev-sessions'),
+      compSessionsDiffText: document.getElementById('comp-sessions-diff-text'),
+      compBadge: document.getElementById('rep-comp-badge'),
+
+      
+      insightsContent: document.getElementById('rep-insights-content'),
+
+      
+      tableTbody: document.getElementById('rep-table-tbody'),
+      tableEmpty: document.getElementById('rep-table-empty'),
+      pageInfo: document.getElementById('rep-page-info'),
+      btnPagePrev: document.getElementById('rep-btn-page-prev'),
+      btnPageNext: document.getElementById('rep-btn-page-next')
+    };
+  },
+
+  bindEvents() {
+    
+    if (this.dom.typePills) {
+      this.dom.typePills.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.dom.typePills.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentReportType = btn.getAttribute('data-report-type') || 'all';
+          this.toggleSectionsByType();
+        });
+      });
+    }
+
+    
+    if (this.dom.rangePills) {
+      this.dom.rangePills.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.dom.rangePills.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const rangeKey = btn.getAttribute('data-report-range') || '30d';
+          this.currentRange = rangeKey;
+
+          if (rangeKey === 'custom') {
+            if (this.dom.customRangeRow) this.dom.customRangeRow.style.display = 'flex';
+          } else {
+            if (this.dom.customRangeRow) this.dom.customRangeRow.style.display = 'none';
+            this.currentPage = 1;
+            this.filterAndRender();
+          }
+        });
+      });
+    }
+
+    
+    if (this.dom.btnApplyCustomDates) {
+      this.dom.btnApplyCustomDates.addEventListener('click', () => {
+        const start = this.dom.inputStartDate.value;
+        const end = this.dom.inputEndDate.value;
+        if (!start || !end) {
+          ToastModule.show('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.', 'flame');
+          return;
+        }
+        if (new Date(end) < new Date(start)) {
+          ToastModule.show('Ngày kết thúc không thể trước ngày bắt đầu.', 'flame');
+          return;
+        }
+        this.customStartDate = start;
+        this.customEndDate = end;
+        this.currentPage = 1;
+        this.filterAndRender();
+      });
+    }
+
+    
+    if (this.dom.btnRefresh) {
+      this.dom.btnRefresh.addEventListener('click', () => {
+        ToastModule.show('Đang cập nhật lại báo cáo sức khỏe...', 'cyan');
+        this.loadDataAndRender();
+      });
+    }
+
+    
+    if (this.dom.btnExportCsv) {
+      this.dom.btnExportCsv.addEventListener('click', () => {
+        this.exportToCsv();
+      });
+    }
+
+    
+    if (this.dom.btnPrint) {
+      this.dom.btnPrint.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    
+    if (this.dom.btnPagePrev) {
+      this.dom.btnPagePrev.addEventListener('click', () => {
+        if (this.currentPage > 1) {
+          this.currentPage--;
+          this.renderTable();
+        }
+      });
+    }
+    if (this.dom.btnPageNext) {
+      this.dom.btnPageNext.addEventListener('click', () => {
+        const total = Math.ceil(this.dailyMergedRows.length / this.pageSize) || 1;
+        if (this.currentPage < total) {
+          this.currentPage++;
+          this.renderTable();
+        }
+      });
+    }
+  },
+
+  loadDataAndRender() {
+    this.cachedWeights = window.storageService ? window.storageService.getWeightLogs() : [];
+    this.cachedWorkouts = window.storageService ? window.storageService.getWorkoutLogs() : [];
+    this.cachedProfile = window.storageService ? (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {})) : {};
+
+    
+    if (window.HealthReportsChartEngine) {
+      HealthReportsChartEngine.init('report-weight-canvas', 'report-weight-tooltip');
+    }
+
+    
+    const todayStr = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    const past30 = new Date();
+    past30.setDate(past30.getDate() - 30);
+    const past30Str = past30.toISOString().split('T')[0];
+
+    if (this.dom.inputStartDate && !this.dom.inputStartDate.value) this.dom.inputStartDate.value = past30Str;
+    if (this.dom.inputEndDate && !this.dom.inputEndDate.value) this.dom.inputEndDate.value = todayStr;
+
+    this.filterAndRender();
+  },
+
+  filterAndRender() {
+    let startD = null;
+    let endD = new Date();
+    let daysCount = 30;
+
+    if (this.currentRange === 'custom') {
+      if (this.customStartDate && this.customEndDate) {
+        startD = new Date(`${this.customStartDate}T00:00:00`);
+        endD = new Date(`${this.customEndDate}T23:59:59`);
+        daysCount = Math.max(1, Math.round((endD - startD) / (1000 * 60 * 60 * 24)));
+      } else {
+        startD = new Date();
+        startD.setDate(startD.getDate() - 30);
+      }
+    } else {
+      if (this.currentRange === '7d') daysCount = 7;
+      else if (this.currentRange === '30d') daysCount = 30;
+      else if (this.currentRange === '90d') daysCount = 90;
+      else if (this.currentRange === '180d') daysCount = 180;
+      else if (this.currentRange === '365d') daysCount = 365;
+
+      startD = new Date();
+      startD.setDate(startD.getDate() - daysCount);
+    }
+
+    
+    const prevEndD = new Date(startD);
+    const prevStartD = new Date(startD);
+    prevStartD.setDate(prevStartD.getDate() - daysCount);
+
+    
+    this.filteredWeights = this.cachedWeights.filter(w => {
+      const d = new Date(w.date);
+      return d >= startD && d <= endD;
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    this.filteredWorkouts = this.cachedWorkouts.filter(w => {
+      const d = new Date(w.workoutDate);
+      return d >= startD && d <= endD;
+    }).sort((a, b) => new Date(a.workoutDate) - new Date(b.workoutDate));
+
+    
+    this.prevWeights = this.cachedWeights.filter(w => {
+      const d = new Date(w.date);
+      return d >= prevStartD && d < startD;
+    });
+
+    this.prevWorkouts = this.cachedWorkouts.filter(w => {
+      const d = new Date(w.workoutDate);
+      return d >= prevStartD && d < startD;
+    });
+
+    this.renderRangeBadge(startD, endD, daysCount);
+    this.renderKPIs();
+    this.renderCharts();
+    this.renderWorkoutBreakdown();
+    this.renderPeriodComparison();
+    this.renderInsights();
+    this.buildDailyMergedRows();
+    this.renderTable();
+  },
+
+  renderRangeBadge(startD, endD, daysCount) {
+    const fmt = (d) => {
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
+    const text = `Từ ${fmt(startD)} đến ${fmt(endD)} (${daysCount} ngày)`;
+    if (this.dom.rangeDatesText) this.dom.rangeDatesText.textContent = text;
+    if (this.dom.printMetaText) {
+      const userName = this.cachedProfile.name || 'Người dùng FitVN';
+      this.dom.printMetaText.textContent = `Khoảng thời gian: ${text} | Người dùng: ${userName} | FitVN Tracker`;
+    }
+  },
+
+  toggleSectionsByType() {
+    const type = this.currentReportType;
+    if (this.dom.secWeightReport) {
+      this.dom.secWeightReport.style.display = (type === 'all' || type === 'weight') ? 'block' : 'none';
+    }
+    if (this.dom.secWorkoutReport) {
+      this.dom.secWorkoutReport.style.display = (type === 'all' || type === 'workout') ? 'block' : 'none';
+    }
+  },
+
+  renderKPIs() {
+    const height = Number(this.cachedProfile.height) || null;
+    const report = window.HealthCalculator.generateComprehensiveReport(
+      this.filteredWeights,
+      height,
+      this.filteredWorkouts
+    );
+
+    
+    if (report.hasWeightData) {
+      if (this.dom.kpiStartWeight) this.dom.kpiStartWeight.innerHTML = `${report.weight.startWeight.toFixed(1)} <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiEndWeight) this.dom.kpiEndWeight.innerHTML = `${report.weight.endWeight.toFixed(1)} <span class="stat-unit">kg</span>`;
+      
+      const sign = report.weight.weightDiff > 0 ? `+${report.weight.weightDiff}` : `${report.weight.weightDiff}`;
+      if (this.dom.kpiWeightDiff) this.dom.kpiWeightDiff.innerHTML = `${sign} <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiWeightDiffPercent) {
+        const pSign = report.weight.weightPercentChange > 0 ? `+${report.weight.weightPercentChange}` : `${report.weight.weightPercentChange}`;
+        this.dom.kpiWeightDiffPercent.textContent = `${pSign}%`;
+      }
+      if (this.dom.kpiWeightDiffBadge) {
+        this.dom.kpiWeightDiffBadge.textContent = report.weight.weightDiff > 0 ? 'Tăng' : report.weight.weightDiff < 0 ? 'Giảm' : 'Ổn định';
+        this.dom.kpiWeightDiffBadge.className = `glass-badge ${report.weight.weightDiff > 0 ? 'glass-badge-cyan' : report.weight.weightDiff < 0 ? 'glass-badge-emerald' : 'glass-badge-muted'}`;
+      }
+
+      if (report.weight.endBMI) {
+        if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `${report.weight.endBMI.toFixed(1)} <span class="stat-unit">kg/m²</span>`;
+        if (this.dom.kpiBmiBadge) {
+          this.dom.kpiBmiBadge.className = `glass-badge ${report.weight.bmiColorClass}`;
+          this.dom.kpiBmiBadge.textContent = report.weight.bmiCategory;
+        }
+        if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = report.weight.bmiCategory;
+      } else {
+        if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
+        if (this.dom.kpiBmiBadge) this.dom.kpiBmiBadge.textContent = 'Chưa có chiều cao';
+        if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = 'Chưa thiết lập';
+      }
+    } else {
+      if (this.dom.kpiStartWeight) this.dom.kpiStartWeight.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiEndWeight) this.dom.kpiEndWeight.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiWeightDiff) this.dom.kpiWeightDiff.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiWeightDiffPercent) this.dom.kpiWeightDiffPercent.textContent = 'Chưa có dữ liệu';
+      if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
+      if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = 'Chưa có dữ liệu';
+    }
+
+    
+    if (report.hasWorkoutData) {
+      if (this.dom.kpiWorkoutSessions) this.dom.kpiWorkoutSessions.innerHTML = `${report.workout.totalSessions} <span class="stat-unit">buổi</span>`;
+      if (this.dom.kpiWorkoutDuration) this.dom.kpiWorkoutDuration.innerHTML = `${report.workout.formattedDuration}`;
+      if (this.dom.kpiWorkoutAvg) this.dom.kpiWorkoutAvg.textContent = `TB: ${report.workout.avgDurationMinutes}p / buổi`;
+      if (this.dom.kpiWorkoutDays) this.dom.kpiWorkoutDays.innerHTML = `${report.workout.activeDaysCount} <span class="stat-unit">ngày</span>`;
+    } else {
+      if (this.dom.kpiWorkoutSessions) this.dom.kpiWorkoutSessions.innerHTML = `0 <span class="stat-unit">buổi</span>`;
+      if (this.dom.kpiWorkoutDuration) this.dom.kpiWorkoutDuration.innerHTML = `0 phút`;
+      if (this.dom.kpiWorkoutAvg) this.dom.kpiWorkoutAvg.textContent = 'Chưa tập buổi nào';
+      if (this.dom.kpiWorkoutDays) this.dom.kpiWorkoutDays.innerHTML = `0 <span class="stat-unit">ngày</span>`;
+    }
+  },
+
+  renderCharts() {
+    if (!window.HealthReportsChartEngine) return;
+
+    
+    const height = Number(this.cachedProfile.height) || null;
+    const targetWeight = Number(this.cachedProfile.targetWeight) || null;
+
+    const weightsWithBmi = this.filteredWeights.map(w => {
+      let bmi = null;
+      if (height && height > 0) {
+        const hM = height / 100;
+        bmi = parseFloat((w.weight / (hM * hM)).toFixed(1));
+      }
+      return { ...w, bmi };
+    });
+
+    HealthReportsChartEngine.renderWeightReportChart(weightsWithBmi, targetWeight);
+  },
+
+  renderWorkoutBreakdown() {
+    const workouts = this.filteredWorkouts;
+    if (workouts.length === 0) {
+      if (this.dom.repWorkoutPopularBadge) this.dom.repWorkoutPopularBadge.textContent = 'Chưa có';
+      if (this.dom.repWoPopularType) this.dom.repWoPopularType.textContent = 'Chưa có hoạt động';
+      if (this.dom.repWoAvgDuration) this.dom.repWoAvgDuration.textContent = '0 phút / buổi';
+      if (this.dom.repWoTotalDist) this.dom.repWoTotalDist.textContent = '0 km';
+      return;
+    }
+
+    const report = window.HealthCalculator.generateComprehensiveReport([], null, workouts);
+    const typeMap = {
+      gym: '🏋️‍♂️ Tập Gym',
+      running: '🏃‍♂️ Chạy bộ',
+      walking: '🚶‍♂️ Đi bộ',
+      cycling: '🚴‍♂️ Đạp xe',
+      strength: '💪 Tập sức mạnh',
+      yoga: '🧘‍♀️ Yoga',
+      swimming: '🏊‍♂️ Bơi lội',
+      sports: '⚽ Thể thao',
+      other: '⚡ Khác'
+    };
+
+    const popType = report.workout.popularType;
+    if (this.dom.repWorkoutPopularBadge) this.dom.repWorkoutPopularBadge.textContent = typeMap[popType] || 'Hoạt động';
+    if (this.dom.repWoPopularType) this.dom.repWoPopularType.textContent = typeMap[popType] || 'Khác';
+    if (this.dom.repWoAvgDuration) this.dom.repWoAvgDuration.textContent = `${report.workout.avgDurationMinutes} phút / buổi`;
+    if (this.dom.repWoTotalDist) this.dom.repWoTotalDist.textContent = `${report.workout.totalDistanceKm} km`;
+  },
+
+  renderPeriodComparison() {
+    const height = Number(this.cachedProfile.height) || null;
+    const currRep = window.HealthCalculator.generateComprehensiveReport(this.filteredWeights, height, this.filteredWorkouts);
+    const prevRep = window.HealthCalculator.generateComprehensiveReport(this.prevWeights, height, this.prevWorkouts);
+
+    const comp = window.HealthCalculator.compareHealthPeriods(currRep, prevRep);
+
+    if (!comp.hasComparison) {
+      if (this.dom.compCurrWeight) this.dom.compCurrWeight.textContent = currRep.weight.endWeight ? `${currRep.weight.endWeight.toFixed(1)} kg` : '-- kg';
+      if (this.dom.compPrevWeight) this.dom.compPrevWeight.textContent = '-- kg';
+      if (this.dom.compWeightDiffText) this.dom.compWeightDiffText.textContent = comp.reason;
+      if (this.dom.compCurrSessions) this.dom.compCurrSessions.textContent = `${currRep.workout.totalSessions} buổi`;
+      if (this.dom.compPrevSessions) this.dom.compPrevSessions.textContent = '-- buổi';
+      if (this.dom.compSessionsDiffText) this.dom.compSessionsDiffText.textContent = comp.reason;
+      if (this.dom.compBadge) this.dom.compBadge.textContent = 'Chưa đủ dữ liệu';
+      return;
+    }
+
+    
+    if (this.dom.compCurrWeight) this.dom.compCurrWeight.textContent = `${currRep.weight.endWeight.toFixed(1)} kg`;
+    if (this.dom.compPrevWeight) this.dom.compPrevWeight.textContent = `${prevRep.weight.endWeight.toFixed(1)} kg`;
+    if (this.dom.compWeightDiffText) {
+      if (comp.weightDiff !== null) {
+        const sign = comp.weightDiff > 0 ? `+${comp.weightDiff}` : `${comp.weightDiff}`;
+        this.dom.compWeightDiffText.textContent = `Chênh lệch: ${sign} kg (${comp.weightDiffPercent > 0 ? '+' : ''}${comp.weightDiffPercent}%) so với chu kỳ trước`;
+      } else {
+        this.dom.compWeightDiffText.textContent = 'Không đủ dữ liệu cân nặng';
+      }
+    }
+
+    
+    if (this.dom.compCurrSessions) this.dom.compCurrSessions.textContent = `${currRep.workout.totalSessions} buổi`;
+    if (this.dom.compPrevSessions) this.dom.compPrevSessions.textContent = `${prevRep.workout.totalSessions} buổi`;
+    if (this.dom.compSessionsDiffText) {
+      const sSign = comp.sessionDiff > 0 ? `+${comp.sessionDiff}` : `${comp.sessionDiff}`;
+      this.dom.compSessionsDiffText.textContent = `Chênh lệch: ${sSign} buổi tập (${comp.sessionPercent > 0 ? '+' : ''}${comp.sessionPercent}%) so với chu kỳ trước`;
+    }
+
+    if (this.dom.compBadge) this.dom.compBadge.textContent = 'Đã đối chiếu';
+  },
+
+  renderInsights() {
+    if (!this.dom.insightsContent) return;
+
+    const wCount = this.filteredWeights.length;
+    const woCount = this.filteredWorkouts.length;
+
+    if (wCount === 0 && woCount === 0) {
+      this.dom.insightsContent.textContent = 'Chưa có dữ liệu thể trọng hoặc nhật ký tập luyện nào trong khoảng thời gian này. Hãy tích cực ghi nhận để có phân tích toàn diện.';
+      return;
+    }
+
+    const height = Number(this.cachedProfile.height) || null;
+    const rep = window.HealthCalculator.generateComprehensiveReport(this.filteredWeights, height, this.filteredWorkouts);
+
+    let parts = [];
+    if (wCount > 0) {
+      parts.push(`Trong kỳ này, bạn đã ghi nhận ${wCount} mốc cân nặng. Thể trọng biến thiên ${rep.weight.weightDiff > 0 ? 'tăng' : rep.weight.weightDiff < 0 ? 'giảm' : 'không đổi'} ${Math.abs(rep.weight.weightDiff)} kg.`);
+      if (rep.weight.endBMI) {
+        parts.push(`Chỉ số BMI cuối kỳ đạt ${rep.weight.endBMI} (${rep.weight.bmiCategory}).`);
+      }
+    }
+
+    if (woCount > 0) {
+      parts.push(`Bạn đã hoàn thành ${rep.workout.totalSessions} buổi rèn luyện thể chất với tổng cộng ${rep.workout.formattedDuration} (${rep.workout.activeDaysCount} ngày tập thực tế).`);
+    }
+
+    parts.push(`Lưu ý khoa học: Các biến động cân nặng ngắn hạn thường liên quan đến lượng nước tích trữ và glycogen. Hãy duy trì chế độ dinh dưỡng lành mạnh và tập luyện đều đặn.`);
+
+    this.dom.insightsContent.textContent = parts.join(' ');
+  },
+
+  buildDailyMergedRows() {
+    const map = new Map();
+    const height = Number(this.cachedProfile.height) || null;
+
+    
+    this.filteredWeights.forEach(w => {
+      let bmi = '--';
+      if (height && height > 0) {
+        const hM = height / 100;
+        bmi = (w.weight / (hM * hM)).toFixed(1);
+      }
+      map.set(w.date, {
+        date: w.date,
+        weight: Number(w.weight).toFixed(1),
+        bmi,
+        workoutSessions: 0,
+        workoutMinutes: 0
+      });
+    });
+
+    
+    this.filteredWorkouts.forEach(wo => {
+      const d = wo.workoutDate;
+      const mins = Math.max(0, parseInt(wo.durationMinutes, 10) || 0);
+
+      if (!map.has(d)) {
+        map.set(d, {
+          date: d,
+          weight: '--',
+          bmi: '--',
+          workoutSessions: 0,
+          workoutMinutes: 0
+        });
+      }
+
+      const item = map.get(d);
+      item.workoutSessions += 1;
+      item.workoutMinutes += mins;
+    });
+
+    
+    this.dailyMergedRows = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+  },
+
+  renderTable() {
+    const tbody = this.dom.tableTbody;
+    if (!tbody) return;
+
+    if (this.dailyMergedRows.length === 0) {
+      tbody.innerHTML = '';
+      if (this.dom.tableEmpty) this.dom.tableEmpty.style.display = 'block';
+      if (this.dom.pageInfo) this.dom.pageInfo.textContent = 'Trang 0 / 0';
+      if (this.dom.btnPagePrev) this.dom.btnPagePrev.disabled = true;
+      if (this.dom.btnPageNext) this.dom.btnPageNext.disabled = true;
+      return;
+    }
+
+    if (this.dom.tableEmpty) this.dom.tableEmpty.style.display = 'none';
+
     const totalPages = Math.ceil(this.dailyMergedRows.length / this.pageSize) || 1;
     this.currentPage = Math.min(this.currentPage, totalPages);
     const startIdx = (this.currentPage - 1) * this.pageSize;
@@ -3874,411 +4086,6 @@ window.WorkoutJournalModule = WorkoutJournalModule;
           </td>
           <td>
             ${row.workoutMinutes > 0 ? `${row.workoutMinutes} phút` : '<span style="color: var(--color-text-muted);">0p</span>'}
-    // Sort
-    entries.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return this.sortAscending ? dateA - dateB : dateB - dateA;
-    });
-
-    // Pagination slice
-    const totalPages = Math.ceil(entries.length / this.pageSize) || 1;
-    this.currentPage = Math.min(this.currentPage, totalPages);
-    const startIdx = (this.currentPage - 1) * this.pageSize;
-    const pageItems = entries.slice(startIdx, startIdx + this.pageSize);
-
-    // Build rows
-    const rowsHtml = pageItems.map((item, idx) => {
-      // Find diff compared to previous chronological entry in all entries
-      const allSortedAsc = [...this.cachedAllEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
-      const masterIdx = allSortedAsc.findIndex(e => e.id === item.id || (e.date === item.date && e.weight === item.weight));
-
-      let diffHtml = '<span style="color: var(--color-text-muted);">--</span>';
-      if (masterIdx > 0) {
-        const prevItem = allSortedAsc[masterIdx - 1];
-        const d = parseFloat((item.weight - prevItem.weight).toFixed(1));
-        if (d > 0) {
-          diffHtml = `<span style="color: #326B82; font-weight: 600;">+${d} kg</span>`;
-        } else if (d < 0) {
-          diffHtml = `<span style="color: #287653; font-weight: 600;">${d} kg</span>`;
-        } else {
-          diffHtml = `<span style="color: var(--color-text-muted);">0.0 kg</span>`;
-        }
-      }
-
-      const bmiDisplay = item.bmi ? `${Number(item.bmi).toFixed(1)} kg/m²` : '--';
-      const noteDisplay = item.note ? item.note : '<span style="color: var(--color-text-muted); font-style: italic;">Không có</span>';
-    // 1. Time range filter buttons
-    if (this.dom.timePills && this.dom.timePills.length > 0) {
-      this.dom.timePills.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          this.dom.timePills.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          this.currentRange = btn.getAttribute('data-range') || 'all';
-          this.renderChart();
-        });
-      });
-    }
-
-    // 2. Open quick weight log modal
-    if (this.dom.btnQuickLogWeight) {
-      this.dom.btnQuickLogWeight.addEventListener('click', () => {
-        this.openWeightModal();
-      });
-    }
-
-    // 3. Close modal handlers
-    if (this.dom.modalCloseBtn) {
-      this.dom.modalCloseBtn.addEventListener('click', () => this.closeWeightModal());
-    }
-    if (this.dom.modalCancelBtn) {
-      this.dom.modalCancelBtn.addEventListener('click', () => this.closeWeightModal());
-    }
-    if (this.dom.modalWeight) {
-      this.dom.modalWeight.addEventListener('click', (e) => {
-        if (e.target === this.dom.modalWeight) this.closeWeightModal();
-      });
-    }
-
-    // 4. Submit weight form
-    if (this.dom.formWeight) {
-      this.dom.formWeight.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.handleSaveWeight();
-      });
-    }
-  },
-
-  openWeightModal() {
-    if (!this.dom.modalWeight) return;
-    if (this.dom.inputDate) {
-      this.dom.inputDate.value = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
-    }
-    if (this.dom.inputWeight) {
-      const latest = window.storageService ? window.storageService.getLatestWeight() : null;
-      this.dom.inputWeight.value = latest ? latest.weight : '';
-    }
-    if (this.dom.inputNote) {
-      this.dom.inputNote.value = '';
-    }
-    this.dom.modalWeight.style.display = 'flex';
-  },
-
-  closeWeightModal() {
-    if (this.dom.modalWeight) {
-      this.dom.modalWeight.style.display = 'none';
-    }
-  },
-
-  handleSaveWeight() {
-    const dateVal = this.dom.inputDate.value;
-    const weightVal = parseFloat(this.dom.inputWeight.value);
-    const noteVal = this.dom.inputNote.value.trim();
-
-    if (!dateVal || isNaN(weightVal) || weightVal <= 0) {
-      if (window.ToastModule) ToastModule.show('Vui lòng nhập cân nặng hợp lệ!', 'flame');
-      return;
-    }
-
-    const newEntry = {
-      id: 'wt-' + Date.now(),
-      date: dateVal,
-      weight: weightVal,
-      note: noteVal
-    };
-
-    if (window.storageService && window.storageService.saveWeightEntry) {
-      window.storageService.saveWeightEntry(newEntry);
-    } else {
-      const logs = window.storageService.getWeightLogs();
-      logs.push(newEntry);
-      window.storageService.set(window.STORAGE_KEYS.WEIGHT_LOGS, logs);
-    }
-
-    // Also update profile current weight
-    const profile = window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {});
-    profile.currentWeight = weightVal;
-    window.storageService.set(window.STORAGE_KEYS.USER_PROFILE, profile);
-
-    this.closeWeightModal();
-    if (window.ToastModule) ToastModule.show(`Đã lưu bản ghi ${weightVal} kg ngày ${dateVal}!`);
-    this.updateDashboard();
-  },
-
-  updateDashboard() {
-    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
-    const weightLogs = window.storageService ? window.storageService.getWeightLogs() : [];
-    const latestLog = window.storageService ? window.storageService.getLatestWeight() : null;
-
-    const currentWeight = latestLog ? Number(latestLog.weight) : (Number(profile.currentWeight) || null);
-    const height = Number(profile.height) || null;
-    const targetWeight = Number(profile.targetWeight) || 70;
-
-    // 1. Personalized Greeting
-    if (this.dom.greetingTitle) {
-      const userName = profile.name || 'Gymer FitVN';
-      this.dom.greetingTitle.textContent = `Xin chào, ${userName}!`;
-    }
-
-    // 2. Incomplete Profile State Check
-    const isIncomplete = !currentWeight || !height || height <= 0 || currentWeight <= 0;
-    if (this.dom.incompleteBanner) {
-      this.dom.incompleteBanner.style.display = isIncomplete ? 'flex' : 'none';
-    }
-
-    // 3. BMI Calculation & Needle Spectrum
-    this.renderBMIAnalysis(currentWeight, height);
-
-    // 4. Weight Card with Comparison
-    this.renderWeightOverview(weightLogs, currentWeight);
-
-    // 5. Height & Target Weight Cards
-    if (this.dom.heightVal) {
-      this.dom.heightVal.innerHTML = height ? `${height} <span class="stat-unit">cm</span>` : `-- <span class="stat-unit">cm</span>`;
-    }
-    if (this.dom.targetVal) {
-      this.dom.targetVal.innerHTML = `${targetWeight} <span class="stat-unit">kg</span>`;
-    }
-    if (this.dom.targetDiffText && currentWeight) {
-      const diff = (currentWeight - targetWeight).toFixed(1);
-      if (Math.abs(diff) <= 0.2) {
-        this.dom.targetDiffText.textContent = '🎉 Đã đạt mục tiêu cân nặng!';
-      } else if (diff > 0) {
-        this.dom.targetDiffText.textContent = `Cần giảm ${diff} kg để tới đích`;
-      } else {
-        this.dom.targetDiffText.textContent = `Cần tăng ${Math.abs(diff)} kg để tới đích`;
-      }
-    }
-
-    // 6. Goal Progress Card
-    this.renderGoalProgress(profile, weightLogs, currentWeight, targetWeight);
-
-    // 7. Health Metrics: Water & Calories
-    this.renderHealthMetrics(profile);
-
-    // 8. Weight Chart
-    this.renderChart();
-
-    // 9. Recent Health Records Table
-    this.renderRecentRecords(weightLogs, height);
-  },
-
-  renderBMIAnalysis(weight, height) {
-    if (!window.HealthCalculator) return;
-    const bmiResult = window.HealthCalculator.calculateBMI(weight, height);
-
-    if (!bmiResult || bmiResult.bmi === null) {
-      if (this.dom.bmiVal) this.dom.bmiVal.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
-      if (this.dom.bmiBadge) {
-        this.dom.bmiBadge.className = 'glass-badge glass-badge-muted';
-        this.dom.bmiBadge.textContent = 'Chưa đủ dữ liệu';
-      }
-      if (this.dom.bmiStatusText) this.dom.bmiStatusText.textContent = 'Cần cập nhật chiều cao và cân nặng';
-      if (this.dom.bmiCategoryBadge) {
-        this.dom.bmiCategoryBadge.className = 'glass-badge glass-badge-muted';
-        this.dom.bmiCategoryBadge.textContent = 'Chưa xác định';
-      }
-      if (this.dom.bmiExplanation) this.dom.bmiExplanation.textContent = 'Vui lòng cập nhật đầy đủ chiều cao và cân nặng để hiển thị phân tích BMI.';
-      if (this.dom.bmiNeedle) this.dom.bmiNeedle.style.display = 'none';
-      return;
-    }
-
-    // Fill BMI texts
-    if (this.dom.bmiVal) this.dom.bmiVal.innerHTML = `${bmiResult.bmi} <span class="stat-unit">kg/m²</span>`;
-    if (this.dom.bmiBadge) {
-      this.dom.bmiBadge.className = `glass-badge ${bmiResult.colorClass}`;
-      this.dom.bmiBadge.textContent = bmiResult.category;
-    }
-    if (this.dom.bmiStatusText) this.dom.bmiStatusText.textContent = bmiResult.category;
-    if (this.dom.bmiCategoryBadge) {
-      this.dom.bmiCategoryBadge.className = `glass-badge ${bmiResult.colorClass}`;
-      this.dom.bmiCategoryBadge.textContent = `${bmiResult.category} (${bmiResult.bmi})`;
-    }
-    if (this.dom.bmiExplanation) this.dom.bmiExplanation.textContent = bmiResult.description;
-
-    // Position Needle on Spectrum Bar (Mapping BMI 15 -> 35 to 0% -> 100%)
-    if (this.dom.bmiNeedle) {
-      const minBmi = 15;
-      const maxBmi = 35;
-      const clampedBmi = Math.max(minBmi, Math.min(maxBmi, bmiResult.bmi));
-      const percentage = ((clampedBmi - minBmi) / (maxBmi - minBmi)) * 100;
-      this.dom.bmiNeedle.style.display = 'block';
-      this.dom.bmiNeedle.style.left = `${percentage.toFixed(1)}%`;
-      this.dom.bmiNeedle.title = `BMI: ${bmiResult.bmi} (${bmiResult.category})`;
-    }
-  },
-
-  renderWeightOverview(weightLogs, currentWeight) {
-    if (!currentWeight) {
-      if (this.dom.weightVal) this.dom.weightVal.innerHTML = `-- <span class="stat-unit">kg</span>`;
-      if (this.dom.weightChangeText) this.dom.weightChangeText.textContent = 'Chưa có dữ liệu';
-      return;
-    }
-
-    if (this.dom.weightVal) {
-      this.dom.weightVal.innerHTML = `${currentWeight} <span class="stat-unit">kg</span>`;
-    }
-
-    // Comparison against previous log
-    if (weightLogs && weightLogs.length >= 2) {
-      const sorted = [...weightLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
-      const latest = sorted[sorted.length - 1];
-      const previous = sorted[sorted.length - 2];
-      const diff = parseFloat((latest.weight - previous.weight).toFixed(1));
-
-      if (this.dom.weightChangeBadge) {
-        if (diff > 0) {
-          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-cyan';
-          this.dom.weightChangeBadge.textContent = `+${diff} kg`;
-        } else if (diff < 0) {
-          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-emerald';
-          this.dom.weightChangeBadge.textContent = `${diff} kg`;
-        } else {
-          this.dom.weightChangeBadge.className = 'glass-badge glass-badge-muted';
-          this.dom.weightChangeBadge.textContent = 'Không đổi';
-        }
-      }
-
-      if (this.dom.weightChangeText) {
-        const signText = diff > 0 ? `Tăng +${diff} kg` : diff < 0 ? `Giảm ${Math.abs(diff)} kg` : 'Giữ nguyên';
-        this.dom.weightChangeText.textContent = `${signText} so với lần trước (${previous.date})`;
-      }
-    } else {
-      if (this.dom.weightChangeBadge) {
-        this.dom.weightChangeBadge.className = 'glass-badge glass-badge-emerald';
-        this.dom.weightChangeBadge.textContent = 'Bản ghi đầu';
-      }
-      if (this.dom.weightChangeText) {
-        this.dom.weightChangeText.textContent = 'Đây là bản ghi thể trọng đầu tiên';
-      }
-    }
-  },
-
-  renderGoalProgress(profile, weightLogs, currentWeight, targetWeight) {
-    // Initial weight is the first recorded weight entry or profile's starting weight
-    let initialWeight = currentWeight;
-    if (weightLogs && weightLogs.length > 0) {
-      const sorted = [...weightLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
-      initialWeight = Number(sorted[0].weight);
-    }
-
-    if (this.dom.goalInitialVal) this.dom.goalInitialVal.textContent = initialWeight ? `${initialWeight} kg` : '-- kg';
-    if (this.dom.goalCurrentVal) this.dom.goalCurrentVal.textContent = currentWeight ? `${currentWeight} kg` : '-- kg';
-    if (this.dom.goalTargetVal) this.dom.goalTargetVal.textContent = targetWeight ? `${targetWeight} kg` : '-- kg';
-
-    if (!window.HealthCalculator || !currentWeight || !initialWeight || !targetWeight) {
-      if (this.dom.goalPercentBadge) this.dom.goalPercentBadge.textContent = '0%';
-      if (this.dom.goalBarFill) this.dom.goalBarFill.style.width = '0%';
-      if (this.dom.goalStatusDesc) this.dom.goalStatusDesc.textContent = 'Chưa đủ dữ liệu để tính tiến độ';
-      return;
-    }
-
-    const progress = window.HealthCalculator.calculateGoalProgress(initialWeight, currentWeight, targetWeight);
-
-    if (this.dom.goalPercentBadge) {
-      this.dom.goalPercentBadge.textContent = `${progress.percent}%`;
-      this.dom.goalPercentBadge.className = progress.isCompleted ? 'glass-badge glass-badge-emerald' : 'glass-badge glass-badge-cyan';
-    }
-    if (this.dom.goalBarFill) {
-      this.dom.goalBarFill.style.width = `${progress.percent}%`;
-    }
-    if (this.dom.goalStatusDesc) {
-      this.dom.goalStatusDesc.textContent = progress.statusText;
-    }
-    if (this.dom.goalRemainingDiff) {
-      this.dom.goalRemainingDiff.textContent = progress.isCompleted ? 'Hoàn thành!' : `Còn ${progress.remainingDiff} kg`;
-    }
-  },
-
-  renderHealthMetrics(profile) {
-    // 1. Water
-    const waterTarget = Number(profile.waterTarget) || 3000;
-    const currentWater = window.storageService ? window.storageService.getWater() : 0;
-    const waterPercent = Math.min(100, Math.round((currentWater / waterTarget) * 100));
-
-    if (this.dom.waterVal) {
-      this.dom.waterVal.textContent = `${currentWater.toLocaleString('vi-VN')} / ${waterTarget.toLocaleString('vi-VN')} ml (${waterPercent}%)`;
-    }
-    if (this.dom.waterProgress) {
-      this.dom.waterProgress.style.width = `${waterPercent}%`;
-    }
-
-    // 2. Calories
-    const calorieTarget = Number(profile.targetCalories) || 2600;
-    const todayDate = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
-    const dayTotals = window.storageService ? window.storageService.calculateDayTotals(todayDate) : { calories: 0 };
-    const consumedCalories = Math.round(dayTotals.calories);
-    const caloriePercent = Math.min(100, Math.round((consumedCalories / calorieTarget) * 100));
-
-    if (this.dom.caloriesVal) {
-      this.dom.caloriesVal.textContent = `${consumedCalories.toLocaleString('vi-VN')} / ${calorieTarget.toLocaleString('vi-VN')} kcal (${caloriePercent}%)`;
-    }
-    if (this.dom.caloriesProgress) {
-      this.dom.caloriesProgress.style.width = `${caloriePercent}%`;
-    }
-  },
-
-  renderChart() {
-    if (!window.HealthDashboardChart) return;
-    const profile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
-    const weightLogs = window.storageService ? window.storageService.getWeightLogs() : [];
-    const targetWeight = Number(profile.targetWeight) || null;
-
-    HealthDashboardChart.init('health-weight-canvas', 'health-weight-tooltip', targetWeight);
-    HealthDashboardChart.render(weightLogs, this.currentRange);
-  },
-
-  renderRecentRecords(weightLogs, height) {
-    if (!this.dom.recentTbody) return;
-
-    if (!weightLogs || weightLogs.length === 0) {
-      this.dom.recentTbody.innerHTML = '';
-      if (this.dom.recentEmpty) this.dom.recentEmpty.style.display = 'block';
-      return;
-    }
-
-    if (this.dom.recentEmpty) this.dom.recentEmpty.style.display = 'none';
-
-    // Sort descending by date (most recent first) and take top 8
-    const sortedDesc = [...weightLogs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
-
-    const rowsHtml = sortedDesc.map((entry) => {
-      let bmiBadgeHtml = '<span class="glass-badge glass-badge-muted">--</span>';
-      if (height && height > 0 && window.HealthCalculator) {
-        const bmiRes = window.HealthCalculator.calculateBMI(entry.weight, height);
-        if (bmiRes && bmiRes.bmi) {
-          bmiBadgeHtml = `<span class="glass-badge ${bmiRes.colorClass}">${bmiRes.bmi} (${bmiRes.category})</span>`;
-        }
-      }
-
-      const noteText = entry.note ? entry.note : '<span style="color: var(--color-text-muted); font-style: italic;">Không có ghi chú</span>';
-
-      return `
-        <tr>
-          <td style="font-weight: 600; color: var(--color-primary, #173F35); white-space: nowrap;">
-            📅 ${item.date}
-          </td>
-          <td style="font-weight: 700;">
-            ${Number(item.weight).toFixed(1)} kg
-          </td>
-          <td style="font-weight: 600;">
-            ${bmiDisplay}
-          </td>
-          <td>
-            ${diffHtml}
-          </td>
-          <td style="color: var(--color-text-secondary, #63756B); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            ${noteDisplay}
-            📅 ${entry.date}
-          </td>
-          <td style="font-weight: 700;">
-            ${Number(entry.weight).toFixed(1)} kg
-          </td>
-          <td>
-            ${bmiBadgeHtml}
-          </td>
-          <td style="color: var(--color-text-secondary, #63756B); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            ${noteText}
           </td>
         </tr>
       `;
@@ -4299,7 +4106,7 @@ window.WorkoutJournalModule = WorkoutJournalModule;
       return;
     }
 
-    // CSV header with UTF-8 BOM
+    
     let csvContent = '\uFEFF';
     csvContent += 'Ngày ghi nhận,Cân nặng (kg),Chỉ số BMI,Số buổi tập,Thời lượng tập (phút)\n';
 
@@ -4321,33 +4128,3 @@ window.WorkoutJournalModule = WorkoutJournalModule;
 };
 
 window.HealthReportsModule = HealthReportsModule;
-    this.dom.tableTbody.innerHTML = rowsHtml.join('');
-
-    // Pagination controls state
-    if (this.dom.pageInfo) {
-      this.dom.pageInfo.textContent = `Trang ${this.currentPage} / ${totalPages} (${entries.length} bản ghi)`;
-    }
-    if (this.dom.btnPagePrev) {
-      this.dom.btnPagePrev.disabled = this.currentPage <= 1;
-    }
-    if (this.dom.btnPageNext) {
-      this.dom.btnPageNext.disabled = this.currentPage >= totalPages;
-    }
-  },
-
-  renderEmptyState() {
-    this.renderSummaryCards();
-    this.renderChart();
-    this.renderPeriodComparison();
-    this.renderGoalProgress();
-    this.renderInsights();
-    this.renderTable();
-  }
-};
-
-window.ProgressChartsModule = ProgressChartsModule;
-    this.dom.recentTbody.innerHTML = rowsHtml.join('');
-  }
-};
-
-window.HealthDashboardModule = HealthDashboardModule;
