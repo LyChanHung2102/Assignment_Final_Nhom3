@@ -35,8 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  
-  AppHeaderModule.init();
+  // Only initialize AppHeaderModule if not on auth page
+  const isAuthPage = window.location.pathname.toLowerCase().includes('auth.html');
+  if (!isAuthPage) {
+    AppHeaderModule.init();
+  }
   NavigationModule.init();
   ToastModule.init();
 
