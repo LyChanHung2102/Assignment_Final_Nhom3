@@ -10,7 +10,10 @@ const OnboardingModule = {
   data: {},
 
   init() {
+    console.log('[OnboardingModule] Initializing...');
     this.modal = document.getElementById('onboarding-modal');
+    console.log('[OnboardingModule] Modal found:', !!this.modal);
+
     if (!this.modal) return;
 
     this.bindEvents();
@@ -18,14 +21,26 @@ const OnboardingModule = {
   },
 
   checkShouldShow() {
+    console.log('[OnboardingModule] Checking if should show onboarding...');
     const currentUser = window.storageService?.getCurrentUser();
-    if (!currentUser) return;
+    console.log('[OnboardingModule] Current user:', currentUser);
+
+    if (!currentUser) {
+      console.log('[OnboardingModule] No current user, skipping onboarding');
+      return;
+    }
 
     const hasCompletedOnboarding = localStorage.getItem(`fitvn_onboarding_${currentUser.id}`);
     const isFromSignup = sessionStorage.getItem('fitvn_show_onboarding');
 
+    console.log('[OnboardingModule] hasCompletedOnboarding:', hasCompletedOnboarding);
+    console.log('[OnboardingModule] isFromSignup:', isFromSignup);
+
     if (isFromSignup === 'true' || !hasCompletedOnboarding) {
+      console.log('[OnboardingModule] Showing onboarding modal');
       this.show();
+    } else {
+      console.log('[OnboardingModule] Onboarding already completed, skipping');
     }
   },
 
