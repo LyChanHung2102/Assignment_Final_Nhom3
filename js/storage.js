@@ -122,6 +122,23 @@ const storageService = {
     this.set(STORAGE_KEYS.AUTH_USER, safeUser);
   },
 
+  updateCurrentUser(fields) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+
+    const updatedUser = { ...currentUser, ...fields };
+    this.setCurrentUser(updatedUser);
+
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === currentUser.id);
+    if (index !== -1) {
+      users[index] = { ...users[index], ...fields };
+      this.set(STORAGE_KEYS.USERS_LIST, users);
+    }
+
+    return updatedUser;
+  },
+
   hasActiveSession() {
     const user = this.getCurrentUser();
     return !!(user && user.id && user.email);
@@ -168,6 +185,8 @@ const storageService = {
 
     this.setCurrentUser(newUser);
 
+    const fallbackCalories = userData.targetCalories ? Number(userData.targetCalories) : 2000;
+
     const initialProfile = {
       userId: newUser.id,
       name: newUser.name,
@@ -179,26 +198,16 @@ const storageService = {
       targetWeight: userData.targetWeight ? Number(userData.targetWeight) : newUser.weight,
       activityLevel: userData.activityLevel || 'moderate',
       fitnessGoal: newUser.fitnessGoal,
-      targetCalories: userData.targetCalories ? Number(userData.targetCalories) : 2000,
-      macros: {
-        protein: Math.round(((userData.targetCalories || 2000) * 0.3) / 4),
-        carbs: Math.round(((userData.targetCalories || 2000) * 0.45) / 4),
-        fat: Math.round(((userData.targetCalories || 2000) * 0.25) / 9)
-      },
+      targetCalories: fallbackCalories,
+      macros: window.HealthCalculator?.calculateMacroTargets(fallbackCalories, newUser.fitnessGoal)
+        || { protein: 150, carbs: 225, fat: 55 },
       waterTarget: 2500
     };
 
-    if (typeof window !== 'undefined' && window.calcService && typeof window.calcService.calculateTDEE === 'function' && initialProfile.currentWeight && initialProfile.height && initialProfile.age) {
-      const bmr = window.calcService.calculateBMR(initialProfile.currentWeight, initialProfile.height, initialProfile.age, initialProfile.gender);
-      const tdee = window.calcService.calculateTDEE(bmr, initialProfile.activityLevel || 'moderate');
-      if (initialProfile.fitnessGoal === 'cut') initialProfile.targetCalories = Math.round(tdee - 500);
-      else if (initialProfile.fitnessGoal === 'lean_bulk') initialProfile.targetCalories = Math.round(tdee + 300);
-      else initialProfile.targetCalories = Math.round(tdee);
-      initialProfile.macros = {
-        protein: Math.round((initialProfile.targetCalories * 0.3) / 4),
-        carbs: Math.round((initialProfile.targetCalories * 0.45) / 4),
-        fat: Math.round((initialProfile.targetCalories * 0.25) / 9)
-      };
+    const plan = window.HealthCalculator?.calculateNutritionPlan(initialProfile);
+    if (plan) {
+      initialProfile.targetCalories = plan.targetCalories;
+      initialProfile.macros = plan.macros;
     }
 
     this.setUserProfile(initialProfile);

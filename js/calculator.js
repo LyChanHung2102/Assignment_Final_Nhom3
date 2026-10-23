@@ -80,7 +80,112 @@ const HealthCalculator = {
     };
   },
 
-  
+  ACTIVITY_MULTIPLIERS: {
+    '0': 1.2,
+    '1': 1.375,
+    '3': 1.55,
+    '6': 1.725,
+    '8': 1.9,
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very_active: 1.9
+  },
+
+  GOAL_PRESETS: {
+    cut: { calorieAdjust: -500, protein: 0.40, carbs: 0.35, fat: 0.25, weeklyRateKg: 0.5 },
+    maintain: { calorieAdjust: 0, protein: 0.30, carbs: 0.45, fat: 0.25, weeklyRateKg: 0 },
+    lean_bulk: { calorieAdjust: 300, protein: 0.25, carbs: 0.50, fat: 0.25, weeklyRateKg: 0.3 }
+  },
+
+  MIN_SAFE_CALORIES: 1200,
+
+  getGoalPreset(fitnessGoal) {
+    return this.GOAL_PRESETS[fitnessGoal] || this.GOAL_PRESETS.maintain;
+  },
+
+  // Mifflin-St Jeor: nam +5, nữ -161
+  calculateBMR(weightKg, heightCm, age, gender) {
+    const weight = Number(weightKg);
+    const height = Number(heightCm);
+    const ageNum = Number(age);
+
+    if (!weight || !height || !ageNum || weight <= 0 || height <= 0) return null;
+    if (ageNum < 12 || ageNum > 100) return null;
+
+    const base = 10 * weight + 6.25 * height - 5 * ageNum;
+    return Math.round(gender === 'female' ? base - 161 : base + 5);
+  },
+
+  calculateTDEE(bmr, activityLevel) {
+    const bmrNum = Number(bmr);
+    if (!bmrNum || bmrNum <= 0) return null;
+
+    const key = activityLevel === null || activityLevel === undefined || activityLevel === ''
+      ? 'moderate'
+      : String(activityLevel);
+    const multiplier = this.ACTIVITY_MULTIPLIERS[key] || this.ACTIVITY_MULTIPLIERS.moderate;
+
+    return Math.round(bmrNum * multiplier);
+  },
+
+  calculateTargetCalories(tdee, fitnessGoal) {
+    const tdeeNum = Number(tdee);
+    if (!tdeeNum || tdeeNum <= 0) return null;
+
+    const adjusted = Math.round(tdeeNum + this.getGoalPreset(fitnessGoal).calorieAdjust);
+    return Math.max(this.MIN_SAFE_CALORIES, adjusted);
+  },
+
+  calculateMacroTargets(targetCalories, fitnessGoal) {
+    const calories = Number(targetCalories);
+    if (!calories || calories <= 0) return null;
+
+    const preset = this.getGoalPreset(fitnessGoal);
+    return {
+      protein: Math.round((calories * preset.protein) / 4),
+      carbs: Math.round((calories * preset.carbs) / 4),
+      fat: Math.round((calories * preset.fat) / 9)
+    };
+  },
+
+  estimateGoalTimeline(currentWeight, targetWeight, fitnessGoal) {
+    const curr = Number(currentWeight);
+    const target = Number(targetWeight);
+    if (!curr || !target || curr <= 0 || target <= 0) return null;
+
+    const preset = this.getGoalPreset(fitnessGoal);
+    const diffKg = Math.abs(curr - target);
+
+    if (!preset.weeklyRateKg || diffKg < 0.25) {
+      return { weeks: 0, text: 'Duy trì cân nặng hiện tại' };
+    }
+
+    const weeks = Math.max(1, Math.ceil(diffKg / preset.weeklyRateKg));
+    const direction = target < curr ? 'giảm' : 'tăng';
+    return { weeks, text: `~${weeks} tuần để ${direction} ${diffKg.toFixed(1)} kg` };
+  },
+
+  calculateNutritionPlan(input) {
+    if (!input) return null;
+
+    const bmr = this.calculateBMR(input.currentWeight, input.height, input.age, input.gender);
+    if (bmr === null) return null;
+
+    const tdee = this.calculateTDEE(bmr, input.activityLevel);
+    const targetCalories = this.calculateTargetCalories(tdee, input.fitnessGoal);
+    if (targetCalories === null) return null;
+
+    return {
+      bmr,
+      tdee,
+      targetCalories,
+      macros: this.calculateMacroTargets(targetCalories, input.fitnessGoal),
+      timeline: this.estimateGoalTimeline(input.currentWeight, input.targetWeight, input.fitnessGoal)
+    };
+  },
+
   calculateGoalProgress(initialWeight, currentWeight, targetWeight) {
     const initW = Number(initialWeight);
     const currW = Number(currentWeight);
