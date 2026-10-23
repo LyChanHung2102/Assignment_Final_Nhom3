@@ -319,6 +319,19 @@
           <button type="button" class="chip-btn" data-category="beverage">Sữa Hạt & Nước</button>
         </div>
 
+        <div id="food-serving-editor" class="glass-card" style="display: none; padding: 1rem; margin-top: 12px;" aria-live="polite">
+          <div style="font-weight: 700; color: var(--color-primary, #173F35);" id="food-serving-editor-name"></div>
+          <label for="food-serving-grams" style="display: block; font-size: 0.82rem; margin: 10px 0 6px;">Khẩu phần đã ăn (gram)</label>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="number" id="food-serving-grams" class="glass-input" min="1" step="1" style="max-width: 160px;" aria-describedby="food-serving-preview">
+            <span id="food-serving-base"></span>
+          </div>
+          <div id="food-serving-preview" style="font-size: 0.82rem; color: var(--color-text-secondary, #63756B); margin-top: 8px;"></div>
+          <button type="button" class="glass-btn glass-btn-primary" id="btn-confirm-food-serving" style="width: 100%; margin-top: 12px;">
+            Thêm khẩu phần vào nhật ký
+          </button>
+        </div>
+
         <div class="food-results-list" id="modal-food-results"></div>
       </div>
 
