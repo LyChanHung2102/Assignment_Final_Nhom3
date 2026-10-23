@@ -1299,6 +1299,9 @@ const WeightModule = {
 
     this.bindEvents();
     this.render();
+    if (window.location.hash === '#log-weight') {
+      this.openModal();
+    }
   },
 
   bindEvents() {
@@ -1349,6 +1352,7 @@ const WeightModule = {
     const dateInput = document.getElementById('input-weight-date');
     if (dateInput) {
       dateInput.value = window.getTodayDateString();
+      dateInput.max = window.getTodayDateString();
     }
 
     
@@ -1356,12 +1360,14 @@ const WeightModule = {
     const weightInput = document.getElementById('input-weight-val');
     const bfInput = document.getElementById('input-bodyfat-val');
 
-    if (weightInput && latest) {
-      weightInput.value = latest.weight;
-    }
-    if (bfInput && latest && latest.bodyFat) {
-      bfInput.value = latest.bodyFat;
-    }
+    if (weightInput) weightInput.value = latest ? latest.weight : '';
+    if (bfInput) bfInput.value = latest && latest.bodyFat ? latest.bodyFat : '';
+    const noteInput = document.getElementById('input-weight-note');
+    if (noteInput) noteInput.value = '';
+    ['input-measure-chest', 'input-measure-waist', 'input-measure-arm', 'input-measure-thigh'].forEach((id) => {
+      const input = document.getElementById(id);
+      if (input) input.value = '';
+    });
 
     this.modalBackdropEl.classList.add('active');
   },
@@ -1390,6 +1396,12 @@ const WeightModule = {
       return;
     }
 
+    const logDate = dateInput.value || window.getTodayDateString();
+    if (logDate > window.getTodayDateString()) {
+      ToastModule.show('Ngày ghi nhận không thể ở tương lai!', 'flame');
+      return;
+    }
+
     const measurements = {};
     if (chestInput && chestInput.value) measurements.chest = parseFloat(chestInput.value);
     if (waistInput && waistInput.value) measurements.waist = parseFloat(waistInput.value);
@@ -1397,12 +1409,17 @@ const WeightModule = {
     if (thighInput && thighInput.value) measurements.thigh = parseFloat(thighInput.value);
 
     const saved = window.storageService.addWeightLog({
-      date: dateInput.value || window.getTodayDateString(),
+      date: logDate,
       weight: weightVal,
       bodyFat: bfInput.value ? parseFloat(bfInput.value) : null,
       note: noteInput.value.trim(),
       measurements: Object.keys(measurements).length > 0 ? measurements : null
     });
+
+    if (!saved) {
+      ToastModule.show('Không thể lưu dữ liệu cân nặng. Vui lòng thử lại.', 'flame');
+      return;
+    }
 
     ToastModule.show(`Đã lưu thể trọng: ${saved.weight} kg!`);
     this.closeModal();
@@ -1422,6 +1439,7 @@ const WeightModule = {
   render() {
     const logs = window.storageService.getWeightLogs();
     const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
+    this.renderWeeklyFluctuation(logs);
 
     if (logs.length === 0) return;
 
@@ -1492,6 +1510,47 @@ const WeightModule = {
 
     
     this.renderHistory(logs, maData);
+  },
+
+  renderWeeklyFluctuation(logs) {
+    const valueEl = document.getElementById('weight-weekly-range-val');
+    const detailEl = document.getElementById('weight-weekly-range-detail');
+    if (!valueEl || !detailEl) return;
+
+    const today = window.getTodayDateString();
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - 6);
+    const startDate = [
+      cutoff.getFullYear(),
+      String(cutoff.getMonth() + 1).padStart(2, '0'),
+      String(cutoff.getDate()).padStart(2, '0')
+    ].join('-');
+    const weeklyLogs = logs.filter(log => log.date >= startDate && log.date <= today);
+
+    if (weeklyLogs.length < 2) {
+      valueEl.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      detailEl.textContent = weeklyLogs.length === 0
+        ? 'Chưa có lần ghi cân nào trong 7 ngày gần nhất.'
+        : 'Cần ít nhất 2 lần ghi nhận trong 7 ngày gần nhất để tính khoảng dao động.';
+      return;
+    }
+
+    const weights = weeklyLogs.map(log => Number(log.weight));
+    const lowest = Math.min(...weights);
+    const highest = Math.max(...weights);
+    const range = Number((highest - lowest).toFixed(1));
+    const firstWeight = Number(weeklyLogs[0].weight);
+    const latestWeight = Number(weeklyLogs[weeklyLogs.length - 1].weight);
+    const netChange = Number((latestWeight - firstWeight).toFixed(1));
+    const changeText = netChange > 0
+      ? `tăng ${netChange.toFixed(1)} kg`
+      : netChange < 0
+        ? `giảm ${Math.abs(netChange).toFixed(1)} kg`
+        : 'không đổi';
+
+    valueEl.innerHTML = `${range.toFixed(1)} <span class="stat-unit">kg</span>`;
+    detailEl.textContent = `Thấp nhất ${lowest.toFixed(1)} kg · cao nhất ${highest.toFixed(1)} kg · ${weeklyLogs.length} lần ghi. Từ lần đầu đến lần mới nhất: ${changeText}.`;
   },
 
   renderMeasurements(logs) {
@@ -1896,7 +1955,6 @@ const HealthDashboardModule = {
       greetingTitle: document.getElementById('health-greeting-title'),
       greetingSubtitle: document.getElementById('health-greeting-subtitle'),
       incompleteBanner: document.getElementById('health-incomplete-banner'),
-      btnQuickLogWeight: document.getElementById('btn-quick-log-weight'),
 
       
       bmiVal: document.getElementById('hd-bmi-val'),
@@ -1936,16 +1994,6 @@ const HealthDashboardModule = {
       recentTbody: document.getElementById('hd-recent-records-tbody'),
       recentEmpty: document.getElementById('hd-recent-empty'),
 
-      
-      modalWeight: document.getElementById('hd-modal-weight'),
-      modalCloseBtn: document.getElementById('hd-modal-weight-close'),
-      modalCancelBtn: document.getElementById('hd-modal-weight-cancel'),
-      formWeight: document.getElementById('hd-form-weight'),
-      inputDate: document.getElementById('hd-input-date'),
-      inputWeight: document.getElementById('hd-input-weight'),
-      inputNote: document.getElementById('hd-input-note'),
-
-      
       timePills: document.querySelectorAll('.time-pill-btn')
     };
   },
@@ -1963,89 +2011,11 @@ const HealthDashboardModule = {
       });
     }
 
-    
-    if (this.dom.btnQuickLogWeight) {
-      this.dom.btnQuickLogWeight.addEventListener('click', () => {
-        this.openWeightModal();
-      });
-    }
-
-    
-    if (this.dom.modalCloseBtn) {
-      this.dom.modalCloseBtn.addEventListener('click', () => this.closeWeightModal());
-    }
-    if (this.dom.modalCancelBtn) {
-      this.dom.modalCancelBtn.addEventListener('click', () => this.closeWeightModal());
-    }
-    if (this.dom.modalWeight) {
-      this.dom.modalWeight.addEventListener('click', (e) => {
-        if (e.target === this.dom.modalWeight) this.closeWeightModal();
-      });
-    }
-
-    
-    if (this.dom.formWeight) {
-      this.dom.formWeight.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.handleSaveWeight();
-      });
-    }
-  },
-
-  openWeightModal() {
-    if (!this.dom.modalWeight) return;
-    if (this.dom.inputDate) {
-      this.dom.inputDate.value = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
-    }
-    if (this.dom.inputWeight) {
-      const latest = window.storageService ? window.storageService.getLatestWeight() : null;
-      this.dom.inputWeight.value = latest ? latest.weight : '';
-    }
-    if (this.dom.inputNote) {
-      this.dom.inputNote.value = '';
-    }
-    this.dom.modalWeight.style.display = 'flex';
-  },
-
-  closeWeightModal() {
-    if (this.dom.modalWeight) {
-      this.dom.modalWeight.style.display = 'none';
-    }
-  },
-
-  handleSaveWeight() {
-    const dateVal = this.dom.inputDate.value;
-    const weightVal = parseFloat(this.dom.inputWeight.value);
-    const noteVal = this.dom.inputNote.value.trim();
-
-    if (!dateVal || isNaN(weightVal) || weightVal <= 0) {
-      if (window.ToastModule) ToastModule.show('Vui lòng nhập cân nặng hợp lệ!', 'flame');
-      return;
-    }
-
-    const newEntry = {
-      id: 'wt-' + Date.now(),
-      date: dateVal,
-      weight: weightVal,
-      note: noteVal
-    };
-
-    if (window.storageService && window.storageService.saveWeightEntry) {
-      window.storageService.saveWeightEntry(newEntry);
-    } else {
-      const logs = window.storageService.getWeightLogs();
-      logs.push(newEntry);
-      window.storageService.set(window.STORAGE_KEYS.WEIGHT_LOGS, logs);
-    }
-
-    
-    const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
-    profile.currentWeight = weightVal;
-    window.storageService.setUserProfile(profile);
-
-    this.closeWeightModal();
-    if (window.ToastModule) ToastModule.show(`Đã lưu bản ghi ${weightVal} kg ngày ${dateVal}!`);
-    this.updateDashboard();
+    window.addEventListener('storage', (e) => {
+      if (e.key === window.STORAGE_KEYS.WEIGHT_LOGS || e.key === window.STORAGE_KEYS.USER_PROFILE) {
+        this.updateDashboard();
+      }
+    });
   },
 
   updateDashboard() {
