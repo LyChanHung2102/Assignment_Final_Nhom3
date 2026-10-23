@@ -2712,6 +2712,13 @@ body.theme-porcelain #app-layout,
 }
 
 /* ==========================================================================
+   HEALTH REPORTS & STATISTICS FEATURE STYLES (Jade & Porcelain Theme)
+   ========================================================================== */
+
+/* Report Type Tabs */
+.report-type-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
    WORKOUT JOURNAL FEATURE STYLES (Jade & Porcelain Theme)
    ========================================================================== */
 
@@ -3191,6 +3198,11 @@ body.theme-porcelain #app-layout,
   gap: 2px;
 }
 
+.report-pill-btn {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full, 9999px);
+  padding: 6px 14px;
 .time-pill-btn {
   background: transparent;
   border: none;
@@ -3204,6 +3216,50 @@ body.theme-porcelain #app-layout,
   transition: all var(--transition-fast, 150ms ease);
 }
 
+.report-pill-btn:hover {
+  color: var(--color-primary, #173F35);
+}
+
+.report-pill-btn.active {
+  background: var(--color-primary, #173F35);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(23, 63, 53, 0.2);
+}
+
+/* Report Header Action Buttons */
+.report-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.report-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--color-border, #DDE3D9);
+  background: var(--color-surface, #FFFEFA);
+  color: var(--color-text, #202B28);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.report-action-btn:hover {
+  background: var(--color-surface-raised, #F0F1E9);
+  border-color: var(--color-border-focus, #397866);
+  color: var(--color-primary, #173F35);
+}
+
+/* Custom Date Range Picker Dropdown / Box */
+.custom-range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 .btn-workout-action:hover {
   background: var(--color-surface-raised, #F0F1E9);
   color: var(--color-primary, #173F35);
@@ -3426,6 +3482,69 @@ body.theme-porcelain #app-layout,
   color: var(--color-text-secondary, #63756B);
 }
 
+.custom-range-input {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--color-text, #202B28);
+}
+
+/* Print Friendly Styles */
+@media print {
+  /* Hide non-printable elements */
+  #app-nav,
+  .app-navigation,
+  .app-header,
+  .report-header-actions,
+  .report-type-pills,
+  .progress-time-pills,
+  .custom-range-row,
+  .table-pagination-controls,
+  .btn-workout-action,
+  #toast-container {
+    display: none !important;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  .content-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .main-viewport {
+    padding: 0 !important;
+  }
+
+  .glass-card {
+    background: transparent !important;
+    border: 1px solid #CCCCCC !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 15px !important;
+  }
+
+  .print-only-header {
+    display: block !important;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #173F35;
+    padding-bottom: 10px;
+  }
+
+  .chart-viewport canvas {
+    max-width: 100% !important;
+  }
+}
+
+.print-only-header {
+  display: none;
 .page-btn-group {
   display: inline-flex;
   gap: 4px;

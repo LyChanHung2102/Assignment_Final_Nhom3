@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     DashboardModule.init();
   }
 
+  if (document.getElementById('report-weight-canvas')) {
+    HealthReportsModule.init();
   if (document.getElementById('workout-chart-canvas')) {
     WorkoutJournalModule.init();
   if (document.getElementById('progress-chart-canvas')) {
@@ -2086,6 +2088,28 @@ window.OnboardingModule = OnboardingModule;
 window.SettingsModule = SettingsModule;
 
 /**
+ * HealthReportsModule - Controller for Health Reports & Statistics Page
+ * Manages Multi-metric KPI aggregation, Time Range filtering (presets & custom dates),
+ * Weight/BMI & Workout reporting, Period comparison, Table generation, CSV export and Printing.
+ */
+const HealthReportsModule = {
+  dom: {},
+  currentRange: '30d',      // '7d' | '30d' | '90d' | '180d' | '365d' | 'custom'
+  currentReportType: 'all', // 'all' | 'weight' | 'workout'
+  customStartDate: null,
+  customEndDate: null,
+  currentPage: 1,
+  pageSize: 8,
+
+  cachedWeights: [],
+  cachedWorkouts: [],
+  cachedProfile: {},
+
+  filteredWeights: [],
+  filteredWorkouts: [],
+  prevWeights: [],
+  prevWorkouts: [],
+  dailyMergedRows: [],
  * WorkoutJournalModule - Controller for Workout Journal Feature
  * Handles Workout CRUD, Filtering by Range/Type/Intensity, Search,
  * Form Validations, Details Modal, Confirm Delete, Pagination and Duration Chart.
@@ -2159,6 +2183,63 @@ const HealthDashboardModule = {
 
   cacheDOM() {
     this.dom = {
+      // Action buttons
+      btnRefresh: document.getElementById('btn-refresh-report'),
+      btnExportCsv: document.getElementById('btn-export-csv'),
+      btnPrint: document.getElementById('btn-print-report'),
+
+      // Type & Range Pills
+      typePills: document.querySelectorAll('[data-report-type]'),
+      rangePills: document.querySelectorAll('[data-report-range]'),
+      customRangeRow: document.getElementById('rep-custom-range-row'),
+      inputStartDate: document.getElementById('rep-start-date'),
+      inputEndDate: document.getElementById('rep-end-date'),
+      btnApplyCustomDates: document.getElementById('btn-apply-custom-dates'),
+      rangeDatesText: document.getElementById('rep-range-dates-text'),
+      printMetaText: document.getElementById('print-meta-text'),
+
+      // Section wrappers
+      secWeightReport: document.getElementById('sec-weight-report'),
+      secWorkoutReport: document.getElementById('sec-workout-report'),
+
+      // 7 KPI cards
+      kpiStartWeight: document.getElementById('kpi-start-weight'),
+      kpiEndWeight: document.getElementById('kpi-end-weight'),
+      kpiWeightDiff: document.getElementById('kpi-weight-diff'),
+      kpiWeightDiffBadge: document.getElementById('kpi-weight-diff-badge'),
+      kpiWeightDiffPercent: document.getElementById('kpi-weight-diff-percent'),
+      kpiEndBmi: document.getElementById('kpi-end-bmi'),
+      kpiBmiBadge: document.getElementById('kpi-bmi-badge'),
+      kpiBmiCategory: document.getElementById('kpi-bmi-category'),
+      kpiWorkoutSessions: document.getElementById('kpi-workout-sessions'),
+      kpiWorkoutDuration: document.getElementById('kpi-workout-duration'),
+      kpiWorkoutAvg: document.getElementById('kpi-workout-avg'),
+      kpiWorkoutDays: document.getElementById('kpi-workout-days'),
+
+      // Workout summary
+      repWorkoutPopularBadge: document.getElementById('rep-workout-popular-badge'),
+      repWoPopularType: document.getElementById('rep-wo-popular-type'),
+      repWoAvgDuration: document.getElementById('rep-wo-avg-duration'),
+      repWoTotalDist: document.getElementById('rep-wo-total-dist'),
+
+      // Period comparison
+      compCurrWeight: document.getElementById('comp-curr-weight'),
+      compPrevWeight: document.getElementById('comp-prev-weight'),
+      compWeightDiffText: document.getElementById('comp-weight-diff-text'),
+      compCurrSessions: document.getElementById('comp-curr-sessions'),
+      compPrevSessions: document.getElementById('comp-prev-sessions'),
+      compSessionsDiffText: document.getElementById('comp-sessions-diff-text'),
+      compBadge: document.getElementById('rep-comp-badge'),
+
+      // Insights
+      insightsContent: document.getElementById('rep-insights-content'),
+
+      // Table & Pagination
+      tableTbody: document.getElementById('rep-table-tbody'),
+      tableEmpty: document.getElementById('rep-table-empty'),
+      pageInfo: document.getElementById('rep-page-info'),
+      btnPagePrev: document.getElementById('rep-btn-page-prev'),
+      btnPageNext: document.getElementById('rep-btn-page-next')
       // Summary cards
       statSessions: document.getElementById('wo-stat-sessions'),
       statDuration: document.getElementById('wo-stat-duration'),
@@ -2349,6 +2430,81 @@ const HealthDashboardModule = {
   },
 
   bindEvents() {
+    // 1. Report Type switcher
+    if (this.dom.typePills) {
+      this.dom.typePills.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.dom.typePills.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.currentReportType = btn.getAttribute('data-report-type') || 'all';
+          this.toggleSectionsByType();
+        });
+      });
+    }
+
+    // 2. Range preset pills
+    if (this.dom.rangePills) {
+      this.dom.rangePills.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.dom.rangePills.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const rangeKey = btn.getAttribute('data-report-range') || '30d';
+          this.currentRange = rangeKey;
+
+          if (rangeKey === 'custom') {
+            if (this.dom.customRangeRow) this.dom.customRangeRow.style.display = 'flex';
+          } else {
+            if (this.dom.customRangeRow) this.dom.customRangeRow.style.display = 'none';
+            this.currentPage = 1;
+            this.filterAndRender();
+          }
+        });
+      });
+    }
+
+    // 3. Apply custom dates
+    if (this.dom.btnApplyCustomDates) {
+      this.dom.btnApplyCustomDates.addEventListener('click', () => {
+        const start = this.dom.inputStartDate.value;
+        const end = this.dom.inputEndDate.value;
+        if (!start || !end) {
+          ToastModule.show('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc.', 'flame');
+          return;
+        }
+        if (new Date(end) < new Date(start)) {
+          ToastModule.show('Ngày kết thúc không thể trước ngày bắt đầu.', 'flame');
+          return;
+        }
+        this.customStartDate = start;
+        this.customEndDate = end;
+        this.currentPage = 1;
+        this.filterAndRender();
+      });
+    }
+
+    // 4. Refresh button
+    if (this.dom.btnRefresh) {
+      this.dom.btnRefresh.addEventListener('click', () => {
+        ToastModule.show('Đang cập nhật lại báo cáo sức khỏe...', 'cyan');
+        this.loadDataAndRender();
+      });
+    }
+
+    // 5. Export CSV
+    if (this.dom.btnExportCsv) {
+      this.dom.btnExportCsv.addEventListener('click', () => {
+        this.exportToCsv();
+      });
+    }
+
+    // 6. Print Report
+    if (this.dom.btnPrint) {
+      this.dom.btnPrint.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    // 7. Pagination
     // 1. Time range pills
     if (this.dom.rangeButtons) {
       this.dom.rangeButtons.forEach(btn => {
@@ -2524,6 +2680,10 @@ const HealthDashboardModule = {
         }
       });
     }
+    if (this.dom.btnPageNext) {
+      this.dom.btnPageNext.addEventListener('click', () => {
+        const total = Math.ceil(this.dailyMergedRows.length / this.pageSize) || 1;
+        if (this.currentPage < total) {
 
     if (this.dom.btnPageNext) {
       this.dom.btnPageNext.addEventListener('click', () => {
@@ -2541,6 +2701,345 @@ const HealthDashboardModule = {
   },
 
   loadDataAndRender() {
+    this.cachedWeights = window.storageService ? window.storageService.getWeightLogs() : [];
+    this.cachedWorkouts = window.storageService ? window.storageService.getWorkoutLogs() : [];
+    this.cachedProfile = window.storageService ? window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}) : {};
+
+    // Initialize Chart
+    if (window.HealthReportsChartEngine) {
+      HealthReportsChartEngine.init('report-weight-canvas', 'report-weight-tooltip');
+    }
+
+    // Set default custom dates in inputs
+    const todayStr = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
+    const past30 = new Date();
+    past30.setDate(past30.getDate() - 30);
+    const past30Str = past30.toISOString().split('T')[0];
+
+    if (this.dom.inputStartDate && !this.dom.inputStartDate.value) this.dom.inputStartDate.value = past30Str;
+    if (this.dom.inputEndDate && !this.dom.inputEndDate.value) this.dom.inputEndDate.value = todayStr;
+
+    this.filterAndRender();
+  },
+
+  filterAndRender() {
+    let startD = null;
+    let endD = new Date();
+    let daysCount = 30;
+
+    if (this.currentRange === 'custom') {
+      if (this.customStartDate && this.customEndDate) {
+        startD = new Date(`${this.customStartDate}T00:00:00`);
+        endD = new Date(`${this.customEndDate}T23:59:59`);
+        daysCount = Math.max(1, Math.round((endD - startD) / (1000 * 60 * 60 * 24)));
+      } else {
+        startD = new Date();
+        startD.setDate(startD.getDate() - 30);
+      }
+    } else {
+      if (this.currentRange === '7d') daysCount = 7;
+      else if (this.currentRange === '30d') daysCount = 30;
+      else if (this.currentRange === '90d') daysCount = 90;
+      else if (this.currentRange === '180d') daysCount = 180;
+      else if (this.currentRange === '365d') daysCount = 365;
+
+      startD = new Date();
+      startD.setDate(startD.getDate() - daysCount);
+    }
+
+    // Calculate previous period of equal length for comparison
+    const prevEndD = new Date(startD);
+    const prevStartD = new Date(startD);
+    prevStartD.setDate(prevStartD.getDate() - daysCount);
+
+    // 1. Filter current period
+    this.filteredWeights = this.cachedWeights.filter(w => {
+      const d = new Date(w.date);
+      return d >= startD && d <= endD;
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    this.filteredWorkouts = this.cachedWorkouts.filter(w => {
+      const d = new Date(w.workoutDate);
+      return d >= startD && d <= endD;
+    }).sort((a, b) => new Date(a.workoutDate) - new Date(b.workoutDate));
+
+    // 2. Filter previous comparison period
+    this.prevWeights = this.cachedWeights.filter(w => {
+      const d = new Date(w.date);
+      return d >= prevStartD && d < startD;
+    });
+
+    this.prevWorkouts = this.cachedWorkouts.filter(w => {
+      const d = new Date(w.workoutDate);
+      return d >= prevStartD && d < startD;
+    });
+
+    this.renderRangeBadge(startD, endD, daysCount);
+    this.renderKPIs();
+    this.renderCharts();
+    this.renderWorkoutBreakdown();
+    this.renderPeriodComparison();
+    this.renderInsights();
+    this.buildDailyMergedRows();
+    this.renderTable();
+  },
+
+  renderRangeBadge(startD, endD, daysCount) {
+    const fmt = (d) => {
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
+
+    const text = `Từ ${fmt(startD)} đến ${fmt(endD)} (${daysCount} ngày)`;
+    if (this.dom.rangeDatesText) this.dom.rangeDatesText.textContent = text;
+    if (this.dom.printMetaText) {
+      const userName = this.cachedProfile.name || 'Gymer FitVN';
+      this.dom.printMetaText.textContent = `Khoảng thời gian: ${text} | Người dùng: ${userName} | FitVN Tracker`;
+    }
+  },
+
+  toggleSectionsByType() {
+    const type = this.currentReportType;
+    if (this.dom.secWeightReport) {
+      this.dom.secWeightReport.style.display = (type === 'all' || type === 'weight') ? 'block' : 'none';
+    }
+    if (this.dom.secWorkoutReport) {
+      this.dom.secWorkoutReport.style.display = (type === 'all' || type === 'workout') ? 'block' : 'none';
+    }
+  },
+
+  renderKPIs() {
+    const height = Number(this.cachedProfile.height) || null;
+    const report = window.HealthCalculator.generateComprehensiveReport(
+      this.filteredWeights,
+      height,
+      this.filteredWorkouts
+    );
+
+    // Weight & BMI KPIs
+    if (report.hasWeightData) {
+      if (this.dom.kpiStartWeight) this.dom.kpiStartWeight.innerHTML = `${report.weight.startWeight.toFixed(1)} <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiEndWeight) this.dom.kpiEndWeight.innerHTML = `${report.weight.endWeight.toFixed(1)} <span class="stat-unit">kg</span>`;
+      
+      const sign = report.weight.weightDiff > 0 ? `+${report.weight.weightDiff}` : `${report.weight.weightDiff}`;
+      if (this.dom.kpiWeightDiff) this.dom.kpiWeightDiff.innerHTML = `${sign} <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiWeightDiffPercent) {
+        const pSign = report.weight.weightPercentChange > 0 ? `+${report.weight.weightPercentChange}` : `${report.weight.weightPercentChange}`;
+        this.dom.kpiWeightDiffPercent.textContent = `${pSign}%`;
+      }
+      if (this.dom.kpiWeightDiffBadge) {
+        this.dom.kpiWeightDiffBadge.textContent = report.weight.weightDiff > 0 ? 'Tăng' : report.weight.weightDiff < 0 ? 'Giảm' : 'Ổn định';
+        this.dom.kpiWeightDiffBadge.className = `glass-badge ${report.weight.weightDiff > 0 ? 'glass-badge-cyan' : report.weight.weightDiff < 0 ? 'glass-badge-emerald' : 'glass-badge-muted'}`;
+      }
+
+      if (report.weight.endBMI) {
+        if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `${report.weight.endBMI.toFixed(1)} <span class="stat-unit">kg/m²</span>`;
+        if (this.dom.kpiBmiBadge) {
+          this.dom.kpiBmiBadge.className = `glass-badge ${report.weight.bmiColorClass}`;
+          this.dom.kpiBmiBadge.textContent = report.weight.bmiCategory;
+        }
+        if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = report.weight.bmiCategory;
+      } else {
+        if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
+        if (this.dom.kpiBmiBadge) this.dom.kpiBmiBadge.textContent = 'Chưa có chiều cao';
+        if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = 'Chưa thiết lập';
+      }
+    } else {
+      if (this.dom.kpiStartWeight) this.dom.kpiStartWeight.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiEndWeight) this.dom.kpiEndWeight.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiWeightDiff) this.dom.kpiWeightDiff.innerHTML = `-- <span class="stat-unit">kg</span>`;
+      if (this.dom.kpiWeightDiffPercent) this.dom.kpiWeightDiffPercent.textContent = 'Chưa có dữ liệu';
+      if (this.dom.kpiEndBmi) this.dom.kpiEndBmi.innerHTML = `-- <span class="stat-unit">kg/m²</span>`;
+      if (this.dom.kpiBmiCategory) this.dom.kpiBmiCategory.textContent = 'Chưa có dữ liệu';
+    }
+
+    // Workout KPIs
+    if (report.hasWorkoutData) {
+      if (this.dom.kpiWorkoutSessions) this.dom.kpiWorkoutSessions.innerHTML = `${report.workout.totalSessions} <span class="stat-unit">buổi</span>`;
+      if (this.dom.kpiWorkoutDuration) this.dom.kpiWorkoutDuration.innerHTML = `${report.workout.formattedDuration}`;
+      if (this.dom.kpiWorkoutAvg) this.dom.kpiWorkoutAvg.textContent = `TB: ${report.workout.avgDurationMinutes}p / buổi`;
+      if (this.dom.kpiWorkoutDays) this.dom.kpiWorkoutDays.innerHTML = `${report.workout.activeDaysCount} <span class="stat-unit">ngày</span>`;
+    } else {
+      if (this.dom.kpiWorkoutSessions) this.dom.kpiWorkoutSessions.innerHTML = `0 <span class="stat-unit">buổi</span>`;
+      if (this.dom.kpiWorkoutDuration) this.dom.kpiWorkoutDuration.innerHTML = `0 phút`;
+      if (this.dom.kpiWorkoutAvg) this.dom.kpiWorkoutAvg.textContent = 'Chưa tập buổi nào';
+      if (this.dom.kpiWorkoutDays) this.dom.kpiWorkoutDays.innerHTML = `0 <span class="stat-unit">ngày</span>`;
+    }
+  },
+
+  renderCharts() {
+    if (!window.HealthReportsChartEngine) return;
+
+    // Enhance weights with BMI for tooltip
+    const height = Number(this.cachedProfile.height) || null;
+    const targetWeight = Number(this.cachedProfile.targetWeight) || null;
+
+    const weightsWithBmi = this.filteredWeights.map(w => {
+      let bmi = null;
+      if (height && height > 0) {
+        const hM = height / 100;
+        bmi = parseFloat((w.weight / (hM * hM)).toFixed(1));
+      }
+      return { ...w, bmi };
+    });
+
+    HealthReportsChartEngine.renderWeightReportChart(weightsWithBmi, targetWeight);
+  },
+
+  renderWorkoutBreakdown() {
+    const workouts = this.filteredWorkouts;
+    if (workouts.length === 0) {
+      if (this.dom.repWorkoutPopularBadge) this.dom.repWorkoutPopularBadge.textContent = 'Chưa có';
+      if (this.dom.repWoPopularType) this.dom.repWoPopularType.textContent = 'Chưa có hoạt động';
+      if (this.dom.repWoAvgDuration) this.dom.repWoAvgDuration.textContent = '0 phút / buổi';
+      if (this.dom.repWoTotalDist) this.dom.repWoTotalDist.textContent = '0 km';
+      return;
+    }
+
+    const report = window.HealthCalculator.generateComprehensiveReport([], null, workouts);
+    const typeMap = {
+      gym: '🏋️‍♂️ Tập Gym',
+      running: '🏃‍♂️ Chạy bộ',
+      walking: '🚶‍♂️ Đi bộ',
+      cycling: '🚴‍♂️ Đạp xe',
+      strength: '💪 Tập sức mạnh',
+      yoga: '🧘‍♀️ Yoga',
+      swimming: '🏊‍♂️ Bơi lội',
+      sports: '⚽ Thể thao',
+      other: '⚡ Khác'
+    };
+
+    const popType = report.workout.popularType;
+    if (this.dom.repWorkoutPopularBadge) this.dom.repWorkoutPopularBadge.textContent = typeMap[popType] || 'Hoạt động';
+    if (this.dom.repWoPopularType) this.dom.repWoPopularType.textContent = typeMap[popType] || 'Khác';
+    if (this.dom.repWoAvgDuration) this.dom.repWoAvgDuration.textContent = `${report.workout.avgDurationMinutes} phút / buổi`;
+    if (this.dom.repWoTotalDist) this.dom.repWoTotalDist.textContent = `${report.workout.totalDistanceKm} km`;
+  },
+
+  renderPeriodComparison() {
+    const height = Number(this.cachedProfile.height) || null;
+    const currRep = window.HealthCalculator.generateComprehensiveReport(this.filteredWeights, height, this.filteredWorkouts);
+    const prevRep = window.HealthCalculator.generateComprehensiveReport(this.prevWeights, height, this.prevWorkouts);
+
+    const comp = window.HealthCalculator.compareHealthPeriods(currRep, prevRep);
+
+    if (!comp.hasComparison) {
+      if (this.dom.compCurrWeight) this.dom.compCurrWeight.textContent = currRep.weight.endWeight ? `${currRep.weight.endWeight.toFixed(1)} kg` : '-- kg';
+      if (this.dom.compPrevWeight) this.dom.compPrevWeight.textContent = '-- kg';
+      if (this.dom.compWeightDiffText) this.dom.compWeightDiffText.textContent = comp.reason;
+      if (this.dom.compCurrSessions) this.dom.compCurrSessions.textContent = `${currRep.workout.totalSessions} buổi`;
+      if (this.dom.compPrevSessions) this.dom.compPrevSessions.textContent = '-- buổi';
+      if (this.dom.compSessionsDiffText) this.dom.compSessionsDiffText.textContent = comp.reason;
+      if (this.dom.compBadge) this.dom.compBadge.textContent = 'Chưa đủ dữ liệu';
+      return;
+    }
+
+    // Weight comparison
+    if (this.dom.compCurrWeight) this.dom.compCurrWeight.textContent = `${currRep.weight.endWeight.toFixed(1)} kg`;
+    if (this.dom.compPrevWeight) this.dom.compPrevWeight.textContent = `${prevRep.weight.endWeight.toFixed(1)} kg`;
+    if (this.dom.compWeightDiffText) {
+      if (comp.weightDiff !== null) {
+        const sign = comp.weightDiff > 0 ? `+${comp.weightDiff}` : `${comp.weightDiff}`;
+        this.dom.compWeightDiffText.textContent = `Chênh lệch: ${sign} kg (${comp.weightDiffPercent > 0 ? '+' : ''}${comp.weightDiffPercent}%) so với chu kỳ trước`;
+      } else {
+        this.dom.compWeightDiffText.textContent = 'Không đủ dữ liệu cân nặng';
+      }
+    }
+
+    // Sessions comparison
+    if (this.dom.compCurrSessions) this.dom.compCurrSessions.textContent = `${currRep.workout.totalSessions} buổi`;
+    if (this.dom.compPrevSessions) this.dom.compPrevSessions.textContent = `${prevRep.workout.totalSessions} buổi`;
+    if (this.dom.compSessionsDiffText) {
+      const sSign = comp.sessionDiff > 0 ? `+${comp.sessionDiff}` : `${comp.sessionDiff}`;
+      this.dom.compSessionsDiffText.textContent = `Chênh lệch: ${sSign} buổi tập (${comp.sessionPercent > 0 ? '+' : ''}${comp.sessionPercent}%) so với chu kỳ trước`;
+    }
+
+    if (this.dom.compBadge) this.dom.compBadge.textContent = 'Đã đối chiếu';
+  },
+
+  renderInsights() {
+    if (!this.dom.insightsContent) return;
+
+    const wCount = this.filteredWeights.length;
+    const woCount = this.filteredWorkouts.length;
+
+    if (wCount === 0 && woCount === 0) {
+      this.dom.insightsContent.textContent = 'Chưa có dữ liệu thể trọng hoặc nhật ký tập luyện nào trong khoảng thời gian này. Hãy tích cực ghi nhận để có phân tích toàn diện.';
+      return;
+    }
+
+    const height = Number(this.cachedProfile.height) || null;
+    const rep = window.HealthCalculator.generateComprehensiveReport(this.filteredWeights, height, this.filteredWorkouts);
+
+    let parts = [];
+    if (wCount > 0) {
+      parts.push(`Trong kỳ này, bạn đã ghi nhận ${wCount} mốc cân nặng. Thể trọng biến thiên ${rep.weight.weightDiff > 0 ? 'tăng' : rep.weight.weightDiff < 0 ? 'giảm' : 'không đổi'} ${Math.abs(rep.weight.weightDiff)} kg.`);
+      if (rep.weight.endBMI) {
+        parts.push(`Chỉ số BMI cuối kỳ đạt ${rep.weight.endBMI} (${rep.weight.bmiCategory}).`);
+      }
+    }
+
+    if (woCount > 0) {
+      parts.push(`Bạn đã hoàn thành ${rep.workout.totalSessions} buổi rèn luyện thể chất với tổng cộng ${rep.workout.formattedDuration} (${rep.workout.activeDaysCount} ngày tập thực tế).`);
+    }
+
+    parts.push(`Lưu ý khoa học: Các biến động cân nặng ngắn hạn thường liên quan đến lượng nước tích trữ và glycogen. Hãy duy trì chế độ dinh dưỡng lành mạnh và tập luyện đều đặn.`);
+
+    this.dom.insightsContent.textContent = parts.join(' ');
+  },
+
+  buildDailyMergedRows() {
+    const map = new Map();
+    const height = Number(this.cachedProfile.height) || null;
+
+    // Add weights
+    this.filteredWeights.forEach(w => {
+      let bmi = '--';
+      if (height && height > 0) {
+        const hM = height / 100;
+        bmi = (w.weight / (hM * hM)).toFixed(1);
+      }
+      map.set(w.date, {
+        date: w.date,
+        weight: Number(w.weight).toFixed(1),
+        bmi,
+        workoutSessions: 0,
+        workoutMinutes: 0
+      });
+    });
+
+    // Add workouts
+    this.filteredWorkouts.forEach(wo => {
+      const d = wo.workoutDate;
+      const mins = Math.max(0, parseInt(wo.durationMinutes, 10) || 0);
+
+      if (!map.has(d)) {
+        map.set(d, {
+          date: d,
+          weight: '--',
+          bmi: '--',
+          workoutSessions: 0,
+          workoutMinutes: 0
+        });
+      }
+
+      const item = map.get(d);
+      item.workoutSessions += 1;
+      item.workoutMinutes += mins;
+    });
+
+    // Sort descending by date
+    this.dailyMergedRows = Array.from(map.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+  },
+
+  renderTable() {
+    const tbody = this.dom.tableTbody;
+    if (!tbody) return;
+
+    if (this.dailyMergedRows.length === 0) {
+      tbody.innerHTML = '';
     this.cachedAllWorkouts = window.storageService ? window.storageService.getWorkoutLogs() : [];
     
     // Initialize Canvas Chart
@@ -3350,6 +3849,31 @@ window.WorkoutJournalModule = WorkoutJournalModule;
 
     if (this.dom.tableEmpty) this.dom.tableEmpty.style.display = 'none';
 
+    const totalPages = Math.ceil(this.dailyMergedRows.length / this.pageSize) || 1;
+    this.currentPage = Math.min(this.currentPage, totalPages);
+    const startIdx = (this.currentPage - 1) * this.pageSize;
+    const pageRows = this.dailyMergedRows.slice(startIdx, startIdx + this.pageSize);
+
+    const rowsHtml = pageRows.map(row => {
+      const parts = row.date.split('-');
+      const dFmt = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : row.date;
+
+      return `
+        <tr>
+          <td style="font-weight: 600; color: var(--color-primary); white-space: nowrap;">
+            📅 ${dFmt}
+          </td>
+          <td style="font-weight: 700;">
+            ${row.weight !== '--' ? row.weight + ' kg' : '--'}
+          </td>
+          <td style="font-weight: 600;">
+            ${row.bmi !== '--' ? row.bmi : '--'}
+          </td>
+          <td>
+            ${row.workoutSessions > 0 ? `${row.workoutSessions} buổi` : '<span style="color: var(--color-text-muted);">Không</span>'}
+          </td>
+          <td>
+            ${row.workoutMinutes > 0 ? `${row.workoutMinutes} phút` : '<span style="color: var(--color-text-muted);">0p</span>'}
     // Sort
     entries.sort((a, b) => {
       const dateA = new Date(a.date);
@@ -3760,6 +4284,43 @@ window.WorkoutJournalModule = WorkoutJournalModule;
       `;
     });
 
+    tbody.innerHTML = rowsHtml.join('');
+
+    if (this.dom.pageInfo) {
+      this.dom.pageInfo.textContent = `Trang ${this.currentPage} / ${totalPages} (${this.dailyMergedRows.length} ngày ghi nhận)`;
+    }
+    if (this.dom.btnPagePrev) this.dom.btnPagePrev.disabled = this.currentPage <= 1;
+    if (this.dom.btnPageNext) this.dom.btnPageNext.disabled = this.currentPage >= totalPages;
+  },
+
+  exportToCsv() {
+    if (this.dailyMergedRows.length === 0) {
+      ToastModule.show('Không có dữ liệu trong khoảng thời gian này để xuất file.', 'flame');
+      return;
+    }
+
+    // CSV header with UTF-8 BOM
+    let csvContent = '\uFEFF';
+    csvContent += 'Ngày ghi nhận,Cân nặng (kg),Chỉ số BMI,Số buổi tập,Thời lượng tập (phút)\n';
+
+    this.dailyMergedRows.forEach(r => {
+      csvContent += `"${r.date}","${r.weight}","${r.bmi}","${r.workoutSessions}","${r.workoutMinutes}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `fitvn-health-report-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    ToastModule.show('Đã xuất file báo cáo CSV thành công!', 'emerald');
+  }
+};
+
+window.HealthReportsModule = HealthReportsModule;
     this.dom.tableTbody.innerHTML = rowsHtml.join('');
 
     // Pagination controls state

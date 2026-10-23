@@ -630,6 +630,17 @@ const HealthDashboardChart = {
 window.CanvasChartEngine = CanvasChartEngine;
 
 /**
+ * HealthReportsChartEngine - Pure Canvas Chart for Health Reports
+ * Supports:
+ * 1. Weight & BMI trend line chart with Target line
+ * 2. Workout distribution bar / horizontal breakdown
+ */
+const HealthReportsChartEngine = {
+  canvas: null,
+  ctx: null,
+  tooltipEl: null,
+  renderedElements: [],
+  padding: { top: 35, right: 30, bottom: 45, left: 55 },
  * WorkoutChartEngine - HTML5 Canvas Pure Vanilla Chart
  * Visualizes workout duration (minutes) per active day with hover tooltips
  * Theme: Jade & Porcelain (Rule 3)
@@ -673,6 +684,7 @@ const ProgressChartEngine = {
     if (!this.canvas) return;
 
     const handlePointer = (e) => {
+      if (this.renderedElements.length === 0) return;
       if (this.renderedBars.length === 0) return;
       if (this.renderedPoints.length === 0) return;
       const rect = this.canvas.getBoundingClientRect();
@@ -682,6 +694,14 @@ const ProgressChartEngine = {
       const mouseX = clientX - rect.left;
       const mouseY = clientY - rect.top;
 
+      let closest = null;
+      let minDist = Infinity;
+
+      this.renderedElements.forEach((el) => {
+        const dist = Math.abs(el.x - mouseX);
+        if (dist < minDist && dist < 45) {
+          minDist = dist;
+          closest = el;
       let hoveredBar = null;
       this.renderedBars.forEach(b => {
         if (mouseX >= b.x && mouseX <= b.x + b.w && mouseY >= b.y && mouseY <= b.y + b.h) {
@@ -746,6 +766,26 @@ const ProgressChartEngine = {
 
   showTooltip(point, rect) {
     if (!this.tooltipEl) return;
+    const item = point.data;
+
+    let targetDiffHtml = '';
+    if (point.targetWeight) {
+      const diff = (item.weight - point.targetWeight).toFixed(1);
+      const text = diff > 0 ? `+${diff} kg so với mục tiêu` : diff < 0 ? `${diff} kg so với mục tiêu` : 'Đạt mục tiêu!';
+      targetDiffHtml = `<div style="font-size: 0.73rem; color: #287653; margin-top: 2px;">🎯 ${text}</div>`;
+    }
+
+    const bmiHtml = item.bmi ? `<div style="font-size: 0.8rem; color: #63756B;">Chỉ số BMI: <strong style="color: #287653;">${Number(item.bmi).toFixed(1)}</strong></div>` : '';
+
+    this.tooltipEl.innerHTML = `
+      <div style="font-weight: 700; color: #173F35; margin-bottom: 4px; font-size: 0.78rem;">
+        📅 ${item.date}
+      </div>
+      <div style="font-size: 0.86rem; color: #202B28;">
+        Cân nặng: <strong style="color: #173F35; font-size: 0.95rem;">${Number(item.weight).toFixed(1)} kg</strong>
+      </div>
+      ${bmiHtml}
+      ${targetDiffHtml}
 
     const item = point.data;
     const isWeight = this.currentMetric === 'weight';
@@ -783,6 +823,8 @@ const ProgressChartEngine = {
     this.tooltipEl.style.display = 'block';
 
     const canvasWidth = this.canvas.clientWidth;
+    let leftPos = point.x + 12;
+    if (leftPos + 180 > canvasWidth) leftPos = point.x - 185;
     let leftPos = bar.x + bar.w / 2 - 60;
     if (leftPos + 140 > canvasWidth) leftPos = canvasWidth - 145;
     if (leftPos < 10) leftPos = 10;
@@ -804,6 +846,12 @@ const ProgressChartEngine = {
     }
   },
 
+  renderWeightReportChart(entries = [], targetWeight = null) {
+    if (!this.canvas || !this.ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const width = this.canvas.parentElement.clientWidth || 600;
+    const height = Math.max(240, Math.min(320, width * 0.42));
   render(groupedData) {
     if (!this.canvas || !this.ctx) return;
     this.data = groupedData || [];
@@ -836,6 +884,21 @@ const ProgressChartEngine = {
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
 
+    if (!entries || entries.length === 0) {
+      ctx.fillStyle = '#829087';
+      ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Không có dữ liệu cân nặng trong khoảng thời gian báo cáo.', width / 2, height / 2);
+      this.renderedElements = [];
+      return;
+    }
+
+    const weights = entries.map(e => Number(e.weight)).filter(w => !isNaN(w) && w > 0);
+    if (targetWeight) weights.push(targetWeight);
+
+    const minWeight = Math.floor(Math.min(...weights) - 1.5);
+    const maxWeight = Math.ceil(Math.max(...weights) + 1.5);
+    const weightSpan = Math.max(2, maxWeight - minWeight);
     if (this.data.length === 0) {
       ctx.fillStyle = '#829087';
       ctx.font = '500 13px "Be Vietnam Pro", sans-serif';
@@ -882,6 +945,13 @@ const ProgressChartEngine = {
     const chartW = width - pad.left - pad.right;
     const chartH = height - pad.top - pad.bottom;
 
+    const getX = (idx) => {
+      if (entries.length === 1) return pad.left + chartW / 2;
+      return pad.left + (idx / (entries.length - 1)) * chartW;
+    };
+    const getY = (w) => pad.top + (1 - (w - minWeight) / weightSpan) * chartH;
+
+    // 1. Grid & Y Axis
     // 1. Grid & Y Axis
     ctx.strokeStyle = '#DDE3D9';
     ctx.lineWidth = 1;
@@ -958,6 +1028,9 @@ window.WorkoutChartEngine = WorkoutChartEngine;
     ctx.font = '500 11px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'right';
 
+    const yStep = Math.max(1, Math.round(weightSpan / 4));
+    for (let w = minWeight; w <= maxWeight; w += yStep) {
+      const yPos = getY(w);
     const yStep = Math.max(isWeight ? 1 : 0.5, Math.round((valSpan / 4) * 10) / 10);
     for (let v = minVal; v <= maxVal; v += yStep) {
       const yPos = getY(v);
@@ -965,6 +1038,12 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       ctx.moveTo(pad.left, yPos);
       ctx.lineTo(width - pad.right, yPos);
       ctx.stroke();
+      ctx.fillText(`${w} kg`, pad.left - 8, yPos + 4);
+    }
+
+    // 2. Target Line
+    if (targetWeight && targetWeight >= minWeight && targetWeight <= maxWeight) {
+      const targetY = getY(targetWeight);
       ctx.fillText(`${v.toFixed(isWeight ? 0 : 1)} ${isWeight ? 'kg' : ''}`, pad.left - 8, yPos + 4);
     }
 
@@ -983,6 +1062,23 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       ctx.fillStyle = '#287653';
       ctx.font = '600 10.5px "Be Vietnam Pro", sans-serif';
       ctx.textAlign = 'left';
+      ctx.fillText(`Mục tiêu: ${targetWeight} kg`, pad.left + 8, targetY - 6);
+      ctx.restore();
+    }
+
+    // 3. Map Points
+    this.renderedElements = entries.map((e, idx) => ({
+      x: getX(idx),
+      y: getY(Number(e.weight)),
+      data: e,
+      targetWeight
+    }));
+
+    // 4. Fill Area Gradient
+    if (this.renderedElements.length > 1) {
+      ctx.save();
+      const areaGrad = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
+      areaGrad.addColorStop(0, 'rgba(23, 63, 53, 0.16)');
       ctx.fillText(`Mục tiêu: ${this.targetWeight} kg`, pad.left + 8, targetY - 6);
       ctx.restore();
     } else if (!isWeight) {
@@ -1027,6 +1123,12 @@ window.WorkoutChartEngine = WorkoutChartEngine;
       ctx.fillStyle = areaGrad;
 
       ctx.beginPath();
+      ctx.moveTo(this.renderedElements[0].x, pad.top + chartH);
+      ctx.lineTo(this.renderedElements[0].x, this.renderedElements[0].y);
+      for (let i = 1; i < this.renderedElements.length; i++) {
+        ctx.lineTo(this.renderedElements[i].x, this.renderedElements[i].y);
+      }
+      ctx.lineTo(this.renderedElements[this.renderedElements.length - 1].x, pad.top + chartH);
       ctx.moveTo(this.renderedPoints[0].x, pad.top + chartH);
       ctx.lineTo(this.renderedPoints[0].x, this.renderedPoints[0].y);
       for (let i = 1; i < this.renderedPoints.length; i++) {
@@ -1040,6 +1142,12 @@ window.WorkoutChartEngine = WorkoutChartEngine;
 
     // 5. Draw Curve Stroke
     ctx.save();
+    ctx.strokeStyle = '#173F35';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(this.renderedElements[0].x, this.renderedElements[0].y);
+    for (let i = 1; i < this.renderedElements.length; i++) {
+      ctx.lineTo(this.renderedElements[i].x, this.renderedElements[i].y);
     ctx.strokeStyle = isWeight ? '#173F35' : '#397866';
     ctx.lineWidth = 2.8;
     ctx.beginPath();
@@ -1050,11 +1158,18 @@ window.WorkoutChartEngine = WorkoutChartEngine;
     ctx.stroke();
     ctx.restore();
 
+    // 6. Draw Points & Date Labels
     // 6. Draw Points and Labels
     ctx.font = '500 10.5px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#63756B';
 
+    const stepLabel = Math.max(1, Math.ceil(this.renderedElements.length / 7));
+    this.renderedElements.forEach((p, idx) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
     const stepLabel = Math.max(1, Math.ceil(this.renderedPoints.length / 8));
 
     this.renderedPoints.forEach((p, idx) => {
@@ -1070,6 +1185,12 @@ window.WorkoutChartEngine = WorkoutChartEngine;
 
       ctx.beginPath();
       ctx.strokeStyle = '#173F35';
+      ctx.lineWidth = 2.2;
+      ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      if (idx % stepLabel === 0 || idx === this.renderedElements.length - 1) {
       ctx.lineWidth = 2;
       ctx.arc(p.x, p.y, isEnd || isStart ? 5.5 : 4, 0, Math.PI * 2);
       ctx.stroke();
@@ -1085,5 +1206,6 @@ window.WorkoutChartEngine = WorkoutChartEngine;
   }
 };
 
+window.HealthReportsChartEngine = HealthReportsChartEngine;
 window.ProgressChartEngine = ProgressChartEngine;
 window.HealthDashboardChart = HealthDashboardChart;
