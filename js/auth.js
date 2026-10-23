@@ -2,11 +2,13 @@ const AuthModule = {
   activeTab: 'login',
 
   init() {
+    console.log('[AuthModule] Initializing...');
     this.checkSessionAndRedirect();
     this.bindTabEvents();
     this.bindPasswordToggleEvents();
     this.bindFormEvents();
     this.checkAutoFill();
+    console.log('[AuthModule] Initialized successfully');
   },
 
   checkSessionAndRedirect() {
@@ -102,15 +104,25 @@ const AuthModule = {
   },
 
   bindFormEvents() {
+    console.log('[AuthModule] Binding form events...');
     const formLogin = document.getElementById('form-login');
     const formSignup = document.getElementById('form-signup');
 
+    console.log('[AuthModule] formLogin found:', !!formLogin);
+    console.log('[AuthModule] formSignup found:', !!formSignup);
+
     if (formLogin) {
-      formLogin.addEventListener('submit', (e) => this.handleLoginSubmit(e));
+      formLogin.addEventListener('submit', (e) => {
+        console.log('[AuthModule] Login form submitted');
+        this.handleLoginSubmit(e);
+      });
     }
 
     if (formSignup) {
-      formSignup.addEventListener('submit', (e) => this.handleSignupSubmit(e));
+      formSignup.addEventListener('submit', (e) => {
+        console.log('[AuthModule] Signup form submitted');
+        this.handleSignupSubmit(e);
+      });
     }
 
     ['login-email', 'login-password', 'signup-name', 'signup-email', 'signup-password', 'signup-confirm-password', 'signup-age', 'signup-height', 'signup-weight'].forEach(id => {
@@ -119,6 +131,7 @@ const AuthModule = {
         el.addEventListener('input', () => this.clearFieldError(id));
       }
     });
+    console.log('[AuthModule] Form events bound');
   },
 
   setFieldError(fieldId, message) {
@@ -169,12 +182,16 @@ const AuthModule = {
 
   async handleLoginSubmit(e) {
     e.preventDefault();
+    console.log('[AuthModule] handleLoginSubmit called');
     this.clearErrors();
     this.hideAlert();
 
     const email = document.getElementById('login-email')?.value.trim();
     const password = document.getElementById('login-password')?.value;
     const submitBtn = document.getElementById('btn-submit-login');
+
+    console.log('[AuthModule] Email:', email);
+    console.log('[AuthModule] Password:', password ? '***' : 'empty');
 
     let hasError = false;
 
@@ -191,8 +208,12 @@ const AuthModule = {
       hasError = true;
     }
 
-    if (hasError) return;
+    if (hasError) {
+      console.log('[AuthModule] Validation failed');
+      return;
+    }
 
+    console.log('[AuthModule] Calling storageService.loginUser...');
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Đang đăng nhập...';
@@ -200,6 +221,7 @@ const AuthModule = {
 
     try {
       const result = await window.storageService.loginUser(email, password);
+      console.log('[AuthModule] Login result:', result);
       if (!result.success) {
         this.showAlert(result.message || 'Email hoặc mật khẩu không chính xác', 'error');
         if (submitBtn) {
@@ -221,6 +243,7 @@ const AuthModule = {
         window.location.href = redirectUrl;
       }, 500);
     } catch (err) {
+      console.error('[AuthModule] Login error:', err);
       this.showAlert('Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại.', 'error');
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -231,6 +254,7 @@ const AuthModule = {
 
   async handleSignupSubmit(e) {
     e.preventDefault();
+    console.log('[AuthModule] handleSignupSubmit called');
     this.clearErrors();
     this.hideAlert();
 
@@ -245,6 +269,8 @@ const AuthModule = {
     const weight = parseFloat(document.getElementById('signup-weight')?.value);
     const fitnessGoal = document.getElementById('signup-goal')?.value;
     const submitBtn = document.getElementById('btn-submit-signup');
+
+    console.log('[AuthModule] Signup data:', { name, email, gender, age, height, weight, fitnessGoal });
 
     let hasError = false;
 
@@ -295,8 +321,12 @@ const AuthModule = {
       hasError = true;
     }
 
-    if (hasError) return;
+    if (hasError) {
+      console.log('[AuthModule] Signup validation failed');
+      return;
+    }
 
+    console.log('[AuthModule] Calling storageService.registerUser...');
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Đang đăng ký...';
@@ -313,6 +343,8 @@ const AuthModule = {
         weight,
         fitnessGoal
       });
+
+      console.log('[AuthModule] Signup result:', result);
 
       if (!result.success) {
         this.showAlert(result.message || 'Không thể đăng ký tài khoản!', 'error');
@@ -332,6 +364,7 @@ const AuthModule = {
         window.location.href = '../index.html';
       }, 700);
     } catch (err) {
+      console.error('[AuthModule] Signup error:', err);
       this.showAlert('Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại.', 'error');
       if (submitBtn) {
         submitBtn.disabled = false;
