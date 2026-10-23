@@ -360,6 +360,9 @@ const AuthModule = {
         window.ToastModule.show(`Chào mừng ${result.user.name} đến với FitVN Tracker!`, 'cyan');
       }
 
+      // Set flag to show onboarding after redirect
+      sessionStorage.setItem('fitvn_show_onboarding', 'true');
+
       setTimeout(() => {
         window.location.href = '../index.html';
       }, 700);
