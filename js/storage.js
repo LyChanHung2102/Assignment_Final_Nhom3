@@ -11,6 +11,11 @@ const STORAGE_KEYS = {
   REDIRECT_AFTER_LOGIN: 'fitvn_redirect_url'
 };
 
+// Expose STORAGE_KEYS to window for use in other modules
+if (typeof window !== 'undefined') {
+  window.STORAGE_KEYS = STORAGE_KEYS;
+}
+
 function getTodayDateString() {
   const today = new Date();
   const year = today.getFullYear();
