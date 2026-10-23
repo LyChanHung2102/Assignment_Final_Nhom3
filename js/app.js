@@ -107,6 +107,7 @@ const ToastModule = {
       this.containerEl.id = 'toast-container';
       document.body.appendChild(this.containerEl);
     }
+    this.bindLogoutEvents();
   },
 
   show(message, type = 'cyan') {
