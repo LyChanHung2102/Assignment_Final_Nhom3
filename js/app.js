@@ -3547,6 +3547,7 @@ const WorkoutJournalModule = {
     this.dom.inputNotes.value = '';
 
     this.dom.modalForm.style.display = 'flex';
+    this.dom.modalForm.classList.add('active');
   },
 
   openEditForm(item) {
@@ -3570,10 +3571,12 @@ const WorkoutJournalModule = {
     this.dom.inputNotes.value = item.notes || '';
 
     this.dom.modalForm.style.display = 'flex';
+    this.dom.modalForm.classList.add('active');
   },
 
   closeFormModal() {
     if (this.dom.modalForm) {
+      this.dom.modalForm.classList.remove('active');
       this.dom.modalForm.style.display = 'none';
     }
   },
@@ -3742,10 +3745,12 @@ const WorkoutJournalModule = {
     }
 
     this.dom.modalDetail.style.display = 'flex';
+    this.dom.modalDetail.classList.add('active');
   },
 
   closeDetailModal() {
     if (this.dom.modalDetail) {
+      this.dom.modalDetail.classList.remove('active');
       this.dom.modalDetail.style.display = 'none';
     }
   },
@@ -3758,12 +3763,14 @@ const WorkoutJournalModule = {
     }
     if (this.dom.modalDelete) {
       this.dom.modalDelete.style.display = 'flex';
+      this.dom.modalDelete.classList.add('active');
     }
   },
 
   closeDeleteModal() {
     this.pendingDeleteId = null;
     if (this.dom.modalDelete) {
+      this.dom.modalDelete.classList.remove('active');
       this.dom.modalDelete.style.display = 'none';
     }
   }

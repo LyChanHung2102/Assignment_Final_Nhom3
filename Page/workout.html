@@ -309,7 +309,7 @@
 
   
   <div class="glass-modal-backdrop" id="wo-modal-form" role="dialog" aria-modal="true" aria-labelledby="wo-modal-form-title" style="display: none;">
-    <div class="glass-modal-container" style="max-width: 540px;">
+    <div class="glass-modal-container workout-form-modal">
       <div class="modal-header">
         <div class="modal-title-group">
           <h3 class="modal-title" id="wo-modal-form-title">Ghi Nhận Buổi Tập</h3>
@@ -318,25 +318,23 @@
         <button type="button" class="modal-close-btn" id="wo-modal-form-close" aria-label="Đóng">&times;</button>
       </div>
 
-      <form id="form-workout-entry" novalidate>
+      <form id="form-workout-entry" class="modal-body workout-form" novalidate>
         <input type="hidden" id="wo-input-id" value="">
 
-        
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label for="wo-input-title" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+        <div class="form-group workout-form-group">
+          <label for="wo-input-title" class="form-label">
             Tên buổi tập <span style="color: var(--color-danger, #B83E42);">*</span>
           </label>
-          <input type="text" id="wo-input-title" class="form-control" placeholder="Ví dụ: Đẩy ngực vai (Push Day), Chạy bộ Zone 2..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+          <input type="text" id="wo-input-title" class="form-control workout-form-control" placeholder="Ví dụ: Đẩy ngực vai (Push Day), Chạy bộ Zone 2..." required>
           <div class="form-invalid-feedback" id="feedback-wo-title">Vui lòng nhập tên buổi tập.</div>
         </div>
 
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-          <div class="form-group">
-            <label for="wo-input-type" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+        <div class="workout-form-row">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-type" class="form-label">
               Loại hình <span style="color: var(--color-danger, #B83E42);">*</span>
             </label>
-            <select id="wo-input-type" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+            <select id="wo-input-type" class="form-control workout-form-control" required>
               <option value="gym">🏋️‍♂️ Tập Gym</option>
               <option value="running">🏃‍♂️ Chạy bộ</option>
               <option value="walking">🚶‍♂️ Đi bộ</option>
@@ -349,11 +347,11 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="wo-input-intensity" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-intensity" class="form-label">
               Cường độ
             </label>
-            <select id="wo-input-intensity" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <select id="wo-input-intensity" class="form-control workout-form-control">
               <option value="medium">Trung bình</option>
               <option value="high">Cường độ cao</option>
               <option value="low">Nhẹ nhàng</option>
@@ -361,68 +359,64 @@
           </div>
         </div>
 
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-          <div class="form-group">
-            <label for="wo-input-date" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+        <div class="workout-form-row">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-date" class="form-label">
               Ngày tập <span style="color: var(--color-danger, #B83E42);">*</span>
             </label>
-            <input type="date" id="wo-input-date" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+            <input type="date" id="wo-input-date" class="form-control workout-form-control" required>
             <div class="form-invalid-feedback" id="feedback-wo-date">Ngày tập không hợp lệ.</div>
           </div>
 
-          <div class="form-group">
-            <label for="wo-input-duration" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-duration" class="form-label">
               Thời lượng (phút) <span style="color: var(--color-danger, #B83E42);">*</span>
             </label>
-            <input type="number" min="1" max="720" id="wo-input-duration" class="form-control" placeholder="Ví dụ: 60" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;" required>
+            <input type="number" min="1" max="720" id="wo-input-duration" class="form-control workout-form-control" placeholder="Ví dụ: 60" required>
             <div class="form-invalid-feedback" id="feedback-wo-duration">Thời lượng phải lớn hơn 0 và dưới 720 phút.</div>
           </div>
         </div>
 
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-          <div class="form-group">
-            <label for="wo-input-start-time" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+        <div class="workout-form-row">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-start-time" class="form-label">
               Giờ bắt đầu
             </label>
-            <input type="time" id="wo-input-start-time" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <input type="time" id="wo-input-start-time" class="form-control workout-form-control">
           </div>
 
-          <div class="form-group">
-            <label for="wo-input-end-time" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-end-time" class="form-label">
               Giờ kết thúc
             </label>
-            <input type="time" id="wo-input-end-time" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <input type="time" id="wo-input-end-time" class="form-control workout-form-control">
             <div class="form-invalid-feedback" id="feedback-wo-time">Giờ kết thúc phải sau giờ bắt đầu.</div>
           </div>
         </div>
 
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-          <div class="form-group">
-            <label for="wo-input-distance" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+        <div class="workout-form-row">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-distance" class="form-label">
               Quãng đường (km)
             </label>
-            <input type="number" step="0.01" min="0" id="wo-input-distance" class="form-control" placeholder="Ví dụ: 5.2" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <input type="number" step="0.01" min="0" id="wo-input-distance" class="form-control workout-form-control" placeholder="Ví dụ: 5.2">
             <div class="form-invalid-feedback" id="feedback-wo-distance">Quãng đường không thể âm.</div>
           </div>
 
-          <div class="form-group">
-            <label for="wo-input-steps" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+          <div class="form-group workout-form-group">
+            <label for="wo-input-steps" class="form-label">
               Số bước chân
             </label>
-            <input type="number" min="0" id="wo-input-steps" class="form-control" placeholder="Ví dụ: 6400" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+            <input type="number" min="0" id="wo-input-steps" class="form-control workout-form-control" placeholder="Ví dụ: 6400">
             <div class="form-invalid-feedback" id="feedback-wo-steps">Số bước chân không thể âm.</div>
           </div>
         </div>
 
-        
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label for="wo-input-feeling" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+        <div class="form-group workout-form-group">
+          <label for="wo-input-feeling" class="form-label">
             Cảm nhận sau buổi tập
           </label>
-          <select id="wo-input-feeling" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px;">
+          <select id="wo-input-feeling" class="form-control workout-form-control">
             <option value="great">🔥 Tuyệt vời, tràn đầy năng lượng</option>
             <option value="good">👍 Khỏe khoắn, đạt chỉ tiêu</option>
             <option value="tired">🥱 Hơi mệt, căng cơ tốt</option>
@@ -430,15 +424,14 @@
           </select>
         </div>
 
-        
-        <div class="form-group" style="margin-bottom: 16px;">
-          <label for="wo-input-notes" class="form-label" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px;">
+        <div class="form-group workout-form-group">
+          <label for="wo-input-notes" class="form-label">
             Ghi chú buổi tập (tối đa 500 ký tự)
           </label>
-          <textarea id="wo-input-notes" maxlength="500" rows="3" class="form-control" placeholder="Nhập các bài tập chính, mức tạ, reps/sets hoặc lưu ý thể trạng..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--color-border); border-radius: 8px; resize: vertical;"></textarea>
+          <textarea id="wo-input-notes" maxlength="500" rows="3" class="form-control workout-form-control workout-form-notes" placeholder="Nhập các bài tập chính, mức tạ, reps/sets hoặc lưu ý thể trạng..."></textarea>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <div class="workout-form-actions">
           <button type="button" class="glass-btn" id="wo-modal-form-cancel">Hủy</button>
           <button type="submit" class="glass-btn glass-btn-primary" id="wo-btn-submit-form">Lưu Buổi Tập</button>
         </div>
@@ -498,6 +491,7 @@
 
   
   <script src="../js/calculator.js"></script>
+  <script src="../js/foodDatabase.js"></script>
   <script src="../js/chart.js"></script>
   <script src="../js/storage.js"></script>
   <script src="../js/app.js"></script>

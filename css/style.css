@@ -2816,6 +2816,103 @@ body.theme-porcelain #app-layout,
    WORKOUT JOURNAL FEATURE STYLES (Jade & Porcelain Theme)
    ========================================================================== */
 
+.workout-form-modal {
+  max-width: 620px;
+}
+
+.workout-form {
+  min-height: 0;
+  gap: 16px;
+  padding: 20px 24px 24px;
+}
+
+.workout-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.workout-form-group {
+  min-width: 0;
+  gap: 7px;
+}
+
+.workout-form-group .form-label {
+  color: var(--color-text, #202B28);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.workout-form-control {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border, #DDE3D9);
+  border-radius: 10px;
+  background: var(--color-surface, #FFFEFA);
+  color: var(--color-text, #202B28);
+  font: inherit;
+  font-size: 0.88rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.workout-form-control:focus {
+  outline: none;
+  border-color: var(--color-border-focus, #397866);
+  background: #FFFFFF;
+  box-shadow: var(--shadow-focus, 0 0 0 3px rgba(57, 120, 102, 0.16));
+}
+
+.workout-form-control::placeholder {
+  color: var(--color-text-muted, #829087);
+}
+
+.workout-form-notes {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.workout-form-control.is-invalid {
+  border-color: var(--color-danger, #B83E42);
+}
+
+.workout-form-actions {
+  position: sticky;
+  bottom: -24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 2px -24px -24px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--color-border, #DDE3D9);
+  background: var(--color-surface, #FFFEFA);
+}
+
+.workout-form-actions .glass-btn {
+  min-width: 112px;
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .workout-form-modal {
+    max-height: 92vh;
+  }
+
+  .workout-form {
+    padding: 16px 18px 20px;
+  }
+
+  .workout-form-row {
+    gap: 12px;
+  }
+
+  .workout-form-actions {
+    bottom: -20px;
+    margin: 2px -18px -20px;
+    padding: 14px 18px 16px;
+  }
+}
 
 .workout-item-card {
   display: flex;
