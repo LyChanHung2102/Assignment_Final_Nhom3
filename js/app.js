@@ -2,17 +2,18 @@ const AuthGuard = {
   checkAccess() {
     const pathname = window.location.pathname.toLowerCase();
     const isAuthPage = pathname.includes("auth.html");
+    const isLandingPage = pathname.includes("landing-page.html");
     const isSubdir = pathname.includes("/page/");
-    const authPath = isSubdir ? "auth.html" : "Page/auth.html";
+    const landingPath = isSubdir ? "landing-page.html" : "Page/landing-page.html";
     const homePath = isSubdir ? "../index.html" : "index.html";
     const hasSession = window.storageService && window.storageService.hasActiveSession();
 
-    if (!hasSession && !isAuthPage) {
+    if (!hasSession && !isAuthPage && !isLandingPage) {
       try {
         const currentRel = window.location.pathname + window.location.search;
         sessionStorage.setItem("fitvn_redirect_url", currentRel);
       } catch (e) {}
-      window.location.replace(authPath);
+      window.location.replace(landingPath);
       return false;
     }
 
