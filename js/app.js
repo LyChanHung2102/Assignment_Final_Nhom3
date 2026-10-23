@@ -212,12 +212,24 @@ const NavigationModule = {
     const currentPath = window.location.pathname.toLowerCase();
 
     let activeKey = 'dashboard';
-    if (currentPath.includes('food-log.html')) {
-      activeKey = 'food';
+    if (currentPath.includes('progress-charts.html')) {
+      activeKey = 'progress-charts';
+    } else if (currentPath.includes('health-dashboard.html')) {
+      activeKey = 'health-dashboard';
+    } else if (currentPath.includes('workout.html')) {
+      activeKey = 'workout';
+    } else if (currentPath.includes('reports.html')) {
+      activeKey = 'reports';
     } else if (currentPath.includes('weight.html')) {
       activeKey = 'weight';
+    } else if (currentPath.includes('food-log.html')) {
+      activeKey = 'food';
+    } else if (currentPath.includes('food-search.html')) {
+      activeKey = 'food-search';
     } else if (currentPath.includes('settings.html')) {
       activeKey = 'settings';
+    } else if (currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath === '') {
+      activeKey = 'dashboard';
     }
 
     this.navLinks.forEach((link) => {
