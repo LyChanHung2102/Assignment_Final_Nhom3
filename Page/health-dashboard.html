@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#F7F6F0">
+  <meta name="description" content="Health Tracking Dashboard - Tổng quan sức khỏe, BMI & tiến độ cân nặng FitVN Tracker">
+  <title>Health Dashboard - FitVN Tracker</title>
+
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/glass.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="theme-porcelain">
+
+  <div id="app-layout">
+    
+    <nav class="app-navigation glass-nav" id="app-nav" aria-label="Main Navigation">
+      <div class="nav-brand-desktop">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">FitVN Tracker</span>
+          <span class="brand-sub">Gym & Nutrition</span>
+        </div>
+      </div>
+
+            <ul class="nav-list" role="tablist">
+        <li class="nav-item">
+          <a href="../index.html" class="nav-link" data-page="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+            <span class="nav-label">Trang Chủ</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="health-dashboard.html" class="nav-link active" data-page="health-dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span class="nav-label">Sức Khỏe</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="progress-charts.html" class="nav-link" data-page="progress-charts">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span class="nav-label">Tiến Trình</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="workout.html" class="nav-link" data-page="workout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M6.5 12h11M4 3v18M20 3v18"/></svg>
+            <span class="nav-label">Tập Luyện</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span class="nav-label">Báo Cáo</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="weight.html" class="nav-link" data-page="weight">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/></svg>
+            <span class="nav-label">Cân Nặng</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="food-log.html" class="nav-link" data-page="food">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            <span class="nav-label">Nhật Ký</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="food-search.html" class="nav-link" data-page="food-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span class="nav-label">Tra Cứu</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-page="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span class="nav-label">Cá Nhân</span>
+          </a>
+        </li>
+      </ul>
+
+      
+      <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
+        <div class="avatar-pill">VN</div>
+        <div class="user-info-snippet">
+          <span class="user-name">Người dùng FitVN</span>
+          <span class="user-goal-tag">Đang tải hồ sơ...</span>
+        </div>
+      </a>
+    </nav>
+
+    
+    <div class="content-wrapper">
+      
+      <header class="app-header glass-header">
+        <div class="header-left">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+            </svg>
+          </div>
+          <span class="brand-title">FitVN Tracker</span>
+        </div>
+        <div class="header-center">
+          <h1 class="header-tab-title" id="header-title">Health Dashboard</h1>
+          <span class="header-date-badge" id="header-date">Hôm nay</span>
+        </div>
+        <div class="header-right">
+          <a href="auth.html" class="avatar-pill" title="Hồ sơ tài khoản">VN</a>
+        </div>
+      </header>
+
+      
+      <main class="main-viewport">
+        <section class="tab-content active" id="tab-health-dashboard">
+          
+          
+          <div class="incomplete-profile-banner" id="health-incomplete-banner" style="display: none;">
+            <div>
+              <h4>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                Hồ sơ sức khỏe chưa hoàn thiện
+              </h4>
+              <p>Vui lòng cập nhật đầy đủ chiều cao và cân nặng trong hồ sơ để hệ thống tính toán chính xác chỉ số BMI và tiến độ.</p>
+            </div>
+            <a href="settings.html" class="glass-btn glass-btn-primary" style="font-size: 0.8rem; white-space: nowrap;">
+              Cập Nhật Hồ Sơ
+            </a>
+          </div>
+
+          
+          <div class="section-header" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 class="section-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #173F35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+                <span id="health-greeting-title">Tổng Quan Sức Khỏe Cá Nhân</span>
+              </h2>
+              <p class="section-subtitle" id="health-greeting-subtitle">Theo dõi BMI, diễn biến cân nặng và mức độ hoàn thành mục tiêu thể chất</p>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <a href="weight.html#log-weight" class="glass-btn glass-btn-primary" id="btn-quick-log-weight">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Ghi Cân Nặng Mới
+              </a>
+            </div>
+          </div>
+
+          
+          <div class="grid-cards grid-cards-4">
+            
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>BMI HIỆN TẠI</span>
+                <span class="glass-badge" id="hd-bmi-badge">--</span>
+              </div>
+              <div class="stat-value" id="hd-bmi-val">-- <span class="stat-unit">kg/m²</span></div>
+              <div style="font-size: 0.8rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;" id="hd-bmi-status-text">
+                Đang tải dữ liệu...
+              </div>
+            </div>
+
+            
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>CÂN NẶNG HIỆN TẠI</span>
+                <span class="glass-badge glass-badge-emerald" id="hd-weight-change-badge">Mới nhất</span>
+              </div>
+              <div class="stat-value" id="hd-weight-val">-- <span class="stat-unit">kg</span></div>
+              <div style="font-size: 0.8rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;" id="hd-weight-change-text">
+                Chưa có dữ liệu so sánh
+              </div>
+            </div>
+
+            
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>CHIỀU CAO</span>
+                <span class="glass-badge glass-badge-cyan">Hồ sơ</span>
+              </div>
+              <div class="stat-value" id="hd-height-val">-- <span class="stat-unit">cm</span></div>
+              <div style="font-size: 0.8rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;">
+                Chiều cao chuẩn hóa
+              </div>
+            </div>
+
+            
+            <div class="glass-card stat-card glass-card-interactive">
+              <div class="stat-header">
+                <span>MỤC TIÊU CÂN NẶNG</span>
+                <span class="glass-badge glass-badge-emerald" id="hd-target-badge">Mục tiêu</span>
+              </div>
+              <div class="stat-value" id="hd-target-val">-- <span class="stat-unit">kg</span></div>
+              <div style="font-size: 0.8rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;" id="hd-target-diff-text">
+                Khoảng cách đến đích
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="glass-card stat-card" style="margin-top: var(--spacing-md);">
+            <div class="stat-header">
+              <span style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary, #173F35); display: flex; align-items: center; gap: 8px;">
+                <span>📊</span>
+                <span>Phân Tích Chỉ Số Khối Cơ Thể (BMI Analysis)</span>
+              </span>
+              <span class="glass-badge" id="hd-bmi-category-badge">Đang phân tích</span>
+            </div>
+
+            <p style="font-size: 0.84rem; color: var(--color-text-secondary, #63756B); margin-top: 4px;" id="hd-bmi-explanation">
+              Chỉ số khối cơ thể (BMI) là công cụ sàng lọc thể trọng dựa trên tỷ lệ cân nặng và bình phương chiều cao.
+            </p>
+
+            
+            <div class="bmi-spectrum-container">
+              <div class="bmi-spectrum-bar" id="hd-bmi-bar" aria-label="Thang đo chỉ số BMI">
+                <div class="bmi-segment bmi-segment-underweight" title="Thiếu cân (< 18.5)"></div>
+                <div class="bmi-segment bmi-segment-normal" title="Bình thường (18.5 - 24.9)"></div>
+                <div class="bmi-segment bmi-segment-overweight" title="Thừa cân (25.0 - 29.9)"></div>
+                <div class="bmi-segment bmi-segment-obese" title="Béo phì (≥ 30.0)"></div>
+                
+                <div class="bmi-needle-indicator" id="hd-bmi-needle" style="left: 0%; display: none;"></div>
+              </div>
+
+              
+              <div class="bmi-legend-labels">
+                <div class="bmi-legend-item">
+                  <span class="bmi-legend-dot" style="background: var(--color-bmi-underweight, #326B82);"></span>
+                  <span>Thiếu cân (&lt; 18.5)</span>
+                </div>
+                <div class="bmi-legend-item">
+                  <span class="bmi-legend-dot" style="background: var(--color-bmi-normal, #287653);"></span>
+                  <span>Bình thường (18.5 - 24.9)</span>
+                </div>
+                <div class="bmi-legend-item">
+                  <span class="bmi-legend-dot" style="background: var(--color-bmi-overweight, #946414);"></span>
+                  <span>Thừa cân (25.0 - 29.9)</span>
+                </div>
+                <div class="bmi-legend-item">
+                  <span class="bmi-legend-dot" style="background: var(--color-bmi-obesity, #B83E42);"></span>
+                  <span>Béo phì (≥ 30.0)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; font-size: 0.76rem; color: var(--color-text-muted, #829087); border-top: 1px solid var(--color-border, #DDE3D9); padding-top: 8px;">
+              * Lưu ý: BMI là chỉ số sàng lọc tham khảo cho người trưởng thành, không thay thế chẩn đoán y tế. Người tập tạ nhiều cơ bắp có thể có BMI cao nhưng tỷ lệ mỡ thấp.
+            </div>
+          </div>
+
+          
+          <div class="glass-card chart-container-card" style="margin-top: var(--spacing-md);">
+            <div class="chart-header-row" style="flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary, #173F35); display: flex; align-items: center; gap: 8px;">
+                  <span>📈</span>
+                  <span>Biểu Đồ Theo Dõi Cân Nặng (Weight Tracking Chart)</span>
+                </h3>
+                <p style="font-size: 0.78rem; color: var(--color-text-secondary, #63756B); margin-top: 2px;">
+                  Đường biểu diễn cân nặng thực tế và đường tham chiếu mục tiêu theo thời gian
+                </p>
+              </div>
+
+              
+              <div class="time-filter-pills" role="group" aria-label="Khoảng thời gian biểu đồ">
+                <button type="button" class="time-pill-btn" data-range="7d">7 Ngày</button>
+                <button type="button" class="time-pill-btn" data-range="30d">30 Ngày</button>
+                <button type="button" class="time-pill-btn active" data-range="all">Tất cả</button>
+              </div>
+            </div>
+
+            
+            <div style="display: flex; gap: 16px; font-size: 0.76rem; color: var(--color-text-secondary, #63756B); margin-top: 6px;">
+              <span style="display: inline-flex; align-items: center; gap: 6px;">
+                <span style="width: 14px; height: 3px; background: #173F35; display: inline-block; border-radius: 2px;"></span>
+                Cân nặng thực tế
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 6px;">
+                <span style="width: 14px; height: 0; border-top: 2px dashed #287653; display: inline-block;"></span>
+                Đường mục tiêu
+              </span>
+            </div>
+
+            
+            <div class="chart-viewport" style="margin-top: 10px;">
+              <canvas id="health-weight-canvas"></canvas>
+              <div class="canvas-tooltip" id="health-weight-tooltip"></div>
+            </div>
+          </div>
+
+          
+          <div class="grid-cards" style="margin-top: var(--spacing-md); grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+            
+            
+            <div class="glass-card stat-card">
+              <div class="stat-header">
+                <span style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary, #173F35); display: flex; align-items: center; gap: 8px;">
+                  <span>🎯</span>
+                  <span>Tiến Độ Mục Tiêu Cân Nặng</span>
+                </span>
+                <span class="glass-badge glass-badge-emerald" id="hd-goal-percent-badge">0%</span>
+              </div>
+
+              <div class="goal-progress-card-inner" style="margin-top: 8px;">
+                <div class="goal-milestones-row">
+                  <div class="milestone-node">
+                    <div class="milestone-label">Ban đầu</div>
+                    <div class="milestone-value" id="hd-goal-initial-val">-- kg</div>
+                  </div>
+                  <div style="font-size: 1.2rem; color: var(--color-text-muted, #829087);">&#8594;</div>
+                  <div class="milestone-node">
+                    <div class="milestone-label">Hiện tại</div>
+                    <div class="milestone-value" style="color: var(--color-primary, #173F35);" id="hd-goal-current-val">-- kg</div>
+                  </div>
+                  <div style="font-size: 1.2rem; color: var(--color-text-muted, #829087);">&#8594;</div>
+                  <div class="milestone-node">
+                    <div class="milestone-label">Mục tiêu</div>
+                    <div class="milestone-value" style="color: var(--color-success, #287653);" id="hd-goal-target-val">-- kg</div>
+                  </div>
+                </div>
+
+                <div class="goal-progress-track">
+                  <div class="goal-progress-bar-fill" id="hd-goal-bar-fill" style="width: 0%;"></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--color-text-secondary, #63756B);">
+                  <span id="hd-goal-status-desc">Đang tính toán tiến trình...</span>
+                  <strong style="color: var(--color-primary, #173F35);" id="hd-goal-remaining-diff">--</strong>
+                </div>
+              </div>
+            </div>
+
+            
+            <div class="glass-card stat-card">
+              <div class="stat-header">
+                <span style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary, #173F35); display: flex; align-items: center; gap: 8px;">
+                  <span>💧</span>
+                  <span>Chỉ Số Sinh Hoạt Trong Ngày</span>
+                </span>
+                <span style="font-size: 0.75rem; color: var(--color-text-muted, #829087);">Hôm nay</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px;">
+                
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                    <span style="color: #326B82; font-weight: 600;">💧 Lượng nước uống:</span>
+                    <strong id="hd-metric-water-val">0 / 3,000 ml</strong>
+                  </div>
+                  <div class="progress-track" style="height: 8px;">
+                    <div class="progress-fill" id="hd-metric-water-progress" style="width: 0%; background: #326B82;"></div>
+                  </div>
+                </div>
+
+                
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                    <span style="color: var(--color-primary, #173F35); font-weight: 600;">🔥 Calo nạp vào:</span>
+                    <strong id="hd-metric-calories-val">0 / -- kcal</strong>
+                  </div>
+                  <div class="progress-track" style="height: 8px;">
+                    <div class="progress-fill" id="hd-metric-calories-progress" style="width: 0%; background: var(--color-primary, #173F35);"></div>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+                  <a href="../index.html" class="glass-btn" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                    Chi tiết Calo & Nước &rarr;
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="glass-card stat-card" style="margin-top: var(--spacing-md);">
+            <div class="stat-header" style="flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary, #173F35); display: flex; align-items: center; gap: 8px;">
+                <span>📋</span>
+                <span>Lịch Sử Ghi Nhận Sức Khỏe Gần Đây</span>
+              </span>
+              <a href="weight.html" style="font-size: 0.78rem; color: var(--color-primary, #173F35); text-decoration: none; font-weight: 600;">
+                Xem toàn bộ biểu đồ 7DMA &rarr;
+              </a>
+            </div>
+
+            <div class="health-table-wrap">
+              <table class="health-table" aria-label="Bảng các lần ghi nhận cân nặng gần nhất">
+                <thead>
+                  <tr>
+                    <th>Ngày ghi nhận</th>
+                    <th>Cân nặng (kg)</th>
+                    <th>BMI tại thời điểm</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody id="hd-recent-records-tbody">
+                  
+                </tbody>
+              </table>
+            </div>
+
+            
+            <div id="hd-recent-empty" style="display: none; padding: 1.5rem; text-align: center; color: var(--color-text-muted, #829087); font-size: 0.85rem;">
+              Chưa có bản ghi cân nặng nào. Nhấn <strong>"Ghi Cân Nặng Mới"</strong> để bắt đầu theo dõi sức khỏe.
+            </div>
+          </div>
+
+        </section>
+      </main>
+    </div>
+  </div>
+
+  
+  <div id="toast-container" aria-live="polite"></div>
+
+  
+  <script src="../js/calculator.js"></script>
+  <script src="../js/chart.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

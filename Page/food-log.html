@@ -3,33 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#07090e">
-  <meta name="description" content="Nhật Ký Ăn Uống & Ghi Chép Thực Phẩm Siêu Tốc - FitVN Tracker">
+  <meta name="theme-color" content="#F7F6F0">
+  <meta name="description" content="Nhật Ký Ăn Uống, Macro & Barcode Scanner - FitVN Tracker">
   <title>Nhật Ký Ăn Uống - FitVN Tracker</title>
 
-  <!-- Google Font Inter -->
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Core CSS -->
+  
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/glass.css">
   <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-
-  <!-- Ambient Glowing Blobs -->
-  <div class="ambient-glow-container" aria-hidden="true">
-    <div class="ambient-blob blob-cyan"></div>
-    <div class="ambient-blob blob-purple"></div>
-    <div class="ambient-blob blob-emerald"></div>
-  </div>
+<body class="theme-porcelain">
 
   <div id="app-layout">
-    <!-- NAVIGATION BAR -->
+    
     <nav class="app-navigation glass-nav" id="app-nav" aria-label="Main Navigation">
-      <!-- Desktop Brand Header -->
       <div class="nav-brand-desktop">
         <div class="brand-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -42,61 +34,74 @@
         </div>
       </div>
 
-      <!-- Navigation Links -->
-      <ul class="nav-list" role="tablist">
+            <ul class="nav-list" role="tablist">
         <li class="nav-item">
           <a href="../index.html" class="nav-link" data-page="dashboard">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="9" rx="1.5"/>
-              <rect x="14" y="3" width="7" height="5" rx="1.5"/>
-              <rect x="14" y="12" width="7" height="9" rx="1.5"/>
-              <rect x="3" y="16" width="7" height="5" rx="1.5"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
             <span class="nav-label">Trang Chủ</span>
           </a>
         </li>
         <li class="nav-item">
-          <a href="food-log.html" class="nav-link active" data-page="food">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-              <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-              <line x1="6" y1="1" x2="6" y2="4"/>
-              <line x1="10" y1="1" x2="10" y2="4"/>
-              <line x1="14" y1="1" x2="14" y2="4"/>
-            </svg>
-            <span class="nav-label">Nhật Ký</span>
+          <a href="health-dashboard.html" class="nav-link" data-page="health-dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span class="nav-label">Sức Khỏe</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="progress-charts.html" class="nav-link" data-page="progress-charts">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span class="nav-label">Tiến Trình</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="workout.html" class="nav-link" data-page="workout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M6.5 12h11M4 3v18M20 3v18"/></svg>
+            <span class="nav-label">Tập Luyện</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link" data-page="reports">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span class="nav-label">Báo Cáo</span>
           </a>
         </li>
         <li class="nav-item">
           <a href="weight.html" class="nav-link" data-page="weight">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 9l9-6 9 6M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/></svg>
             <span class="nav-label">Cân Nặng</span>
           </a>
         </li>
         <li class="nav-item">
+          <a href="food-log.html" class="nav-link active" data-page="food">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            <span class="nav-label">Nhật Ký</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="food-search.html" class="nav-link" data-page="food-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span class="nav-label">Tra Cứu</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a href="settings.html" class="nav-link" data-page="settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span class="nav-label">Cá Nhân</span>
           </a>
         </li>
       </ul>
 
-      <!-- Desktop Sidebar User Snippet -->
-      <div class="nav-footer-desktop">
+      
+      <a href="auth.html" class="nav-footer-desktop" title="Chuyển đổi tài khoản / Đăng nhập">
         <div class="avatar-pill">VN</div>
         <div class="user-info-snippet">
-          <span class="user-name">Gymer FitVN</span>
-          <span class="user-goal-tag">Tăng Cơ (Lean Bulk)</span>
+          <span class="user-name">Người dùng FitVN</span>
+          <span class="user-goal-tag">Đang tải hồ sơ...</span>
         </div>
-      </div>
+      </a>
     </nav>
 
-    <!-- CONTENT WRAPPER -->
+    
     <div class="content-wrapper">
       <header class="app-header glass-header">
         <div class="header-left">
@@ -112,36 +117,103 @@
           <span class="header-date-badge" id="header-date">Hôm nay</span>
         </div>
         <div class="header-right">
-          <div class="avatar-pill" title="Tài khoản gymer">VN</div>
+          <a href="auth.html" class="avatar-pill" title="Hồ sơ tài khoản">VN</a>
         </div>
       </header>
 
       <main class="main-viewport">
-        <!-- FOOD LOG CONTENT -->
+        
         <section class="tab-content active" id="tab-food-log">
           <div class="section-header">
-            <h2 class="section-title">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2">
-                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-              </svg>
-              Bữa Ăn Trong Ngày
-            </h2>
+            <div>
+              <h2 class="section-title">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #173F35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                </svg>
+                Bữa Ăn Trong Ngày
+              </h2>
+              <p class="section-subtitle">Ghi nhận lượng calo và macro từng bữa ăn để kiểm soát mục tiêu thể hình</p>
+            </div>
             <button type="button" class="glass-btn glass-btn-primary" data-open-food-modal data-meal-type="lunch">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
               Ghi Chép Nhanh
             </button>
           </div>
 
-          <div class="grid-cards" style="grid-template-columns: 1fr;">
-            <!-- Bữa Sáng -->
+          
+          <div class="food-date-navigator glass-card">
+            <div class="date-nav-controls">
+              <button type="button" class="date-arrow-btn" id="btn-prev-day" title="Ngày hôm trước" aria-label="Ngày hôm trước">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+
+              <div class="date-picker-trigger" id="date-picker-container" title="Bấm để chọn ngày trên lịch">
+                <div class="date-display-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #173F35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="active-date-text" id="food-log-current-date-text">Đang tải ngày...</span>
+                  <span class="glass-badge glass-badge-emerald" id="food-log-today-badge">Hôm nay</span>
+                </div>
+                
+                <input type="date" id="input-food-log-date" class="date-picker-input" aria-label="Chọn ngày xem nhật ký">
+              </div>
+
+              <button type="button" class="date-arrow-btn" id="btn-next-day" title="Ngày hôm sau" aria-label="Ngày hôm sau">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+
+            <div class="date-quick-actions">
+              <button type="button" class="glass-btn-subtle" id="btn-jump-today">
+                Về Hôm Nay
+              </button>
+              <div class="day-total-summary" style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <div>
+                  <span class="summary-label">Tổng calo trong ngày:</span>
+                  <strong class="summary-value" id="food-log-day-total-cals">0 kcal</strong>
+                </div>
+                <div style="font-size: 0.8rem; display: flex; gap: 10px; font-weight: 600;">
+                  <span style="color: var(--color-primary, #173F35);">P: <strong id="food-log-day-total-p">0</strong>g</span>
+                  <span style="color: #d97706;">C: <strong id="food-log-day-total-c">0</strong>g</span>
+                  <span style="color: var(--color-danger, #D9534F);">F: <strong id="food-log-day-total-f">0</strong>g</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card stat-card" style="margin-top: var(--spacing-md);">
+            <div class="stat-header">
+              <span>TỔNG KẾT CALO TUẦN NÀY (TÍNH ĐẾN HÔM NAY)</span>
+              <span class="glass-badge glass-badge-cyan" id="weekly-calorie-days">0 ngày ghi nhận</span>
+            </div>
+            <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 10px;">
+              <div><div class="summary-label">Mục tiêu cộng dồn</div><strong id="weekly-calorie-target">0 kcal</strong></div>
+              <div><div class="summary-label">Thực tế đã nạp</div><strong id="weekly-calorie-consumed">0 kcal</strong></div>
+              <div><div class="summary-label">Ngày ăn lố / đạt mục tiêu</div><strong id="weekly-calorie-day-counts">0 / 0 ngày</strong></div>
+              <div><div class="summary-label">Dư / thâm hụt</div><strong id="weekly-calorie-balance">0 kcal</strong></div>
+            </div>
+            <div id="weekly-calorie-adjustment" style="font-size: 0.8rem; color: var(--color-text-secondary, #63756B); margin-top: 8px;" aria-live="polite"></div>
+          </div>
+
+          <div class="grid-cards" style="grid-template-columns: 1fr; gap: var(--spacing-md, 16px);">
+            
             <div class="glass-card stat-card">
               <div class="stat-header">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: var(--accent-cyan); font-size: 1rem;">🌅 Bữa Sáng (Breakfast)</strong>
-                  <span class="glass-badge glass-badge-cyan" id="meal-calories-breakfast">0 kcal</span>
+                  <strong style="color: var(--color-primary, #173F35); font-size: 1.05rem;">🌅 Bữa Sáng (Breakfast)</strong>
+                  <span class="glass-badge glass-badge-emerald" id="meal-calories-breakfast">0 kcal</span>
                 </div>
                 <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="breakfast">
                   + Thêm Món
@@ -150,11 +222,11 @@
               <div id="meal-items-breakfast" style="margin-top: var(--spacing-sm);"></div>
             </div>
 
-            <!-- Bữa Trưa -->
+            
             <div class="glass-card stat-card">
               <div class="stat-header">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: var(--accent-emerald); font-size: 1rem;">☀️ Bữa Trưa (Lunch)</strong>
+                  <strong style="color: var(--color-primary, #173F35); font-size: 1.05rem;">☀️ Bữa Trưa (Lunch)</strong>
                   <span class="glass-badge glass-badge-emerald" id="meal-calories-lunch">0 kcal</span>
                 </div>
                 <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="lunch">
@@ -164,12 +236,12 @@
               <div id="meal-items-lunch" style="margin-top: var(--spacing-sm);"></div>
             </div>
 
-            <!-- Bữa Tối -->
+            
             <div class="glass-card stat-card">
               <div class="stat-header">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: #fbbf24; font-size: 1rem;">🌙 Bữa Tối (Dinner)</strong>
-                  <span class="glass-badge" id="meal-calories-dinner">0 kcal</span>
+                  <strong style="color: var(--color-primary, #173F35); font-size: 1.05rem;">🌙 Bữa Tối (Dinner)</strong>
+                  <span class="glass-badge glass-badge-emerald" id="meal-calories-dinner">0 kcal</span>
                 </div>
                 <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="dinner">
                   + Thêm Món
@@ -178,12 +250,12 @@
               <div id="meal-items-dinner" style="margin-top: var(--spacing-sm);"></div>
             </div>
 
-            <!-- Bữa Phụ -->
+            
             <div class="glass-card stat-card">
               <div class="stat-header">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="color: var(--accent-purple); font-size: 1rem;">⚡ Bữa Phụ & Pre-workout</strong>
-                  <span class="glass-badge glass-badge-flame" id="meal-calories-snack">0 kcal</span>
+                  <strong style="color: var(--color-primary, #173F35); font-size: 1.05rem;">⚡ Bữa Phụ & Pre-workout</strong>
+                  <span class="glass-badge glass-badge-emerald" id="meal-calories-snack">0 kcal</span>
                 </div>
                 <button type="button" class="glass-btn glass-btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-open-food-modal data-meal-type="snack">
                   + Thêm Món
@@ -197,7 +269,7 @@
     </div>
   </div>
 
-  <!-- MODAL: QUICK ADD FOOD & SIMULATED BARCODE SCANNER -->
+  
   <div class="glass-modal-backdrop" id="food-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-meal-name">
     <div class="glass-modal-container">
       <div class="modal-header">
@@ -233,9 +305,17 @@
           </svg>
           Quét Barcode Siêu Thị
         </button>
+        <button type="button" class="modal-tab-btn" data-view="custom">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          + Tự Nhập Món Ăn
+        </button>
       </div>
 
-      <!-- VIEW 1: KHO MÓN ĂN VIỆT NAM -->
+      
       <div class="modal-body" id="modal-view-database">
         <div class="food-search-wrapper">
           <svg class="food-search-icon" viewBox="0 0 24 24" fill="none" stroke-width="2">
@@ -253,16 +333,29 @@
           <button type="button" class="chip-btn" data-category="beverage">Sữa Hạt & Nước</button>
         </div>
 
+        <div id="food-serving-editor" class="glass-card" style="display: none; padding: 1rem; margin-top: 12px;" aria-live="polite">
+          <div style="font-weight: 700; color: var(--color-primary, #173F35);" id="food-serving-editor-name"></div>
+          <label for="food-serving-grams" style="display: block; font-size: 0.82rem; margin: 10px 0 6px;">Khẩu phần đã ăn (gram)</label>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="number" id="food-serving-grams" class="glass-input" min="1" step="1" style="max-width: 160px;" aria-describedby="food-serving-preview">
+            <span id="food-serving-base"></span>
+          </div>
+          <div id="food-serving-preview" style="font-size: 0.82rem; color: var(--color-text-secondary, #63756B); margin-top: 8px;"></div>
+          <button type="button" class="glass-btn glass-btn-primary" id="btn-confirm-food-serving" style="width: 100%; margin-top: 12px;">
+            Thêm khẩu phần vào nhật ký
+          </button>
+        </div>
+
         <div class="food-results-list" id="modal-food-results"></div>
       </div>
 
-      <!-- VIEW 2: BARCODE SCANNER SIMULATOR -->
+      
       <div class="modal-body" id="modal-view-barcode" style="display: none;">
         <div class="scanner-container">
           <div class="scanner-viewfinder">
             <div class="scanner-laser"></div>
             <div class="scanner-hint">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.8" style="margin-bottom: 6px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary, #173F35)" stroke-width="1.8" style="margin-bottom: 6px;">
                 <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
                 <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
                 <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
@@ -286,13 +379,68 @@
           <div class="barcode-presets-grid" id="barcode-preset-list"></div>
         </div>
       </div>
+
+      <!-- TAB 3: TỰ NHẬP MÓN ĂN MỚI CỦA NGƯỜI DÙNG -->
+      <div class="modal-body" id="modal-view-custom" style="display: none; flex-direction: column; gap: 14px;">
+        <div style="background: var(--color-surface-raised, #F0F1E9); padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--color-primary, #173F35); font-size: 0.85rem; color: var(--color-text-secondary, #63756B);">
+          💡 Nhập tên món và thành phần dinh dưỡng (Carb, Protein, Fat). Món sẽ được lưu vào nhật ký và tự động cộng dồn vào tổng calo & macro trong ngày!
+        </div>
+
+        <form id="form-custom-food" onsubmit="event.preventDefault(); FoodLogModule.handleCustomFoodSubmit();">
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+            <label for="custom-food-name" style="font-size: 0.86rem; font-weight: 700; color: var(--color-text, #202B28);">Tên món ăn <span style="color: var(--color-danger, #D9534F);">*</span></label>
+            <input type="text" class="glass-input" id="custom-food-name" placeholder="VD: Cơm gạo lứt thịt bò xào, Yến mạch chuối..." required autocomplete="off">
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="custom-food-protein" style="font-size: 0.82rem; font-weight: 700; color: var(--color-primary, #173F35);">Đạm (Protein)</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="number" step="0.1" min="0" class="glass-input" id="custom-food-protein" placeholder="0" style="width: 100%; padding-right: 24px;" required>
+                <span style="position: absolute; right: 10px; font-size: 0.78rem; color: var(--color-text-muted, #829087); font-weight: 600;">g</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="custom-food-carbs" style="font-size: 0.82rem; font-weight: 700; color: #d97706;">Tinh bột (Carb)</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="number" step="0.1" min="0" class="glass-input" id="custom-food-carbs" placeholder="0" style="width: 100%; padding-right: 24px;" required>
+                <span style="position: absolute; right: 10px; font-size: 0.78rem; color: var(--color-text-muted, #829087); font-weight: 600;">g</span>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="custom-food-fat" style="font-size: 0.82rem; font-weight: 700; color: var(--color-danger, #D9534F);">Chất béo (Fat)</label>
+              <div style="position: relative; display: flex; align-items: center;">
+                <input type="number" step="0.1" min="0" class="glass-input" id="custom-food-fat" placeholder="0" style="width: 100%; padding-right: 24px;" required>
+                <span style="position: absolute; right: 10px; font-size: 0.78rem; color: var(--color-text-muted, #829087); font-weight: 600;">g</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: var(--color-surface, #FFFEFA); border: 1px solid var(--color-border, #DDE3D9); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 0.76rem; color: var(--color-text-muted, #829087); font-weight: 600; text-transform: uppercase;">Calo ước tính tự động</div>
+              <div style="font-size: 0.74rem; color: var(--color-text-secondary, #63756B);">1g Đạm/Carb = 4 kcal • 1g Béo = 9 kcal</div>
+            </div>
+            <div style="text-align: right;">
+              <strong id="custom-food-calories-preview" style="font-size: 1.5rem; color: var(--color-primary, #173F35); font-weight: 800;">0</strong>
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--color-text-muted, #829087);">kcal</span>
+            </div>
+          </div>
+
+          <button type="submit" class="glass-btn glass-btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; font-weight: 700;">
+            + Thêm Món Vào Nhật Ký
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
+  
   <div id="toast-container" aria-live="polite"></div>
 
-  <!-- Scripts -->
+  
   <script src="../js/foodDatabase.js"></script>
   <script src="../js/calculator.js"></script>
   <script src="../js/chart.js"></script>

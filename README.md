@@ -9,7 +9,7 @@
 ### 1. Module 1 & 2: Kho Dữ Liệu Món Ăn Việt Nam & Ghi Chép Thực Phẩm Siêu Tốc
 - **Kho món Việt phong phú:** Cơm tấm sườn bì chả, Phở bò tái nạm, Bún bò Huế, Bánh mì thịt patê, Ức gà luộc, Khoai lang vàng, Trứng gà, Cá hồi... với đầy đủ chỉ số Calo, Protein, Carbohydrate, và Fat chuẩn xác.
 - **Tìm kiếm tức thì (Fuzzy Search):** Tự động loại bỏ dấu tiếng Việt (`removeVietnameseTones`), lọc danh sách thời gian thực với `Array.filter()`.
-- **Thao tác 1-Tap Quick Add:** Chỉ 1 cú chạm `[+]` là nạp ngay món ăn vào bữa tương ứng (Sáng, Trưa, Tối, Phụ).
+- **Điều chỉnh khẩu phần theo gram:** Chọn món, nhập lượng gram đã ăn; calo và macro được tính theo tỷ lệ khẩu phần gốc.
 - **Mô phỏng Barcode Scanner siêu thị:** Khung ngắm hiệu ứng tia Laser quét đỏ neon (`@keyframes laserScan`), tra cứu nhanh các sản phẩm gymer phổ biến (*Whey Gold Standard*, *Sữa tươi Vinamilk ít đường*, *Sữa hạt TH true NUT*, *Protein Bar*...).
 - **Lưu trữ vĩnh viễn (LocalStorage):** Dữ liệu được serialize an toàn với `try/catch`, không bị mất khi F5 hoặc đóng trình duyệt.
 
@@ -24,9 +24,24 @@
 
 ### 3. Module 4: Dashboard Tổng Quan & Vòng Tròn Calo Phát Sáng
 - **Vòng tròn tiến độ Calo SVG (Circular Gauge):** Tính toán toạ độ `stroke-dashoffset` động, đổi màu viền neon rực rỡ, hiển thị số calo còn lại to rõ ở tâm vòng tròn.
+- **Ngân sách calo tuần & bù trừ linh hoạt:** Lưu lượng calo từng ngày theo tài khoản, tự giảm mục tiêu ngày tiếp theo theo phần ăn lố (sàn 1.200 kcal), tổng kết mục tiêu, thực tế, số ngày vượt/đạt và dư/thâm hụt trong tuần.
 - **Phân bổ Macro chuyên sâu:** Tính toán khối lượng gam, phần trăm đạt được và năng lượng sinh ra ($1g\text{ Protein/Carb} = 4\text{kcal}$, $1g\text{ Fat} = 9\text{kcal}$).
 - **Hydration Tracker tương tác:** Nạp nước nhanh (+250ml, +500ml, -250ml, Reset) với thanh tiến độ lỏng mờ kính.
 - **Tối ưu hóa DOM (Phương án A):** Cache trước các thẻ DOM, cập nhật thuộc tính mục tiêu và gom nhóm danh sách bằng `DocumentFragment`, đảm bảo $60fps$ mượt mà.
+
+Ví dụ sử dụng API calo trong `storageService`:
+
+```js
+const today = getTodayDateString();
+const consumed = storageService.calculateDayTotals(today).calories;
+const profile = storageService.getUserProfile();
+
+storageService.saveDayLog(today, consumed, profile.targetCalories);
+const todayTarget = storageService.calculateDailyTarget(today);
+const week = storageService.getWeeklySummary(today);
+```
+
+Thêm hoặc xóa món ăn sẽ tự đồng bộ tổng calo ngày vào lịch sử; các phương thức trên cũng có thể dùng khi cần lưu hoặc xem báo cáo thủ công.
 
 ---
 
@@ -36,8 +51,8 @@
 d:\Assignment_Final_Nhom3\
 ├── index.html                   # Trang Chủ (Dashboard): Vòng tròn Calo SVG, Macro, Hydration, 7DMA
 ├── Page/
-│   ├── food-log.html            # Nhật Ký Thực Phẩm: 4 bữa ăn, Modal tìm kiếm món Việt & Quét Barcode
-│   ├── weight.html              # Theo Dõi Cân Nặng: Biểu đồ Canvas 7DMA, Số đo cơ bắp, Modal ghi cân
+│   ├── food-log.html            # Nhật Ký Thực Phẩm: 4 bữa ăn, chọn gram và tính lại dinh dưỡng, Quét Barcode
+│   ├── weight.html              # Theo Dõi Cân Nặng: Ghi cân, biểu đồ 7DMA, dao động 7 ngày, số đo cơ bắp
 │   └── settings.html            # Cài Đặt Cá Nhân: Hồ sơ gymer, Chiều cao, Cân nặng mục tiêu, TDEE
 ├── css/
 │   ├── variables.css            # Hệ màu Dark Obsidian & Neon Accents, spacing scale, blur tokens

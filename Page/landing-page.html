@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="FitVN Tracker giúp bạn theo dõi calo, món ăn Việt, macro và tiến trình thể hình trong một trải nghiệm gọn gàng.">
+  <title>FitVN Tracker — Theo dõi tiến trình, bứt phá mỗi ngày</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-body: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --color-primary: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-glass: rgba(148, 163, 184, 0.17);
+      --font: "Be Vietnam Pro", "Segoe UI", Arial, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(ellipse at 78% 8%, rgba(16, 185, 129, 0.13), transparent 32rem),
+        radial-gradient(ellipse at 5% 48%, rgba(14, 165, 233, 0.08), transparent 30rem),
+        var(--bg-body);
+      color: var(--text-main);
+      font-family: var(--font);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .container { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+    .glass {
+      border: 1px solid var(--border-glass);
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 20px 60px rgba(2, 6, 23, 0.23);
+    }
+
+    .site-header {
+      position: sticky;
+      z-index: 5;
+      top: 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(16px);
+    }
+    .nav {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.04em; }
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #34d399, #059669);
+      color: #052e24;
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.28);
+    }
+    .brand-mark svg { width: 21px; height: 21px; }
+    .nav-links { display: flex; align-items: center; gap: 30px; color: var(--text-muted); font-size: 0.88rem; }
+    .nav-links a:hover, .footer-links a:hover { color: var(--text-main); }
+    .button {
+      display: inline-flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 19px;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 750;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary {
+      background: var(--color-primary);
+      color: #052e24;
+      box-shadow: 0 8px 28px rgba(16, 185, 129, 0.2);
+    }
+    .button-primary:hover { background: #34d399; box-shadow: 0 10px 32px rgba(16, 185, 129, 0.3); }
+    .button-secondary { border-color: var(--border-glass); background: rgba(30, 41, 59, 0.55); color: var(--text-main); }
+    .button-secondary:hover { background: rgba(51, 65, 85, 0.75); }
+
+    .hero { position: relative; overflow: hidden; padding: 90px 0 100px; }
+    .hero-grid { display: grid; grid-template-columns: 1.02fr 0.98fr; align-items: center; gap: 52px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 1px solid rgba(16, 185, 129, 0.24);
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.08);
+      color: #6ee7b7;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .eyebrow-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); box-shadow: 0 0 12px var(--color-primary); }
+    h1, h2, h3, p { margin-top: 0; }
+    .hero h1 { max-width: 670px; margin: 20px 0 18px; font-size: clamp(2.7rem, 5.5vw, 4.7rem); line-height: 1.08; letter-spacing: -0.065em; }
+    .text-gradient { color: #6ee7b7; background: linear-gradient(90deg, #6ee7b7, #34d399 52%, #67e8f9); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-copy { max-width: 560px; margin-bottom: 27px; color: var(--text-muted); font-size: 1.04rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .trust-note { margin: 22px 0 0; color: #64748b; font-size: 0.78rem; }
+    .hero-visual { position: relative; min-height: 450px; display: grid; place-items: center; }
+    .glow-orb { position: absolute; width: 330px; height: 330px; border-radius: 50%; background: rgba(16, 185, 129, 0.13); filter: blur(75px); }
+    .visual-frame {
+      position: relative;
+      width: min(100%, 470px);
+      min-height: 380px;
+      overflow: hidden;
+      border-radius: 30px;
+      background: linear-gradient(140deg, rgba(30, 41, 59, 0.91), rgba(15, 23, 42, 0.55));
+    }
+    .visual-frame::before { position: absolute; inset: 0; content: ""; background: radial-gradient(circle at 70% 36%, rgba(16, 185, 129, 0.16), transparent 40%); }
+    .visual-topline { position: relative; display: flex; justify-content: space-between; padding: 22px 23px 0; color: var(--text-muted); font-size: 0.77rem; }
+    .live-pill { padding: 4px 9px; border: 1px solid rgba(52, 211, 153, 0.22); border-radius: 999px; background: rgba(16, 185, 129, 0.1); color: #6ee7b7; }
+    .athlete-art { position: absolute; inset: 55px 76px 0; display: grid; place-items: center; }
+    .athlete-art svg { height: 318px; max-width: 100%; filter: drop-shadow(0 20px 32px rgba(16, 185, 129, 0.12)); }
+    .float-card { position: absolute; z-index: 1; padding: 15px 17px; border-radius: 17px; }
+    .float-card small { display: block; color: var(--text-muted); font-size: 0.7rem; }
+    .float-card strong { display: block; margin-top: 3px; font-size: 1.1rem; }
+    .float-card .calorie-reference { color: var(--text-muted); font-size: 0.73rem; font-weight: 500; }
+    .float-card-left { top: 117px; left: -12px; }
+    .float-card-right { right: -13px; bottom: 66px; }
+    .float-card .green { color: #6ee7b7; }
+    .mini-bars { display: flex; height: 24px; align-items: end; gap: 4px; margin-top: 7px; }
+    .mini-bars i { width: 5px; border-radius: 5px; background: linear-gradient(#6ee7b7, #059669); }
+
+    .section { padding: 82px 0; }
+    .section-heading { max-width: 690px; margin: 0 auto 38px; text-align: center; }
+    .section-heading .eyebrow { margin-bottom: 15px; }
+    .section-heading h2 { margin-bottom: 12px; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15; letter-spacing: -0.05em; }
+    .section-heading p { margin-bottom: 0; color: var(--text-muted); }
+    .feature-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
+    .feature-card { min-height: 238px; padding: 23px; border-radius: 20px; transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+    .feature-card:hover { transform: translateY(-5px); border-color: rgba(52, 211, 153, 0.38); background: rgba(30, 41, 59, 0.88); }
+    .feature-icon { display: grid; width: 45px; height: 45px; margin-bottom: 20px; place-items: center; border: 1px solid rgba(16, 185, 129, 0.18); border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: #6ee7b7; }
+    .feature-icon svg { width: 22px; height: 22px; }
+    .feature-card h3 { margin-bottom: 8px; font-size: 1.03rem; }
+    .feature-card p { margin-bottom: 0; color: var(--text-muted); font-size: 0.86rem; }
+
+    .proof-section { padding-top: 66px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 60px; }
+    .stat-card { padding: 22px; border-radius: 18px; text-align: center; }
+    .stat-card strong { display: block; color: #6ee7b7; font-size: clamp(1.65rem, 3vw, 2.2rem); letter-spacing: -0.04em; }
+    .stat-card span { color: var(--text-muted); font-size: 0.82rem; }
+    .proof-note { margin: -48px 0 48px; color: #64748b; font-size: 0.72rem; text-align: center; }
+    .quotes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .quote-card { display: flex; min-height: 220px; flex-direction: column; padding: 23px; border-radius: 20px; }
+    .quote-stars { color: #fbbf24; letter-spacing: 0.12em; font-size: 0.9rem; }
+    .quote-card blockquote { flex: 1; margin: 14px 0 22px; color: #cbd5e1; font-size: 0.9rem; }
+    .quote-person { display: flex; align-items: center; gap: 11px; }
+    .avatar { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; background: linear-gradient(145deg, #0f766e, #164e63); color: #d1fae5; font-size: 0.78rem; font-weight: 800; }
+    .quote-person strong { display: block; font-size: 0.82rem; }
+    .quote-person small { display: block; color: var(--text-muted); font-size: 0.7rem; }
+
+    .closing { padding: 30px 0 88px; }
+    .closing-card { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 34px 38px; border-color: rgba(16, 185, 129, 0.2); border-radius: 24px; background: radial-gradient(ellipse at 85% 0%, rgba(16, 185, 129, 0.13), transparent 38%), var(--bg-card); }
+    .closing-card h2 { margin-bottom: 7px; font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -0.04em; }
+    .closing-card p { margin-bottom: 0; color: var(--text-muted); font-size: 0.9rem; }
+    .site-footer { border-top: 1px solid rgba(148, 163, 184, 0.12); }
+    .footer-inner { display: flex; min-height: 88px; align-items: center; justify-content: space-between; gap: 20px; color: var(--text-muted); font-size: 0.78rem; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-inner p { margin: 0; }
+    .reveal { opacity: 0; transform: translateY(14px); transition: opacity 550ms ease, transform 550ms ease; }
+    .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .hero { padding: 68px 0 72px; }
+      .hero-grid { grid-template-columns: 1fr 0.9fr; gap: 26px; }
+      .hero-visual { min-height: 390px; }
+      .visual-frame { min-height: 340px; }
+      .athlete-art { inset: 55px 45px 0; }
+      .athlete-art svg { height: 285px; }
+      .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .container { width: min(100% - 32px, 520px); }
+      .nav { min-height: 64px; }
+      .nav-links { gap: 14px; font-size: 0.78rem; }
+      .nav-links a:first-child { display: none; }
+      .nav .button { min-height: 39px; padding-inline: 12px; font-size: 0.77rem; }
+      .brand { font-size: 0.9rem; }
+      .brand-mark { width: 32px; height: 32px; }
+      .hero { padding: 58px 0 60px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 22px; }
+      .hero h1 { font-size: clamp(2.55rem, 12vw, 3.8rem); }
+      .hero-copy { font-size: 0.95rem; }
+      .hero-visual { min-height: 345px; margin: 0 4px; }
+      .visual-frame { min-height: 320px; }
+      .athlete-art { inset: 55px 58px 0; }
+      .athlete-art svg { height: 275px; }
+      .float-card-left { left: -6px; }
+      .float-card-right { right: -6px; bottom: 43px; }
+      .section { padding: 60px 0; }
+      .feature-grid { gap: 11px; }
+      .feature-card { min-height: unset; padding: 17px; }
+      .feature-icon { width: 40px; height: 40px; margin-bottom: 15px; }
+      .feature-card h3 { font-size: 0.91rem; }
+      .feature-card p { font-size: 0.79rem; }
+      .stats-grid { gap: 8px; margin-bottom: 55px; }
+      .stat-card { padding: 16px 8px; }
+      .stat-card span { display: block; font-size: 0.7rem; }
+      .quotes-grid { grid-template-columns: 1fr; }
+      .quote-card { min-height: 190px; }
+      .closing { padding-bottom: 60px; }
+      .closing-card { align-items: flex-start; flex-direction: column; padding: 25px; }
+      .footer-inner { align-items: flex-start; flex-direction: column; justify-content: center; padding: 21px 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav container" aria-label="Điều hướng chính">
+      <a class="brand" href="#top" aria-label="FitVN Tracker - đầu trang">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 5v14M18 5v14M2 9v6M22 9v6M6 12h12"/>
+          </svg>
+        </span>
+        <span>FitVN Tracker</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Tính năng</a>
+        <a href="#community">Cộng đồng</a>
+        <a class="button button-primary" href="auth.html">Trải nghiệm ngay <span aria-hidden="true">→</span></a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="reveal">
+          <span class="eyebrow"><span class="eyebrow-dot"></span> Dinh dưỡng thông minh, tiến trình bền vững</span>
+          <h1>Xây dựng phiên bản <span class="text-gradient">khỏe hơn</span> của chính bạn.</h1>
+          <p class="hero-copy">Theo dõi calo, món ăn quen thuộc Việt Nam và macro trong một nơi. FitVN Tracker giúp bạn hiểu thói quen mỗi ngày để tiến gần hơn tới mục tiêu body recomposition.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="auth.html">Trải nghiệm ngay <span aria-hidden="true">→</span></a>
+            <a class="button button-secondary" href="#features">Tìm hiểu tính năng</a>
+          </div>
+          <p class="trust-note">Bắt đầu từ những lựa chọn nhỏ. Theo dõi tiến trình theo cách của bạn.</p>
+        </div>
+
+        <div class="hero-visual reveal" aria-label="Minh họa giao diện theo dõi sức khỏe FitVN Tracker">
+          <div class="glow-orb"></div>
+          <div class="visual-frame glass">
+            <div class="visual-topline"><span>TỔNG QUAN HÔM NAY</span><span class="live-pill">● ĐANG THEO DÕI</span></div>
+            <div class="athlete-art" aria-hidden="true">
+              <svg viewBox="0 0 260 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="figure" x1="130" y1="32" x2="130" y2="330" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#6EE7B7"/><stop offset="1" stop-color="#059669"/>
+                  </linearGradient>
+                  <linearGradient id="figureShade" x1="64" y1="100" x2="203" y2="294" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#A7F3D0" stop-opacity=".82"/><stop offset="1" stop-color="#10B981" stop-opacity=".18"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="130" cy="44" r="27" fill="url(#figure)"/>
+                <path d="M105 79c-17 5-29 17-36 36l-20 59c-4 11 2 22 12 25 10 3 19-3 23-13l17-42 4 53-27 91c-4 12 3 24 15 27 11 3 22-4 26-15l20-65 20 65c3 11 15 18 26 15 12-3 18-15 15-27l-27-91 4-53 17 42c4 10 14 16 23 13 11-3 16-14 12-25l-20-59c-7-19-19-31-36-36-19-6-48-6-68 0Z" fill="url(#figure)"/>
+                <path d="M105 82c-16 6-26 17-33 36l-20 58c-2 6 1 12 6 14 6 2 11-1 14-7l19-43 11 1 2 57-27 91c-2 7 2 14 9 16 7 2 14-2 16-9l21-70 7-1v-145c-10 0-18 1-25 2Z" fill="url(#figureShade)" opacity=".62"/>
+                <path d="M85 165c14 10 28 15 45 15s32-5 45-15" stroke="#064E3B" stroke-opacity=".32" stroke-width="4" stroke-linecap="round"/>
+                <path d="M96 88c11 9 22 13 34 13s24-4 34-13" stroke="#064E3B" stroke-opacity=".3" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="float-card float-card-left glass">
+              <small>CALO HÔM NAY</small>
+              <strong>1.420 <span class="calorie-reference">/ 1.800 kcal</span></strong>
+              <div class="mini-bars" aria-hidden="true"><i style="height:45%"></i><i style="height:68%"></i><i style="height:55%"></i><i style="height:86%"></i><i style="height:72%"></i><i style="height:100%"></i><i style="height:78%"></i></div>
+            </div>
+            <div class="float-card float-card-right glass">
+              <small>TIẾN TRÌNH CỦA BẠN</small>
+              <strong class="green">Từng ngày một ✦</strong>
+              <small>Ghi nhận • Điều chỉnh • Tiếp tục</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Công cụ cho hành trình của bạn</span>
+          <h2>Mọi chỉ số cần thiết.<br><span class="text-gradient">Không rối, không áp lực.</span></h2>
+          <p>Tập trung vào thói quen có thể duy trì, với dữ liệu dễ hiểu và phù hợp với bữa ăn hằng ngày.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card glass reveal">
+            <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M4 4l2 2"/></svg></div>
+            <h3>Calo & bù trừ theo tuần</h3>
+            <p>Theo dõi lượng nạp mỗi ngày và xem mục tiêu ngày sau được điều chỉnh theo phần ăn vượt, với mức sàn an toàn.</p>
+          </article>
+          <article class="feature-card glass reveal">
+            <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z"/><path d="M8 8h8"/></svg></div>
+            <h3>Món ăn gần gũi Việt Nam</h3>
+            <p>Tra cứu món quen thuộc như cơm tấm, bún, phở hay ức gà; điều chỉnh khẩu phần để ghi nhận sát thực tế hơn.</p>
+          </article>
+          <article class="feature-card glass reveal">
+            <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5m0 14h16"/><rect x="7" y="11" width="3" height="5" rx="1"/><rect x="12" y="7" width="3" height="9" rx="1"/><rect x="17" y="9" width="3" height="7" rx="1"/></svg></div>
+            <h3>Theo dõi Macro chi tiết</h3>
+            <p>Quan sát Protein, Carb và Fat theo mục tiêu cá nhân để cân đối dinh dưỡng cùng mức năng lượng mỗi ngày.</p>
+          </article>
+          <article class="feature-card glass reveal">
+            <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 14.5 9.5 21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/><path d="m19 2 .8 2.2L22 5l-2.2.8L19 8l-.8-2.2L16 5l2.2-.8L19 2Z"/></svg></div>
+            <h3>Giao diện tối tập trung</h3>
+            <p>Thiết kế Dark Glassmorphism gọn gàng, hiển thị rõ trên điện thoại và máy tính để bạn dễ theo dõi hơn.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section proof-section" id="community">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">Tiến trình tạo nên từ thói quen</span>
+          <h2>Đo lường điều bạn làm,<br><span class="text-gradient">không hứa hẹn điều viển vông.</span></h2>
+          <p>Các con số dưới đây mô tả công cụ theo dõi trong ứng dụng, không phải thống kê người dùng hay kết quả sức khỏe.</p>
+        </div>
+        <div class="stats-grid reveal" aria-label="Các chỉ số tính năng">
+          <div class="stat-card glass"><strong>7 ngày</strong><span>Cửa sổ xem tổng kết calo theo tuần</span></div>
+          <div class="stat-card glass"><strong>3 nhóm</strong><span>Macro chính: Protein, Carb và Fat</span></div>
+          <div class="stat-card glass"><strong>1.200 kcal</strong><span>Mức sàn mục tiêu bù trừ mặc định</span></div>
+        </div>
+        <div class="section-heading reveal" style="margin-bottom:24px">
+          <h2 style="font-size:clamp(1.55rem,3vw,2.15rem)">Lắng nghe chính cơ thể bạn</h2>
+          <p>Thay vì dùng đánh giá chưa được xác thực, FitVN khuyến khích bạn ghi nhận trải nghiệm và tiến trình của riêng mình.</p>
+        </div>
+        <div class="quotes-grid">
+          <article class="quote-card glass reveal">
+            <div class="quote-stars" aria-label="Thông điệp động viên">✦ ✦ ✦</div>
+            <blockquote>“Một bữa ăn không định nghĩa cả hành trình. Ghi lại, hiểu mình hơn, rồi tiếp tục.”</blockquote>
+            <div class="quote-person"><div class="avatar" aria-hidden="true">01</div><div><strong>Nhắc nhở từ FitVN</strong><small>Thông điệp sản phẩm</small></div></div>
+          </article>
+          <article class="quote-card glass reveal">
+            <div class="quote-stars" aria-label="Thông điệp động viên">✦ ✦ ✦</div>
+            <blockquote>“Điều chỉnh khẩu phần và theo dõi đều đặn giúp bạn có thêm dữ liệu để lựa chọn phù hợp.”</blockquote>
+            <div class="quote-person"><div class="avatar" aria-hidden="true">02</div><div><strong>Tiến bộ theo cách của bạn</strong><small>Thông điệp sản phẩm</small></div></div>
+          </article>
+          <article class="quote-card glass reveal">
+            <div class="quote-stars" aria-label="Thông điệp động viên">✦ ✦ ✦</div>
+            <blockquote>“Mục tiêu là công cụ tham khảo. Hãy ưu tiên sức khỏe và chọn nhịp độ bền vững cho bản thân.”</blockquote>
+            <div class="quote-person"><div class="avatar" aria-hidden="true">03</div><div><strong>Thói quen bền vững</strong><small>Thông điệp sản phẩm</small></div></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="container">
+        <div class="closing-card glass reveal">
+          <div>
+            <h2>Bắt đầu theo dõi hành trình của bạn.</h2>
+            <p>Mỗi ngày một ghi nhận nhỏ, thêm một bước hiểu rõ cơ thể mình.</p>
+          </div>
+          <a class="button button-primary" href="auth.html">Trải nghiệm FitVN <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="current-year"></span> FitVN Tracker. Theo dõi khỏe mạnh, tiến bộ bền vững.</p>
+      <div class="footer-links"><a href="auth.html">Đăng nhập</a><a href="../index.html">Ứng dụng</a><a href="#top">Lên đầu trang ↑</a></div>
+    </div>
+  </footer>
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    const revealItems = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const observer = new IntersectionObserver((entries, currentObserver) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            currentObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      revealItems.forEach(item => observer.observe(item));
+    } else {
+      revealItems.forEach(item => item.classList.add('is-visible'));
+    }
+  </script>
+</body>
+</html>

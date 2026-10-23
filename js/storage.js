@@ -1,36 +1,22 @@
-/**
- * FitVN Tracker - LocalStorage Service Module
- * Handles safe data persistence, schema validation, and seeding default state.
- */
-
 const STORAGE_KEYS = {
   USER_PROFILE: 'fitvn_user_profile',
   FOOD_LOGS: 'fitvn_food_logs',
+  DAILY_CALORIE_LOGS: 'fitvn_daily_calorie_logs',
   WEIGHT_LOGS: 'fitvn_weight_logs',
+  WORKOUT_LOGS: 'fitvn_workout_logs',
   SETTINGS: 'fitvn_settings',
   CUSTOM_FOODS: 'fitvn_custom_foods',
-  WATER_LOGS: 'fitvn_water_logs'
+  WATER_LOGS: 'fitvn_water_logs',
+  AUTH_USER: 'fitvn_auth_user',
+  USERS_LIST: 'fitvn_users_list',
+  REDIRECT_AFTER_LOGIN: 'fitvn_redirect_url'
 };
 
-const DEFAULT_PROFILE = {
-  name: 'Gymer FitVN',
-  gender: 'male',
-  age: 24,
-  height: 175, // cm
-  currentWeight: 72.5, // kg
-  targetWeight: 76.0, // kg
-  activityLevel: 'moderate', // sedentary, light, moderate, active, very_active
-  fitnessGoal: 'lean_bulk', // cut, maintain, lean_bulk
-  targetCalories: 2600,
-  macros: {
-    protein: 165, // grams
-    carbs: 325,   // grams
-    fat: 72       // grams
-  },
-  waterTarget: 3000 // ml
-};
+// Expose STORAGE_KEYS to window for use in other modules
+if (typeof window !== 'undefined') {
+  window.STORAGE_KEYS = STORAGE_KEYS;
+}
 
-// Seed initial logs for today
 function getTodayDateString() {
   const today = new Date();
   const year = today.getFullYear();
@@ -39,92 +25,34 @@ function getTodayDateString() {
   return `${year}-${month}-${day}`;
 }
 
-const DEFAULT_FOOD_LOGS = [
-  {
-    id: 'seed-log-1',
-    mealType: 'breakfast',
-    foodId: 'gym-07',
-    name: 'Yến mạch + Chuối tiêu',
-    calories: 320,
-    protein: 14.5,
-    carbs: 58.0,
-    fat: 4.5,
-    servingQty: 1,
-    time: '07:30',
-    date: getTodayDateString()
-  },
-  {
-    id: 'seed-log-2',
-    mealType: 'breakfast',
-    foodId: 'bc-01',
-    name: 'Whey Gold Standard 100%',
-    calories: 120,
-    protein: 24.0,
-    carbs: 3.0,
-    fat: 1.5,
-    servingQty: 1,
-    time: '07:45',
-    date: getTodayDateString()
-  },
-  {
-    id: 'seed-log-3',
-    mealType: 'lunch',
-    foodId: 'vn-01',
-    name: 'Cơm tấm sườn bì chả',
-    calories: 765,
-    protein: 34.5,
-    carbs: 88.0,
-    fat: 30.2,
-    servingQty: 1,
-    time: '12:15',
-    date: getTodayDateString()
-  },
-  {
-    id: 'seed-log-4',
-    mealType: 'snack',
-    foodId: 'bc-04',
-    name: 'Sữa chua Hy Lạp Vinamilk',
-    calories: 95,
-    protein: 7.0,
-    carbs: 8.5,
-    fat: 3.6,
-    servingQty: 1,
-    time: '16:00',
-    date: getTodayDateString()
+async function hashPassword(plainText) {
+  if (!plainText) return '';
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+    try {
+      const msgUint8 = new TextEncoder().encode(plainText);
+      const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgUint8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      return fallbackHash(plainText);
+    }
   }
-];
+  return fallbackHash(plainText);
+}
 
-// Rich 14-day history for realistic 7-Day Moving Average & Muscle measurements
-const DEFAULT_WEIGHT_LOGS = [
-  { id: 'wt-1', date: '2026-10-07', weight: 71.2, bodyFat: 14.8, note: 'Bụng đói sáng sớm', measurements: { chest: 101, waist: 77.5, arm: 36.5, thigh: 57.0 } },
-  { id: 'wt-2', date: '2026-10-08', weight: 71.5, bodyFat: 14.7, note: 'Sau ngày nạp carb cao' },
-  { id: 'wt-3', date: '2026-10-09', weight: 71.3, bodyFat: 14.7, note: 'Tập ngực vai' },
-  { id: 'wt-4', date: '2026-10-10', weight: 71.8, bodyFat: 14.6, note: 'Giữ nước nhẹ do ăn lẩu' },
-  { id: 'wt-5', date: '2026-10-11', weight: 71.4, bodyFat: 14.6, note: 'Nước tiểu trong, đủ nước' },
-  { id: 'wt-6', date: '2026-10-12', weight: 71.6, bodyFat: 14.5, note: 'Khỏe khoắn' },
-  { id: 'wt-7', date: '2026-10-13', weight: 71.9, bodyFat: 14.5, note: 'Tăng tạ buổi tập chân' },
-  { id: 'wt-8', date: '2026-10-14', weight: 71.8, bodyFat: 14.4, note: 'Bụng đói buổi sáng', measurements: { chest: 101.5, waist: 77.2, arm: 37.0, thigh: 57.5 } },
-  { id: 'wt-9', date: '2026-10-15', weight: 72.1, bodyFat: 14.4, note: 'Ăn thêm bữa phụ' },
-  { id: 'wt-10', date: '2026-10-16', weight: 72.0, bodyFat: 14.3, note: 'Sau buổi tập lưng xô' },
-  { id: 'wt-11', date: '2026-10-17', weight: 72.4, bodyFat: 14.3, note: 'Cơ bắp căng tràn pump' },
-  { id: 'wt-12', date: '2026-10-18', weight: 72.2, bodyFat: 14.2, note: 'Khỏe khoắn, đủ nước' },
-  { id: 'wt-13', date: '2026-10-19', weight: 72.3, bodyFat: 14.2, note: 'Ngủ đủ 8 tiếng' },
-  { id: 'wt-14', date: '2026-10-20', weight: 72.5, bodyFat: 14.1, note: 'Tăng cơ tốt, chuẩn Lean Bulk', measurements: { chest: 102.5, waist: 77.0, arm: 37.5, thigh: 58.0 } }
-];
-
-const DEFAULT_SETTINGS = {
-  theme: 'dark',
-  unitSystem: 'metric',
-  remindersEnabled: true
-};
+function fallbackHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return 'h_' + Math.abs(hash).toString(16);
+}
 
 const storageService = {
-  /**
-   * Safe getter from LocalStorage
-   * @param {string} key 
-   * @param {*} defaultValue 
-   * @returns {*}
-   */
+  minimumCalorieTarget: 1200,
+
   get(key, defaultValue = null) {
     try {
       const item = localStorage.getItem(key);
@@ -135,12 +63,6 @@ const storageService = {
     }
   },
 
-  /**
-   * Safe setter to LocalStorage
-   * @param {string} key 
-   * @param {*} value 
-   * @returns {boolean}
-   */
   set(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -151,10 +73,6 @@ const storageService = {
     }
   },
 
-  /**
-   * Remove item from LocalStorage
-   * @param {string} key 
-   */
   remove(key) {
     try {
       localStorage.removeItem(key);
@@ -163,42 +81,249 @@ const storageService = {
     }
   },
 
-  /**
-   * Initialize LocalStorage with starter seed data if not already present
-   */
   initStorage() {
-    if (!this.get(STORAGE_KEYS.USER_PROFILE)) {
-      this.set(STORAGE_KEYS.USER_PROFILE, DEFAULT_PROFILE);
+    if (!this.get(STORAGE_KEYS.USERS_LIST)) {
+      this.set(STORAGE_KEYS.USERS_LIST, []);
     }
     if (!this.get(STORAGE_KEYS.FOOD_LOGS)) {
-      this.set(STORAGE_KEYS.FOOD_LOGS, DEFAULT_FOOD_LOGS);
+      this.set(STORAGE_KEYS.FOOD_LOGS, []);
     }
-    // Check if weight logs is missing or has less than 5 items
-    const existingWeights = this.get(STORAGE_KEYS.WEIGHT_LOGS);
-    if (!existingWeights || existingWeights.length < 5) {
-      this.set(STORAGE_KEYS.WEIGHT_LOGS, DEFAULT_WEIGHT_LOGS);
+    if (!this.get(STORAGE_KEYS.WEIGHT_LOGS)) {
+      this.set(STORAGE_KEYS.WEIGHT_LOGS, []);
     }
-    if (!this.get(STORAGE_KEYS.SETTINGS)) {
-      this.set(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+    if (!this.get(STORAGE_KEYS.WORKOUT_LOGS)) {
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, []);
     }
     if (!this.get(STORAGE_KEYS.CUSTOM_FOODS)) {
       this.set(STORAGE_KEYS.CUSTOM_FOODS, []);
     }
+    if (!this.get(STORAGE_KEYS.WATER_LOGS)) {
+      this.set(STORAGE_KEYS.WATER_LOGS, {});
+    }
   },
 
-  /**
-   * Get all food items (Built-in + Custom created)
-   */
+  getCurrentUser() {
+    return this.get(STORAGE_KEYS.AUTH_USER, null);
+  },
+
+  setCurrentUser(user) {
+    if (!user) {
+      this.remove(STORAGE_KEYS.AUTH_USER);
+      return;
+    }
+    const safeUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      gender: user.gender,
+      age: user.age,
+      height: user.height,
+      weight: user.weight,
+      fitnessGoal: user.fitnessGoal,
+      registeredAt: user.registeredAt
+    };
+    this.set(STORAGE_KEYS.AUTH_USER, safeUser);
+  },
+
+  updateCurrentUser(fields) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+
+    const updatedUser = { ...currentUser, ...fields };
+    this.setCurrentUser(updatedUser);
+
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === currentUser.id);
+    if (index !== -1) {
+      users[index] = { ...users[index], ...fields };
+      this.set(STORAGE_KEYS.USERS_LIST, users);
+    }
+
+    return updatedUser;
+  },
+
+  hasActiveSession() {
+    const user = this.getCurrentUser();
+    return !!(user && user.id && user.email);
+  },
+
+  logoutUser() {
+    try {
+      this.remove(STORAGE_KEYS.AUTH_USER);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  getUsers() {
+    return this.get(STORAGE_KEYS.USERS_LIST, []);
+  },
+
+  async registerUser(userData) {
+    const users = this.getUsers();
+    const cleanEmail = (userData.email || '').trim().toLowerCase();
+    const existing = users.find(u => u.email.toLowerCase() === cleanEmail);
+    if (existing) {
+      return { success: false, message: 'Email này đã được đăng ký trên hệ thống!' };
+    }
+
+    const hashedPwd = await hashPassword(userData.password);
+
+    const newUser = {
+      id: 'usr_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      name: (userData.name || '').trim(),
+      email: cleanEmail,
+      passwordHash: hashedPwd,
+      gender: userData.gender || 'male',
+      age: Number(userData.age) || null,
+      height: Number(userData.height) || null,
+      weight: Number(userData.weight) || null,
+      fitnessGoal: userData.fitnessGoal || 'maintain',
+      registeredAt: new Date().toISOString()
+    };
+
+    users.push(newUser);
+    this.set(STORAGE_KEYS.USERS_LIST, users);
+
+    this.setCurrentUser(newUser);
+
+    const fallbackCalories = userData.targetCalories ? Number(userData.targetCalories) : 2000;
+
+    const initialProfile = {
+      userId: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      gender: newUser.gender,
+      age: newUser.age,
+      height: newUser.height,
+      currentWeight: newUser.weight,
+      targetWeight: userData.targetWeight ? Number(userData.targetWeight) : newUser.weight,
+      activityLevel: userData.activityLevel || 'moderate',
+      fitnessGoal: newUser.fitnessGoal,
+      targetCalories: fallbackCalories,
+      macros: window.HealthCalculator?.calculateMacroTargets(fallbackCalories, newUser.fitnessGoal)
+        || { protein: 150, carbs: 225, fat: 55 },
+      waterTarget: 2500
+    };
+
+    const plan = window.HealthCalculator?.calculateNutritionPlan(initialProfile);
+    if (plan) {
+      initialProfile.targetCalories = plan.targetCalories;
+      initialProfile.macros = plan.macros;
+    }
+
+    this.setUserProfile(initialProfile);
+
+    if (newUser.weight && newUser.weight > 0) {
+      this.addWeightLog({
+        date: getTodayDateString(),
+        weight: newUser.weight,
+        bodyFat: null,
+        note: 'Cân nặng ban đầu khi đăng ký'
+      });
+    }
+
+    return { success: true, user: newUser };
+  },
+
+  async loginUser(email, password) {
+    const users = this.getUsers();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const hashedPwd = await hashPassword(password);
+
+    const user = users.find(u => {
+      const matchesEmail = u.email.toLowerCase() === cleanEmail;
+      const matchesPwd = u.passwordHash ? (u.passwordHash === hashedPwd) : (u.password === password);
+      return matchesEmail && matchesPwd;
+    });
+
+    if (!user) {
+      return { success: false, message: 'Email hoặc mật khẩu không chính xác!' };
+    }
+
+    if (!user.passwordHash) {
+      user.passwordHash = hashedPwd;
+      delete user.password;
+      this.set(STORAGE_KEYS.USERS_LIST, users);
+    }
+
+    this.setCurrentUser(user);
+
+    let profile = this.getUserProfile();
+    if (!profile || !profile.name) {
+      this.setUserProfile({
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        gender: user.gender || 'male',
+        age: user.age || null,
+        height: user.height || null,
+        currentWeight: user.weight || null,
+        targetWeight: user.weight || null,
+        activityLevel: 'moderate',
+        fitnessGoal: user.fitnessGoal || 'maintain',
+        targetCalories: 2000,
+        macros: { protein: 150, carbs: 225, fat: 55 },
+        waterTarget: 2500
+      });
+    }
+
+    return { success: true, user };
+  },
+
+  getUserProfile() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+    const allProfiles = this.get(STORAGE_KEYS.USER_PROFILE, {});
+    return allProfiles[currentUser.id] || {
+      userId: currentUser.id,
+      name: currentUser.name,
+      email: currentUser.email,
+      gender: currentUser.gender || 'male',
+      age: currentUser.age || null,
+      height: currentUser.height || null,
+      currentWeight: currentUser.weight || null,
+      targetWeight: currentUser.weight || null,
+      activityLevel: 'moderate',
+      fitnessGoal: currentUser.fitnessGoal || 'maintain',
+      targetCalories: 2000,
+      macros: { protein: 150, carbs: 225, fat: 55 },
+      waterTarget: 2500
+    };
+  },
+
+  setUserProfile(profileData) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return false;
+    const allProfiles = this.get(STORAGE_KEYS.USER_PROFILE, {});
+    const updated = {
+      ...(allProfiles[currentUser.id] || {}),
+      ...profileData,
+      userId: currentUser.id
+    };
+    allProfiles[currentUser.id] = updated;
+    this.set(STORAGE_KEYS.USER_PROFILE, allProfiles);
+
+    if (profileData.name && profileData.name !== currentUser.name) {
+      currentUser.name = profileData.name;
+      this.setCurrentUser(currentUser);
+      const users = this.getUsers();
+      const uIdx = users.findIndex(u => u.id === currentUser.id);
+      if (uIdx !== -1) {
+        users[uIdx].name = profileData.name;
+        this.set(STORAGE_KEYS.USERS_LIST, users);
+      }
+    }
+    return true;
+  },
+
   getAllFoods() {
     const builtinFoods = window.VIETNAMESE_FOOD_DATABASE || [];
     const customFoods = this.get(STORAGE_KEYS.CUSTOM_FOODS, []);
     return [...builtinFoods, ...customFoods];
   },
 
-  /**
-   * Find food by Barcode
-   * @param {string} barcode 
-   */
   findFoodByBarcode(barcode) {
     if (!barcode) return null;
     const cleanBarcode = barcode.trim();
@@ -206,26 +331,25 @@ const storageService = {
     return allFoods.find(food => food.barcode === cleanBarcode) || null;
   },
 
-  /**
-   * Get food logs, optionally filtered by date
-   * @param {string} dateString 'YYYY-MM-DD'
-   * @returns {Array}
-   */
   getFoodLogs(dateString = null) {
-    const logs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
-    if (!dateString) return logs;
-    return logs.filter(log => log.date === dateString);
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return [];
+    const allLogs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
+    const userLogs = allLogs.filter(log => log.userId === currentUser.id);
+    if (!dateString) return userLogs;
+    return userLogs.filter(log => {
+      const logDate = log.date || getTodayDateString();
+      return logDate === dateString;
+    });
   },
 
-  /**
-   * Add a new food entry
-   * @param {Object} entry 
-   * @returns {Object} savedEntry
-   */
   addFoodLog(entry) {
-    const logs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+    const allLogs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
     const newLog = {
       id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: currentUser.id,
       mealType: entry.mealType || 'breakfast',
       foodId: entry.foodId || null,
       name: entry.name || 'Món ăn',
@@ -234,35 +358,37 @@ const storageService = {
       carbs: parseFloat((Number(entry.carbs) || 0).toFixed(1)),
       fat: parseFloat((Number(entry.fat) || 0).toFixed(1)),
       servingQty: entry.servingQty || 1,
+      servingGrams: Number(entry.servingGrams) > 0 ? Number(entry.servingGrams) : null,
       time: entry.time || new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       date: entry.date || getTodayDateString()
     };
-    logs.unshift(newLog);
-    this.set(STORAGE_KEYS.FOOD_LOGS, logs);
+    allLogs.unshift(newLog);
+    this.set(STORAGE_KEYS.FOOD_LOGS, allLogs);
+    const profile = this.getUserProfile();
+    if (profile) {
+      this.saveDayLog(newLog.date, this.calculateDayTotals(newLog.date).calories, profile.targetCalories);
+    }
     return newLog;
   },
 
-  /**
-   * Remove a food entry by ID
-   * @param {string} logId 
-   * @returns {boolean}
-   */
   removeFoodLog(logId) {
-    const logs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
-    const filteredLogs = logs.filter(log => log.id !== logId);
-    this.set(STORAGE_KEYS.FOOD_LOGS, filteredLogs);
-    return filteredLogs.length < logs.length;
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return false;
+    const allLogs = this.get(STORAGE_KEYS.FOOD_LOGS, []);
+    const filtered = allLogs.filter(log => !(log.id === logId && log.userId === currentUser.id));
+    if (filtered.length === allLogs.length) return false;
+    const removedLog = allLogs.find(log => log.id === logId && log.userId === currentUser.id);
+    if (!this.set(STORAGE_KEYS.FOOD_LOGS, filtered)) return false;
+    const profile = this.getUserProfile();
+    if (profile && removedLog) {
+      this.saveDayLog(removedLog.date || getTodayDateString(), this.calculateDayTotals(removedLog.date).calories, profile.targetCalories);
+    }
+    return true;
   },
 
-  /**
-   * Calculate daily nutrient totals using Array.reduce
-   * @param {string} dateString 
-   * @returns {Object} totals { calories, protein, carbs, fat, count }
-   */
   calculateDayTotals(dateString = null) {
     const targetDate = dateString || getTodayDateString();
     const dayLogs = this.getFoodLogs(targetDate);
-
     return dayLogs.reduce((acc, log) => {
       acc.calories += (Number(log.calories) || 0);
       acc.protein += (Number(log.protein) || 0);
@@ -273,30 +399,170 @@ const storageService = {
     }, { calories: 0, protein: 0, carbs: 0, fat: 0, count: 0 });
   },
 
-  /**
-   * WEIGHT & BODY METRICS METHODS
-   */
-  getWeightLogs() {
-    const logs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
-    // Ensure chronological sort
-    return logs.sort((a, b) => new Date(a.date) - new Date(b.date));
+  getDailyCalorieLogs() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return [];
+    return this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, [])
+      .filter(log => log.userId === currentUser.id)
+      .sort((a, b) => a.date.localeCompare(b.date));
   },
 
-  /**
-   * Add or update weight log for a specific date
-   * @param {Object} entry { date, weight, bodyFat, note, measurements }
-   */
+  getDailyCalorieLog(date) {
+    return this.getDailyCalorieLogs().find(log => log.date === date) || null;
+  },
+
+  calculateDailyTarget(date = getTodayDateString(), historyData = null, baseTargetOverride = null) {
+    const profile = this.getUserProfile();
+    const baseTarget = Math.max(this.minimumCalorieTarget, Number(baseTargetOverride) || Number(profile && profile.targetCalories) || 2000);
+    const history = Array.isArray(historyData) ? historyData : this.getDailyCalorieLogs();
+    const logsByDate = new Map(history.map(log => [log.date, log]));
+    const [year, month, day] = date.split('-').map(Number);
+    const cursor = new Date(year, month - 1, day);
+    cursor.setDate(cursor.getDate() - 1);
+    const previousDays = [];
+
+    while (true) {
+      const previousDate = [
+        cursor.getFullYear(),
+        String(cursor.getMonth() + 1).padStart(2, '0'),
+        String(cursor.getDate()).padStart(2, '0')
+      ].join('-');
+      const previousLog = logsByDate.get(previousDate);
+      const foodTotals = previousLog ? null : this.calculateDayTotals(previousDate);
+      const hasRecord = Boolean(previousLog || (foodTotals && foodTotals.count > 0));
+      if (!hasRecord) break;
+
+      previousDays.push({
+        consumed: previousLog ? Number(previousLog.consumedCalories) || 0 : Number(foodTotals.calories) || 0,
+        baseTarget: Math.max(1, Number(previousLog && previousLog.baseTarget) || baseTarget)
+      });
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    let previousSurplus = 0;
+    for (let index = previousDays.length - 1; index >= 0; index--) {
+      const previousTarget = Math.max(this.minimumCalorieTarget, previousDays[index].baseTarget - previousSurplus);
+      previousSurplus = Math.max(0, previousDays[index].consumed - previousTarget);
+    }
+    return Math.max(this.minimumCalorieTarget, baseTarget - previousSurplus);
+  },
+
+  saveDayLog(date, consumedCalories, baseTarget) {
+    const currentUser = this.getCurrentUser();
+    const consumed = Number(consumedCalories);
+    const base = Number(baseTarget);
+    if (!currentUser || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(consumed) || consumed < 0 || !Number.isFinite(base) || base <= 0) {
+      return null;
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, []);
+    const history = allLogs.filter(log => log.userId === currentUser.id);
+    const adjustedTarget = this.calculateDailyTarget(date, history, base);
+    const surplus = Math.max(0, consumed - adjustedTarget);
+    const deficit = Math.max(0, adjustedTarget - consumed);
+    const dayLog = {
+      userId: currentUser.id,
+      date,
+      consumedCalories: Math.round(consumed),
+      baseTarget: Math.round(base),
+      adjustedTarget: Math.round(adjustedTarget),
+      surplus: Math.round(surplus),
+      deficit: Math.round(deficit),
+      updatedAt: new Date().toISOString()
+    };
+    const existingIndex = allLogs.findIndex(log => log.userId === currentUser.id && log.date === date);
+    if (existingIndex >= 0) {
+      allLogs[existingIndex] = dayLog;
+    } else {
+      allLogs.push(dayLog);
+    }
+
+    const userHistory = allLogs.filter(log => log.userId === currentUser.id).sort((a, b) => a.date.localeCompare(b.date));
+    userHistory.forEach(log => {
+      if (log.date <= date) return;
+      log.adjustedTarget = Math.round(this.calculateDailyTarget(log.date, userHistory, log.baseTarget));
+      log.surplus = Math.max(0, log.consumedCalories - log.adjustedTarget);
+      log.deficit = Math.max(0, log.adjustedTarget - log.consumedCalories);
+    });
+
+    return this.set(STORAGE_KEYS.DAILY_CALORIE_LOGS, allLogs) ? dayLog : null;
+  },
+
+  getWeeklySummary(currentDate = getTodayDateString(), historyData = null) {
+    const [year, month, day] = currentDate.split('-').map(Number);
+    const endDate = new Date(year, month - 1, day);
+    const startDate = new Date(endDate);
+    const daysFromMonday = (startDate.getDay() + 6) % 7;
+    startDate.setDate(startDate.getDate() - daysFromMonday);
+    const history = Array.isArray(historyData) ? historyData : this.getDailyCalorieLogs();
+    const logsByDate = new Map(history.map(log => [log.date, log]));
+    const summary = {
+      startDate: [startDate.getFullYear(), String(startDate.getMonth() + 1).padStart(2, '0'), String(startDate.getDate()).padStart(2, '0')].join('-'),
+      endDate: currentDate,
+      totalTarget: 0,
+      totalConsumed: 0,
+      daysOverTarget: 0,
+      daysMetTarget: 0,
+      totalSurplus: 0,
+      totalDeficit: 0,
+      netDifference: 0,
+      daysTracked: 0
+    };
+
+    for (const cursor = new Date(startDate); cursor <= endDate; cursor.setDate(cursor.getDate() + 1)) {
+      const date = [cursor.getFullYear(), String(cursor.getMonth() + 1).padStart(2, '0'), String(cursor.getDate()).padStart(2, '0')].join('-');
+      const dayLog = logsByDate.get(date);
+      const foodTotals = dayLog ? null : this.calculateDayTotals(date);
+      const consumed = dayLog
+        ? Number(dayLog.consumedCalories) || 0
+        : Number(foodTotals && foodTotals.calories) || 0;
+      const hasRecord = Boolean(dayLog || (foodTotals && foodTotals.count > 0));
+      const target = this.calculateDailyTarget(date, history, dayLog && dayLog.baseTarget);
+
+      summary.totalTarget += target;
+      summary.totalConsumed += consumed;
+      if (hasRecord) {
+        summary.daysTracked += 1;
+        if (consumed > target) {
+          const surplus = consumed - target;
+          summary.daysOverTarget += 1;
+          summary.totalSurplus += surplus;
+        } else {
+          summary.daysMetTarget += 1;
+          summary.totalDeficit += target - consumed;
+        }
+      }
+    }
+
+    summary.netDifference = summary.totalSurplus - summary.totalDeficit;
+    return summary;
+  },
+
+  getWeightLogs() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return [];
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    const userLogs = allLogs.filter(log => log.userId === currentUser.id || log.userId === currentUser.email);
+    return userLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+  },
+
   addWeightLog(entry) {
-    const logs = this.getWeightLogs();
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      console.warn('Cannot add weight log: No user logged in');
+      return null;
+    }
+
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
     const cleanDate = entry.date || getTodayDateString();
     const cleanWeight = parseFloat(Number(entry.weight).toFixed(1));
     const cleanBodyFat = entry.bodyFat ? parseFloat(Number(entry.bodyFat).toFixed(1)) : null;
 
-    // Check if entry for date exists
-    const existingIndex = logs.findIndex(log => log.date === cleanDate);
+    const existingIndex = allLogs.findIndex(log => log.date === cleanDate && (log.userId === currentUser.id || log.userId === currentUser.email));
 
     const newEntry = {
-      id: existingIndex >= 0 ? logs[existingIndex].id : `wt-${Date.now()}`,
+      id: existingIndex >= 0 ? allLogs[existingIndex].id : `wt-${Date.now()}`,
+      userId: currentUser.id,
       date: cleanDate,
       weight: cleanWeight,
       bodyFat: cleanBodyFat,
@@ -305,27 +571,30 @@ const storageService = {
     };
 
     if (existingIndex >= 0) {
-      logs[existingIndex] = newEntry;
+      allLogs[existingIndex] = newEntry;
     } else {
-      logs.push(newEntry);
+      allLogs.push(newEntry);
     }
 
-    logs.sort((a, b) => new Date(a.date) - new Date(b.date));
-    this.set(STORAGE_KEYS.WEIGHT_LOGS, logs);
+    allLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+    this.set(STORAGE_KEYS.WEIGHT_LOGS, allLogs);
 
-    // Update current weight in user profile
-    const profile = this.get(STORAGE_KEYS.USER_PROFILE, {});
-    profile.currentWeight = cleanWeight;
-    this.set(STORAGE_KEYS.USER_PROFILE, profile);
+    const profile = this.getUserProfile();
+    if (profile) {
+      profile.currentWeight = cleanWeight;
+      this.setUserProfile(profile);
+    }
 
     return newEntry;
   },
 
   removeWeightLog(logId) {
-    const logs = this.getWeightLogs();
-    const filtered = logs.filter(log => log.id !== logId);
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return false;
+    const allLogs = this.get(STORAGE_KEYS.WEIGHT_LOGS, []);
+    const filtered = allLogs.filter(log => !(log.id === logId && (log.userId === currentUser.id || log.userId === currentUser.email)));
     this.set(STORAGE_KEYS.WEIGHT_LOGS, filtered);
-    return filtered.length < logs.length;
+    return filtered.length < allLogs.length;
   },
 
   getLatestWeight() {
@@ -334,35 +603,232 @@ const storageService = {
     return logs[logs.length - 1];
   },
 
-  /**
-   * WATER LOGGING METHODS
-   */
   getWater(dateString = null) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return 0;
     const date = dateString || getTodayDateString();
     const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
-    return Number(waterData[date]) || 1750; // 1750ml initial seed
+    const userWater = waterData[currentUser.id] || {};
+    if (typeof userWater[date] !== 'undefined') {
+      return Math.max(0, Number(userWater[date]) || 0);
+    }
+    return 0;
   },
 
   addWater(amount, dateString = null) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return 0;
     const date = dateString || getTodayDateString();
     const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
-    const current = Number(waterData[date]) || 1750;
+    if (!waterData[currentUser.id]) {
+      waterData[currentUser.id] = {};
+    }
+    const current = Math.max(0, Number(waterData[currentUser.id][date]) || 0);
     const updated = Math.max(0, current + amount);
-    waterData[date] = updated;
+    waterData[currentUser.id][date] = updated;
     this.set(STORAGE_KEYS.WATER_LOGS, waterData);
     return updated;
   },
 
   resetWater(dateString = null) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return 0;
     const date = dateString || getTodayDateString();
     const waterData = this.get(STORAGE_KEYS.WATER_LOGS, {});
-    waterData[date] = 0;
+    if (!waterData[currentUser.id]) {
+      waterData[currentUser.id] = {};
+    }
+    waterData[currentUser.id][date] = 0;
     this.set(STORAGE_KEYS.WATER_LOGS, waterData);
     return 0;
+  },
+
+  getWorkoutLogs() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return [];
+    const allLogs = this.get(STORAGE_KEYS.WORKOUT_LOGS, []);
+    return allLogs.filter(log => log.userId === currentUser.id);
+  },
+
+  addWorkoutLog(workoutData) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+    const allLogs = this.get(STORAGE_KEYS.WORKOUT_LOGS, []);
+    const nowIso = new Date().toISOString();
+
+    const newLog = {
+      id: workoutData.id || `wo-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: currentUser.id,
+      title: (workoutData.title || '').trim() || 'Buổi tập luyện',
+      activityType: workoutData.activityType || 'gym',
+      workoutDate: workoutData.workoutDate || getTodayDateString(),
+      startTime: workoutData.startTime || '',
+      endTime: workoutData.endTime || '',
+      durationMinutes: Math.max(1, parseInt(workoutData.durationMinutes, 10) || 30),
+      intensity: workoutData.intensity || 'medium',
+      distanceKm: workoutData.distanceKm !== null && workoutData.distanceKm !== '' ? parseFloat(Number(workoutData.distanceKm).toFixed(2)) : null,
+      steps: workoutData.steps ? parseInt(workoutData.steps, 10) : null,
+      notes: (workoutData.notes || '').trim(),
+      feeling: workoutData.feeling || 'good',
+      createdAt: workoutData.createdAt || nowIso,
+      updatedAt: nowIso
+    };
+
+    allLogs.unshift(newLog);
+    this.set(STORAGE_KEYS.WORKOUT_LOGS, allLogs);
+    return newLog;
+  },
+
+  updateWorkoutLog(id, updatedData) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return null;
+    const allLogs = this.get(STORAGE_KEYS.WORKOUT_LOGS, []);
+    const index = allLogs.findIndex(item => item.id === id && item.userId === currentUser.id);
+    if (index === -1) return null;
+
+    const existing = allLogs[index];
+    const nowIso = new Date().toISOString();
+
+    const updated = {
+      ...existing,
+      ...updatedData,
+      id: existing.id,
+      userId: currentUser.id,
+      durationMinutes: Math.max(1, parseInt(updatedData.durationMinutes, 10) || existing.durationMinutes),
+      distanceKm: updatedData.distanceKm !== null && updatedData.distanceKm !== '' ? parseFloat(Number(updatedData.distanceKm).toFixed(2)) : null,
+      steps: updatedData.steps ? parseInt(updatedData.steps, 10) : null,
+      updatedAt: nowIso
+    };
+
+    allLogs[index] = updated;
+    this.set(STORAGE_KEYS.WORKOUT_LOGS, allLogs);
+    return updated;
+  },
+
+  deleteWorkoutLog(id) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return false;
+    const allLogs = this.get(STORAGE_KEYS.WORKOUT_LOGS, []);
+    const filtered = allLogs.filter(item => !(item.id === id && item.userId === currentUser.id));
+    if (filtered.length !== allLogs.length) {
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, filtered);
+      return true;
+    }
+    return false;
+  },
+
+  exportBackupData() {
+    const currentUser = this.getCurrentUser();
+    const backupSnapshot = {
+      app: 'FitVN Tracker',
+      version: '2.0',
+      exportedAt: new Date().toISOString(),
+      currentUser: currentUser ? currentUser.email : null,
+      data: {
+        profile: this.getUserProfile(),
+        foodLogs: this.getFoodLogs(),
+        dailyCalorieLogs: this.getDailyCalorieLogs(),
+        weightLogs: this.getWeightLogs(),
+        workoutLogs: this.getWorkoutLogs(),
+        water: currentUser ? (this.get(STORAGE_KEYS.WATER_LOGS, {})[currentUser.id] || {}) : {}
+      }
+    };
+    return JSON.stringify(backupSnapshot, null, 2);
+  },
+
+  validateBackupData(jsonObj) {
+    if (!jsonObj || typeof jsonObj !== 'object') {
+      return { valid: false, message: 'Dữ liệu không phải là đối tượng JSON hợp lệ.' };
+    }
+    if (jsonObj.app !== 'FitVN Tracker') {
+      return { valid: false, message: 'File không phải là bản sao lưu của ứng dụng FitVN Tracker.' };
+    }
+    if (!jsonObj.data || typeof jsonObj.data !== 'object') {
+      return { valid: false, message: 'File thiếu phần dữ liệu cốt lõi (data).' };
+    }
+    return { valid: true };
+  },
+
+  importBackupData(jsonObj, isMerge = false) {
+    const validation = this.validateBackupData(jsonObj);
+    if (!validation.valid) {
+      return { success: false, message: validation.message };
+    }
+
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      return { success: false, message: 'Vui lòng đăng nhập trước khi khôi phục dữ liệu!' };
+    }
+
+    try {
+      const data = jsonObj.data;
+      if (data.profile) {
+        this.setUserProfile(data.profile);
+      }
+      if (data.foodLogs && Array.isArray(data.foodLogs)) {
+        const allFood = this.get(STORAGE_KEYS.FOOD_LOGS, []).filter(l => l.userId !== currentUser.id);
+        const importedFood = data.foodLogs.map(l => ({ ...l, userId: currentUser.id }));
+        this.set(STORAGE_KEYS.FOOD_LOGS, [...importedFood, ...allFood]);
+      }
+      if (data.dailyCalorieLogs && Array.isArray(data.dailyCalorieLogs)) {
+        const allDailyCalories = this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, []).filter(log => log.userId !== currentUser.id);
+        const importedDailyCalories = data.dailyCalorieLogs.map(log => ({ ...log, userId: currentUser.id }));
+        this.set(STORAGE_KEYS.DAILY_CALORIE_LOGS, [...importedDailyCalories, ...allDailyCalories]);
+      }
+      if (data.weightLogs && Array.isArray(data.weightLogs)) {
+        const allWeight = this.get(STORAGE_KEYS.WEIGHT_LOGS, []).filter(l => l.userId !== currentUser.id && l.userId !== currentUser.email);
+        const importedWeight = data.weightLogs.map(l => ({ ...l, userId: currentUser.id }));
+        this.set(STORAGE_KEYS.WEIGHT_LOGS, [...importedWeight, ...allWeight]);
+      }
+      if (data.workoutLogs && Array.isArray(data.workoutLogs)) {
+        const allWorkout = this.get(STORAGE_KEYS.WORKOUT_LOGS, []).filter(l => l.userId !== currentUser.id);
+        const importedWorkout = data.workoutLogs.map(l => ({ ...l, userId: currentUser.id }));
+        this.set(STORAGE_KEYS.WORKOUT_LOGS, [...importedWorkout, ...allWorkout]);
+      }
+      if (data.water) {
+        const allWater = this.get(STORAGE_KEYS.WATER_LOGS, {});
+        allWater[currentUser.id] = data.water;
+        this.set(STORAGE_KEYS.WATER_LOGS, allWater);
+      }
+      return { success: true, message: 'Khôi phục dữ liệu thành công!' };
+    } catch (error) {
+      return { success: false, message: 'Lỗi trong quá trình ghi dữ liệu: ' + error.message };
+    }
+  },
+
+  resetUserData() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return { success: false, message: 'Chưa đăng nhập!' };
+    try {
+      const allFood = this.get(STORAGE_KEYS.FOOD_LOGS, []).filter(l => l.userId !== currentUser.id);
+      this.set(STORAGE_KEYS.FOOD_LOGS, allFood);
+
+      const allDailyCalories = this.get(STORAGE_KEYS.DAILY_CALORIE_LOGS, []).filter(log => log.userId !== currentUser.id);
+      this.set(STORAGE_KEYS.DAILY_CALORIE_LOGS, allDailyCalories);
+
+      const allWeight = this.get(STORAGE_KEYS.WEIGHT_LOGS, []).filter(l => l.userId !== currentUser.id && l.userId !== currentUser.email);
+      this.set(STORAGE_KEYS.WEIGHT_LOGS, allWeight);
+
+      const allWorkout = this.get(STORAGE_KEYS.WORKOUT_LOGS, []).filter(l => l.userId !== currentUser.id);
+      this.set(STORAGE_KEYS.WORKOUT_LOGS, allWorkout);
+
+      const allWater = this.get(STORAGE_KEYS.WATER_LOGS, {});
+      delete allWater[currentUser.id];
+      this.set(STORAGE_KEYS.WATER_LOGS, allWater);
+
+      return { success: true, message: 'Đã xóa toàn bộ dữ liệu nhật ký của tài khoản hiện tại!' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   }
 };
 
-// Expose globally
-window.storageService = storageService;
-window.STORAGE_KEYS = STORAGE_KEYS;
-window.getTodayDateString = getTodayDateString;
+if (typeof window !== 'undefined') {
+  window.storageService = storageService;
+  window.STORAGE_KEYS = STORAGE_KEYS;
+  window.getTodayDateString = getTodayDateString;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { storageService, STORAGE_KEYS, getTodayDateString };
+}
