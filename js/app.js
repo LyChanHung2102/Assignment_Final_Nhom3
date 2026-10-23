@@ -136,7 +136,6 @@ const AppHeaderModule = {
   headerDateEl: null,
 
   init() {
-    this.bindLogoutEvents();
     this.headerTitleEl = document.getElementById('header-title');
     this.headerDateEl = document.getElementById('header-date');
     this.updateCurrentDate();
