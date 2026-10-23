@@ -92,20 +92,93 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const ToastModule = {
   containerEl: null,
-
+  logoutModalEl: null,
+  logoutReturnFocusEl: null,
 
   bindLogoutEvents() {
+    this.createLogoutModal();
     document.querySelectorAll('.btn-logout-trigger, [data-action="logout"], #btn-logout-settings').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (window.confirm('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?')) {
-          window.storageService.logoutUser();
-          const isSubdir = window.location.pathname.toLowerCase().includes('/page/');
-          window.location.replace(isSubdir ? 'auth.html' : 'Page/auth.html');
-        }
+        this.openLogoutModal(btn);
       });
     });
   },
+
+  createLogoutModal() {
+    if (this.logoutModalEl) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'glass-modal-backdrop logout-modal-backdrop';
+    modal.id = 'modal-confirm-logout';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'logout-modal-title');
+    modal.setAttribute('aria-describedby', 'logout-modal-description');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.inert = true;
+    modal.innerHTML = `
+      <div class="glass-modal-container logout-modal">
+        <div class="logout-modal-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 17l5-5-5-5"></path>
+            <path d="M15 12H3"></path>
+            <path d="M12 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"></path>
+          </svg>
+        </div>
+        <h2 class="logout-modal-title" id="logout-modal-title">Đăng xuất khỏi tài khoản?</h2>
+        <p class="logout-modal-description" id="logout-modal-description">
+          Bạn sẽ kết thúc phiên đăng nhập trên thiết bị này. Dữ liệu cá nhân vẫn được lưu trên thiết bị.
+        </p>
+        <div class="logout-modal-actions">
+          <button type="button" class="glass-btn logout-modal-cancel" data-logout-cancel>Ở lại</button>
+          <button type="button" class="glass-btn glass-btn-danger logout-modal-confirm" data-logout-confirm>Đăng xuất</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('[data-logout-cancel]').addEventListener('click', () => this.closeLogoutModal());
+    modal.querySelector('[data-logout-confirm]').addEventListener('click', () => this.confirmLogout());
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) this.closeLogoutModal();
+    });
+    modal.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.closeLogoutModal();
+      }
+    });
+
+    this.logoutModalEl = modal;
+  },
+
+  openLogoutModal(returnFocusEl) {
+    if (!this.logoutModalEl) return;
+    this.logoutReturnFocusEl = returnFocusEl;
+    this.logoutModalEl.inert = false;
+    this.logoutModalEl.setAttribute('aria-hidden', 'false');
+    this.logoutModalEl.classList.add('active');
+    this.logoutModalEl.querySelector('[data-logout-cancel]').focus();
+  },
+
+  closeLogoutModal() {
+    if (!this.logoutModalEl) return;
+    this.logoutModalEl.classList.remove('active');
+    this.logoutModalEl.setAttribute('aria-hidden', 'true');
+    this.logoutModalEl.inert = true;
+    if (this.logoutReturnFocusEl && document.contains(this.logoutReturnFocusEl)) {
+      this.logoutReturnFocusEl.focus();
+    }
+    this.logoutReturnFocusEl = null;
+  },
+
+  confirmLogout() {
+    window.storageService.logoutUser();
+    const isSubdir = window.location.pathname.toLowerCase().includes('/page/');
+    window.location.replace(isSubdir ? 'auth.html' : 'Page/auth.html');
+  },
+
   init() {
     this.containerEl = document.getElementById('toast-container');
     if (!this.containerEl) {
