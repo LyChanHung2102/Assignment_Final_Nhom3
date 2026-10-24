@@ -193,6 +193,20 @@
             </div>
           </div>
 
+          <div class="glass-card stat-card" style="margin-top: var(--spacing-md);">
+            <div class="stat-header">
+              <span>TỔNG KẾT CALO TUẦN NÀY (TÍNH ĐẾN HÔM NAY)</span>
+              <span class="glass-badge glass-badge-cyan" id="weekly-calorie-days">0 ngày ghi nhận</span>
+            </div>
+            <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 10px;">
+              <div><div class="summary-label">Mục tiêu cộng dồn</div><strong id="weekly-calorie-target">0 kcal</strong></div>
+              <div><div class="summary-label">Thực tế đã nạp</div><strong id="weekly-calorie-consumed">0 kcal</strong></div>
+              <div><div class="summary-label">Ngày ăn lố / đạt mục tiêu</div><strong id="weekly-calorie-day-counts">0 / 0 ngày</strong></div>
+              <div><div class="summary-label">Dư / thâm hụt</div><strong id="weekly-calorie-balance">0 kcal</strong></div>
+            </div>
+            <div id="weekly-calorie-adjustment" style="font-size: 0.8rem; color: var(--color-text-secondary, #63756B); margin-top: 8px;" aria-live="polite"></div>
+          </div>
+
           <div class="grid-cards" style="grid-template-columns: 1fr; gap: var(--spacing-md, 16px);">
             
             <div class="glass-card stat-card">

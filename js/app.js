@@ -258,6 +258,10 @@ const DashboardModule = {
       gaugeRemaining: document.getElementById('gauge-remaining-val'),
       gaugeLabel: document.getElementById('gauge-status-label'),
       statConsumed: document.getElementById('dash-stat-calories'),
+      calorieCompensation: document.getElementById('dash-calorie-compensation'),
+      calorieDemoSurplus: document.getElementById('calorie-demo-surplus'),
+      calorieDemoButton: document.getElementById('btn-simulate-calorie-tomorrow'),
+      calorieDemoResult: document.getElementById('calorie-demo-result'),
       statRemaining: document.getElementById('dash-calories-remaining'),
       statConsumedSub: document.getElementById('dash-calories-consumed'),
       calProgressFill: document.getElementById('dash-calories-progress'),
@@ -297,6 +301,10 @@ const DashboardModule = {
   },
 
   bindEvents() {
+    if (this.dom.calorieDemoButton) {
+      this.dom.calorieDemoButton.addEventListener('click', () => this.simulateTomorrowCalorieTarget());
+    }
+
     
     document.addEventListener('click', (e) => {
       
@@ -388,6 +396,54 @@ const DashboardModule = {
         }
       });
     }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === window.STORAGE_KEYS.FOOD_LOGS || e.key === window.STORAGE_KEYS.DAILY_CALORIE_LOGS || e.key === window.STORAGE_KEYS.USER_PROFILE) {
+        this.updateUI();
+      }
+    });
+  },
+
+  simulateTomorrowCalorieTarget() {
+    const surplus = Number(this.dom.calorieDemoSurplus && this.dom.calorieDemoSurplus.value);
+    const resultEl = this.dom.calorieDemoResult;
+    if (!resultEl) return;
+    if (!Number.isFinite(surplus) || surplus <= 0 || surplus > 10000) {
+      resultEl.textContent = 'Vui lòng nhập mức ăn vượt từ 1 đến 10.000 kcal.';
+      resultEl.style.display = 'block';
+      return;
+    }
+
+    const profile = window.storageService.getUserProfile();
+    const baseTarget = Number(profile.targetCalories) || 2600;
+    const today = window.getTodayDateString();
+    const todayParts = today.split('-').map(Number);
+    const tomorrowDate = new Date(todayParts[0], todayParts[1] - 1, todayParts[2] + 1);
+    const tomorrow = [
+      tomorrowDate.getFullYear(),
+      String(tomorrowDate.getMonth() + 1).padStart(2, '0'),
+      String(tomorrowDate.getDate()).padStart(2, '0')
+    ].join('-');
+    const historyWithoutToday = window.storageService.getDailyCalorieLogs().filter(log => log.date !== today);
+    const todayTarget = window.storageService.calculateDailyTarget(today, historyWithoutToday, baseTarget);
+    const simulatedLog = {
+      date: today,
+      baseTarget,
+      consumedCalories: todayTarget + surplus
+    };
+    const tomorrowTarget = window.storageService.calculateDailyTarget(
+      tomorrow,
+      [...historyWithoutToday, simulatedLog],
+      baseTarget
+    );
+    const reducedBy = Math.max(0, baseTarget - tomorrowTarget);
+    const formatDate = date => {
+      const [year, month, day] = date.split('-');
+      return `${day}/${month}/${year}`;
+    };
+
+    resultEl.textContent = `Ngày ${formatDate(today)}: mục tiêu ${Math.round(todayTarget).toLocaleString('vi-VN')} kcal, giả lập nạp ${Math.round(simulatedLog.consumedCalories).toLocaleString('vi-VN')} kcal (vượt ${Math.round(surplus).toLocaleString('vi-VN')} kcal). Ngày ${formatDate(tomorrow)}: mục tiêu dự kiến ${Math.round(tomorrowTarget).toLocaleString('vi-VN')} kcal, giảm ${Math.round(reducedBy).toLocaleString('vi-VN')} kcal so với mục tiêu gốc ${Math.round(baseTarget).toLocaleString('vi-VN')} kcal${tomorrowTarget <= window.storageService.minimumCalorieTarget ? ` (đã chạm mức sàn ${window.storageService.minimumCalorieTarget.toLocaleString('vi-VN')} kcal)` : ''}.`;
+    resultEl.style.display = 'block';
   },
 
   updateWater(amount) {
@@ -528,11 +584,15 @@ const DashboardModule = {
 
   updateUI() {
     const profile = (window.storageService.getUserProfile ? window.storageService.getUserProfile() : window.storageService.get(window.STORAGE_KEYS.USER_PROFILE, {}));
-    const targetCalories = profile.targetCalories || 2600;
     const targetMacros = profile.macros || { protein: 165, carbs: 325, fat: 72 };
 
     const todayDate = window.getTodayDateString();
     const dayTotals = window.storageService.calculateDayTotals(todayDate);
+    const baseTarget = Number(profile.targetCalories) || 2600;
+    if (dayTotals.count > 0) {
+      window.storageService.saveDayLog(todayDate, dayTotals.calories, baseTarget);
+    }
+    const targetCalories = window.storageService.calculateDailyTarget(todayDate, null, baseTarget);
 
     
     const consumed = Math.round(dayTotals.calories);
@@ -567,6 +627,12 @@ const DashboardModule = {
     
     if (this.dom.statConsumed) {
       this.dom.statConsumed.innerHTML = `${consumed.toLocaleString()} <span class="stat-unit">/ ${targetCalories.toLocaleString()} kcal</span>`;
+    }
+    if (this.dom.calorieCompensation) {
+      const compensation = baseTarget - targetCalories;
+      this.dom.calorieCompensation.textContent = compensation > 0
+        ? `Đã điều chỉnh giảm ${compensation.toLocaleString()} kcal do phần calo dư hôm qua.`
+        : `Mục tiêu gốc: ${baseTarget.toLocaleString()} kcal · mức bù tối thiểu: ${window.storageService.minimumCalorieTarget.toLocaleString()} kcal.`;
     }
     if (this.dom.statRemaining) {
       this.dom.statRemaining.textContent = `${Math.max(0, remaining).toLocaleString()} kcal`;
@@ -1159,6 +1225,35 @@ const FoodLogModule = {
     if (pEl) pEl.textContent = Math.round(dayTotals.protein);
     if (cEl) cEl.textContent = Math.round(dayTotals.carbs);
     if (fEl) fEl.textContent = Math.round(dayTotals.fat);
+    this.renderWeeklyCalorieSummary();
+  },
+
+  renderWeeklyCalorieSummary() {
+    const currentDate = window.getTodayDateString();
+    const summary = window.storageService.getWeeklySummary(currentDate);
+    const targetEl = document.getElementById('weekly-calorie-target');
+    const consumedEl = document.getElementById('weekly-calorie-consumed');
+    const daysEl = document.getElementById('weekly-calorie-days');
+    const dayCountsEl = document.getElementById('weekly-calorie-day-counts');
+    const balanceEl = document.getElementById('weekly-calorie-balance');
+    const adjustmentEl = document.getElementById('weekly-calorie-adjustment');
+    const formatCalories = value => `${Math.round(value).toLocaleString('vi-VN')} kcal`;
+
+    if (targetEl) targetEl.textContent = formatCalories(summary.totalTarget);
+    if (consumedEl) consumedEl.textContent = formatCalories(summary.totalConsumed);
+    if (daysEl) daysEl.textContent = `${summary.daysTracked} ngày ghi nhận`;
+    if (dayCountsEl) dayCountsEl.textContent = `${summary.daysOverTarget} / ${summary.daysMetTarget} ngày`;
+    if (balanceEl) {
+      const difference = summary.totalSurplus - summary.totalDeficit;
+      balanceEl.textContent = difference > 0
+        ? `Dư ${formatCalories(difference)}`
+        : difference < 0
+          ? `Thâm hụt ${formatCalories(Math.abs(difference))}`
+          : formatCalories(0);
+    }
+    if (adjustmentEl) {
+      adjustmentEl.textContent = `Tổng calo dư các ngày ăn lố: ${formatCalories(summary.totalSurplus)} · tổng thâm hụt các ngày đạt mục tiêu: ${formatCalories(summary.totalDeficit)}.`;
+    }
   },
 
   updateCustomCaloriesPreview() {
@@ -2073,7 +2168,10 @@ const HealthDashboardModule = {
     }
 
     window.addEventListener('storage', (e) => {
-      if (e.key === window.STORAGE_KEYS.WEIGHT_LOGS || e.key === window.STORAGE_KEYS.USER_PROFILE) {
+      if (e.key === window.STORAGE_KEYS.WEIGHT_LOGS
+        || e.key === window.STORAGE_KEYS.USER_PROFILE
+        || e.key === window.STORAGE_KEYS.FOOD_LOGS
+        || e.key === window.STORAGE_KEYS.DAILY_CALORIE_LOGS) {
         this.updateDashboard();
       }
     });
@@ -2278,9 +2376,15 @@ const HealthDashboardModule = {
     }
 
     
-    const calorieTarget = Number(profile.targetCalories) || 2600;
     const todayDate = window.getTodayDateString ? window.getTodayDateString() : new Date().toISOString().split('T')[0];
     const dayTotals = window.storageService ? window.storageService.calculateDayTotals(todayDate) : { calories: 0 };
+    const baseTarget = Number(profile.targetCalories) || 2600;
+    if (window.storageService && dayTotals.count > 0) {
+      window.storageService.saveDayLog(todayDate, dayTotals.calories, baseTarget);
+    }
+    const calorieTarget = window.storageService
+      ? window.storageService.calculateDailyTarget(todayDate, null, baseTarget)
+      : baseTarget;
     const consumedCalories = Math.round(dayTotals.calories);
     const caloriePercent = Math.min(100, Math.round((consumedCalories / calorieTarget) * 100));
 
